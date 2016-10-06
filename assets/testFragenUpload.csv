@@ -1,0 +1,12 @@
+Wo (an welcher Stelle) bezieht Wireshark seine Daten?;Zwischen der Ethernetkarte und dem Betriebssystem*;Auf der Anwendungsebene;Direkt auf dem Physical Layer;Zwischen MAC und Physical Layer;
+Wie gross ist die minimale UDP SDU?;18 Bytes;66 Bytes;0 Bytes*;4 Bytes;64 Bytes
+Was sind typische Probleme, wenn mit Wireshark sehr grosse Datenmengen aufgezeichnet werden?;"Wireshark wird ""träge"" *";Wireshark stürzt ab *;Wireshark zeigt viele Fehlermeldungen an;Das Netz wird blockiert;
+"Was gibt der Qualitätsparameter ""Jitter"" an?";zeitliche Abweichung gegenüber einem bestimmten Takt *;durchschnittliche Zeit,  die Pakete brauchen, um vom Sender zum Empfänger zu gelangen ;durchschnittliche Zeit, die Pakete brauchen, um vom Sender zum Empfänger und wieder zurück zu gelangen;Zeitabstand der Pakete;
+Welche Vorraussetzungen muss ein Server erfüllen, um Performancetests an ihm durchführen zu können?;"Der TCP-Server muss sich im ""Passive Open"" Status befinden.*";Der Server muss eingeschalten sein.*;Der Server muss einen noch nicht belegten Port für den Test verwenden.*;Der Server benötigt mindestens eine 100Mbit/s Verbindung.;
+"Wofür steht die Abkürzung ""RTT"" (im Rahmen der Vorlesung Computernetze)?";Round Trip Time *;Relative Traffic  Target;RealTime Transport;Regression Test Tool;
+Was ist WinPcap?;Die Windowsversion der libpcap Bibliothek.*;Ein Programm zum Verändern von Ethernetpaketen unter Windows.;Die Windowsversion von Wireshark.;;
+Was ist nötig um WLAN Daten mitsniffen zu können?;Unter Windows ein bestimmter WLAN-Snifferstick.*;"Das Einschalten des  ""Promiscous Mode"".*";"Das Einstellen des  ""Monitor Mode"" unter Linux.*";Das hinzufügen einer bestimmten zusätzlichen Bibliothek zu Wireshark.;
+Ist es möglich bestimmte Pakete in einem Wireshark-Trace farblich hervorzuheben?;Ja, unter View > Coloring Rules...*;Ja, unter Edit > Preferences > Font and Colors;Ja, unter Capture > Options > Paket colors;Nein, es ist nicht möglich.;
+Welchen Filter müssen Sie einstellen, um nur Pakete anzuzeigen, welche zur IP-Adresse 152.96.37.60 geschickt bzw. von der IP-Adresse aus gesendet werden.;ip.addr == 152.96.37.60*;ip.addr = 152.96.37.60;ip.dst == 152.96.37.60;ip.id == 152.96.37.60;
+Welchen Filter müssen Sie einstellen, damit nur HTTP-Pakete angezeigt werden?;http*;tcp.port == 80*;tcp;Es wird kein Filter benötigt, Wireshark zeigt nur HTTP Pakete an.;
+ö;ö;ö;ö;ö;

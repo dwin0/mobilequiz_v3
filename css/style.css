@@ -1,0 +1,193 @@
+@CHARSET "ISO-8859-1";
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+  float: left;
+}
+.form-signin .form-signin-heading,
+.form-signin .checkbox {
+  margin-bottom: 10px;
+}
+.form-signin .checkbox {
+  font-weight: normal;
+}
+.form-signin .form-control {
+  position: relative;
+  font-size: 16px;
+  height: auto;
+  padding: 10px;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="text"] {
+  margin-bottom: -1px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.bootstrap-tagsinput 
+{
+	width: 100%;
+}
+
+.magnifyingGlass
+{
+	background-repeat: no-repeat;
+	background-image: url("../assets/magni.png");
+	padding-left: 27px !important;
+	background-position: 3px 8px;
+	background-size: 18px;
+}
+
+.quizReportNav
+{
+	float: left;
+	margin: 0px;
+	padding: 0px 20px 0px 0px;
+}
+
+.bar
+{
+	float: left;
+	margin: 0px;
+	padding: 0px;
+}
+
+.qaaQuestion 
+{
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+.qaaFirstCol
+{
+	float: left;
+	margin-right: 5px;
+}
+
+.qaaAnswer
+{
+	padding-bottom: 2px;
+}
+
+/*
+PARTICIPATION PAGE
+*/
+
+.tr {
+    display: table-row;
+    height: 40px;
+}
+
+.td {
+    display: table-cell;
+    min-width: 200px;
+    vertical-align: middle;
+    white-space : normal;
+}
+
+.left{
+    float:left; 
+    width: 500px;
+}
+
+.center{
+	margin: 0 auto;
+    width: 250px;
+	text-align: center;
+}
+
+.right{
+    float:right;
+    width: 130px;
+}
+
+.question, .questionImage {
+    text-align: center; 
+    font-size: 0.9em;
+    font-weight: bold;
+} 
+
+.questionImage {
+    padding-bottom: 5%;
+}
+
+.answer {
+    float: left;
+    padding-left: 5%;
+    padding-top: 1%;
+    font-weight: normal;
+}
+
+.highlight {
+    color:red;
+}
+
+.input{
+    float: left;
+}
+
+/*
+END PARTICIPATION PAGE
+*/
+
+/*LOading CSS*/
+
+#overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background: #000;
+    opacity: 0.8;
+    filter: alpha(opacity=80);
+    z-index: 9999;
+}
+#loading {
+    width: 50px;
+    height: 57px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin: -28px 0 0 -25px;
+}
+
+/*createquiz sortable connected lists*/
+
+#assignGroupToQuizSortable1, #assignGroupToQuizSortable2, .joinGroup {
+	border: 1px solid #eee;
+	width: 220px;
+	min-height: 36px;
+	list-style-type: none;
+	margin: 0;
+	padding: 5px 0 0 0;
+	float: left;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+#assignGroupToQuizSortable1 li, #assignGroupToQuizSortable2 li, .joinGroup li {
+	margin: 0 5px 5px 5px;
+	padding: 5px;
+	font-size: 1.2em;
+	width: 205px;
+	cursor: move;
+}
+
+.joinGroup li:HOVER {
+	border: 1px solid #de9501;
+}
+
+.joinGroupSelected {
+	border: 1px solid #de9501;
+}
