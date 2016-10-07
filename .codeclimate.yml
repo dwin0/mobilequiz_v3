@@ -1,3 +1,6 @@
 languages:
 	PHP: true
+	exclude_paths: ["helper/*"]
+	exclude_paths: ["js/*"]
+	exclude_paths: ["PHPExcel/*"]
 	exclude_paths: ["tests/*"]
