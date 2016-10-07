@@ -342,11 +342,11 @@ $(function() {
 		                $objPHPExcel->getActiveSheet()->setTitle('Results');
 		                
 		                //clear directory
-		                clearDir('/var/www/html/mobilequiz_v3/PHPExcel/exportedData/');
+		                clearDir('/var/www/html/PHPExcel/exportedData/');
 		                
 		                // Save Excel 2007 file
 		                $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-		                $objWriter->save(str_replace('.php', '.xlsx', '/var/www/html/mobilequiz_v3/PHPExcel/exportedData/' . $dataName . '.php'));
+		                $objWriter->save(str_replace('.php', '.xlsx', '/var/www/html/PHPExcel/exportedData/' . $dataName . '.php'));
 		                ?>
 		            </tbody>
 				</table>

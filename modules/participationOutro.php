@@ -217,16 +217,12 @@
 		if($fetchQuestionnaire["result_visible"] != 3) 
 		{
 		
-			$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, an_qu_user.question_order
-				from question
-				inner join qunaire_qu on qunaire_qu.question_id = question.id
-				left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id
-				where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order;");
+			$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, an_qu_user.question_order from question inner join qunaire_qu on qunaire_qu.question_id = question.id left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order");
 			$stmt->bindParam(":questionnaire_id", $quizId);
 			$stmt->bindParam(":session_id", $fetchSession["id"]);
 			if(!$stmt->execute())
 			{
-				header("Location: index.php?p=quiz&code=-26");
+				header("Location: index.php?p=quiz&code=-26&quizId=" . $quizId . "&session=" . $fetchSession["id"] . "&dbhError=". $dbh->errorInfo()[0] . "&stmtError=" . $stmt->errorInfo()[2]);
 				exit;
 			}
 			$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);

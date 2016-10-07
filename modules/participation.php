@@ -163,7 +163,9 @@ if($action == "startQuiz")
 			{
 				if($_POST["answer"] != "noAnswer")
 				{
-					$isSelected = $_POST["answer"] == $fetchAnswers[$i]["id"];
+					if($_POST["answer"] == $fetchAnswers[$i]["id"])
+					{ $isSelected = 1; } else { $isSelected = 0; }
+					//$isSelected = $_POST["answer"] == $fetchAnswers[$i]["id"];
 				} else {
 					$isSelected = NULL;
 				}
@@ -176,6 +178,7 @@ if($action == "startQuiz")
 			}
 			
 			$stmt->bindParam(":selected", $isSelected);
+			//$stmt->bindValue(":selected", NULL);
 			if($fetchTimeNeededRowCount == 0)
 			{
 				$timeNeeded = time() - $_POST["generationTime"];
@@ -185,12 +188,13 @@ if($action == "startQuiz")
 				$timeNeeded = $fetchTimeNeeded["time_needed"];
 			}
 			$stmt->bindParam(":time_needed", $timeNeeded);
+			//$stmt->bindValue(":time_needed", 0);
 			if(!$stmt->execute())
 			{
-				header("Location: index.php?p=quiz&code=-23&info=participationTime" . "selected:" . $isSelected . "timeNeeded: " . $timeNeeded);
+				header("Location: index.php?p=quiz&code=-23&info=participationTime" . "selected:" . $isSelected . "timeNeeded: " . $timeNeeded . "Error: " . $stmt->errorInfo()[0] . " POSTANSWER: " . $_POST["answer"] . " FETCHANSWER: " . $fetchAnswers[$i]["id"] . " equal: " . ($_POST["answer"] == $fetchAnswers[$i]["id"]) );
 				exit;
 			}
-		}
+		} 
 		
 		if(isset($_POST["prevQuestion"]))
 		{

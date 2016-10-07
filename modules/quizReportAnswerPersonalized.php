@@ -245,7 +245,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 							</h3>
 						</div>
 						<div class="col-md-2 col-sm-3" style="text-align: right;">
-							Ben&oumltigte Zeit f&uuml;r die Frage: <span id="questionTimeNeeded_<?php echo $fetchQuestions[$i]["id"];?>"></span> s
+							Benötigte Zeit für die Frage: <span id="questionTimeNeeded_<?php echo $fetchQuestions[$i]["id"];?>"></span> s
 						</div>
 					</div>
 				</div>

@@ -367,7 +367,7 @@
 						Bitte &auml;ndern Sie Ihr Passwort sofort nachdem Sie sich eingeloggt haben.<br />
 						Falls Sie nie ein neues Passwort angefordert haben wenden Sie sich bitte an einen Administrator.<br /><br />
 						Viele Gr&uumlsse,<br />Ihr MobileQuiz Team";
-						if(!sendPasswordMail($fetchUser["email"], "Passwort zurï¿½ckgesetzt",$text))
+						if(!sendPasswordMail($fetchUser["email"], "Passwort zurückgesetzt",$text))
 						{
 							header("Location: ?p=home&code=-12");
 						}

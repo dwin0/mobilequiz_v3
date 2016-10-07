@@ -513,8 +513,8 @@
 			                        <?php if($_SESSION["role"]["creator"] == 1){?>
 				                        <td>
 				                        	<?php 
-				                        	$allParticipations = 0;
-				                            $stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :qunaire_id group by user_id");
+				                        	$allParticipations = -1;
+				                            $stmt = $dbh->prepare("select distinct user_id from user_qunaire_session where questionnaire_id = :qunaire_id");
 			                            	$stmt->bindParam(":qunaire_id", $fetchQuestionnaire[$i]["qId"]);
 				                            $stmt->execute();
 				                            $allParticipations = $stmt->rowCount();

@@ -1,0 +1,536 @@
+Datum: 04.10.2016 08:31:51
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3331
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 08:38:27
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3331
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 08:52:25
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3331
+Questionnumber: 
+------------------------------
+Datum: 04.10.2016 09:34:16
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3331
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 09:35:48
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3331
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 09:36:48
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3331
+Questionnumber: 3
+------------------------------
+Datum: 04.10.2016 10:09:32
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 04.10.2016 11:03:30
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3330
+Questionnumber: 2
+------------------------------
+Datum: 04.10.2016 12:51:35
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3330
+Questionnumber: 2
+------------------------------
+Datum: 04.10.2016 12:53:39
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3330
+Questionnumber: 2
+------------------------------
+Datum: 04.10.2016 15:03:31
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationConfirmEndQuiz
+Code: -26
+Usersession: 260
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 04.10.2016 15:03:47
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3333
+Questionnumber: 2
+------------------------------
+Datum: 04.10.2016 15:05:21
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3333
+Questionnumber: 4
+------------------------------
+Datum: 04.10.2016 15:05:46
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationIntro&quizId=8
+Code: -26
+Usersession: 260
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 04.10.2016 15:05:53
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationIntro&quizId=8
+Code: -20
+Usersession: 260
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 04.10.2016 15:06:29
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -26
+Usersession: 260
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 04.10.2016 15:13:30
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz
+Code: -26
+Usersession: 260
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 04.10.2016 15:13:35
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 260
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 04.10.2016 15:37:57
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3335
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:38:06
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3335
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:38:07
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3335
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:38:07
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3335
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:38:08
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3335
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:38:08
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3335
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:38:17
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3335
+Questionnumber: 1
+------------------------------
+Datum: 04.10.2016 15:52:49
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:57:44
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 15:59:11
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 16:01:56
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 1
+------------------------------
+Datum: 04.10.2016 16:03:49
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 1
+------------------------------
+Datum: 04.10.2016 16:03:53
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-23&info=participationTimeselected:timeNeeded:%203Error:%2000000
+Code: -38
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 1
+------------------------------
+Datum: 04.10.2016 16:04:28
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 113
+SessionId: 3329
+Questionnumber: 1
+------------------------------
+Datum: 04.10.2016 16:10:19
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 1
+------------------------------
+Datum: 04.10.2016 16:32:34
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 84
+SessionId: 3330
+Questionnumber: 0
+------------------------------
+Datum: 04.10.2016 18:54:11
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 261
+QuizId: 8
+SessionId: 3331
+Questionnumber: 0
+------------------------------
+Datum: 05.10.2016 13:26:47
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 260
+QuizId: 8
+SessionId: 3328
+Questionnumber: 
+------------------------------
+Datum: 05.10.2016 15:55:37
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3332
+Questionnumber: 0
+------------------------------
+Datum: 05.10.2016 16:13:38
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -26
+Usersession: 25
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 05.10.2016 16:19:15
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3333
+Questionnumber: 4
+------------------------------
+Datum: 05.10.2016 16:25:52
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participate
+Code: -23
+Usersession: 25
+QuizId: 8
+SessionId: 3333
+Questionnumber: 4
+------------------------------
+Datum: 05.10.2016 16:29:17
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationConfirmEndQuiz
+Code: -26
+Usersession: 25
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 05.10.2016 16:38:32
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 25
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 05.10.2016 16:38:48
+fromSite: 
+Code: -26
+Usersession: 25
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 05.10.2016 16:47:14
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 25
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 06.10.2016 15:51:19
+fromSite: http://sinv-56082.edu.hsr.ch/?p=quiz
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 06.10.2016 15:51:27
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 06.10.2016 15:52:02
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 06.10.2016 15:52:09
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 06.10.2016 15:52:29
+fromSite: 
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 06.10.2016 15:52:35
+fromSite: 
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 06.10.2016 21:30:12
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationConfirmEndQuiz
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 06.10.2016 21:30:15
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationConfirmEndQuiz
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 06.10.2016 21:31:13
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 06.10.2016 21:31:20
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 06.10.2016 22:45:42
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationConfirmEndQuiz
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 06.10.2016 22:49:24
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationConfirmEndQuiz
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 06.10.2016 23:01:56
+fromSite: http://sinv-56082.edu.hsr.ch/Pindex.php?p=participationConfirmEndQuiz
+Code: -26
+Usersession: 261
+QuizId: -1
+SessionId: -1
+Questionnumber: -1
+------------------------------
+Datum: 07.10.2016 08:41:33
+fromSite: http://sinv-56082.edu.hsr.ch/?p=quiz
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 08:45:17
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 08:49:32
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26&quizId=8&session=3333
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 08:50:06
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 09:06:01
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 09:09:57
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 09:11:01
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26&quizId=8&session=3333
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 09:11:42
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26&quizId=8&session=3333&dbhError=Array&stmtError=Array
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 09:14:05
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz&code=-26&quizId=8&session=3333&dbhError=00000&stmtError=42000
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
+Datum: 07.10.2016 09:14:55
+fromSite: http://sinv-56082.edu.hsr.ch/index.php?p=quiz
+Code: -26
+Usersession: 25
+QuizId: 
+SessionId: 
+Questionnumber: 
+------------------------------
