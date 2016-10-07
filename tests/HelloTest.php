@@ -1,6 +1,6 @@
 <?php
 
-include_once '/../Hello.php';
+include_once '../Hello.php';
 
 /**
  * @coversDefaultClass \Hello
