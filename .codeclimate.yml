@@ -1,6 +1,9 @@
 engines:
   phpcodesniffer:
     enabled: true
+    checks:
+      Generic WhiteSpace DisallowTabIndent TabsUsed:
+        enabled: false
   duplication:
     enabled: true
     config:
