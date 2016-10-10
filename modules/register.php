@@ -1,4 +1,6 @@
 <?php 
+
+	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
 	$code = 0;
 	$errStr = "";
 	
@@ -9,7 +11,7 @@
 		switch($code)
 		{
 			case 0:
-				$errStr = "Allgemeiner Fehler. (Code " . $code . ")";
+				$errStr = "Allgemeiner Fehler. (Code " . htmlspecialchars($code) . ")";
 				break;
 			case -1:
 				$errStr = "E-Mail Fehler.";
@@ -29,7 +31,7 @@
 			case -10:
 				$errStr = "Versenden der E-Mail fehlgeschlagen.";
 				break;
-			default: $errStr = "Allgemeiner Fehler. (Code " . $code . ")";
+			default: $errStr = "Allgemeiner Fehler. (Code " . htmlspecialchars($code) . ")";
 				break;
 		}
 	}

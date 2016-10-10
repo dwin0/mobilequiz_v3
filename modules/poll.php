@@ -481,6 +481,8 @@
 		}
 	
 	<?php
+	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
+	
 	$codeTxt = "";
 	$codeClr = "green";
 	if(isset($_GET["code"]))

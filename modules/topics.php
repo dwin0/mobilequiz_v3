@@ -13,6 +13,8 @@
 		exit;
 	}
 	
+	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
+	
 	$code = 0;
 	$codeTxt = "";
 	$color = "green";
@@ -28,7 +30,7 @@
 				$codeTxt = "Themengebiet erfolgreich hinzugef&uuml;gt.";
 				break;
 			default:
-				$codeTxt = "Fehler (Code: " . $code .")";
+				$codeTxt = "Fehler (Code: " . htmlspecialchars($code) .")";
 				break;
 		}
 	}

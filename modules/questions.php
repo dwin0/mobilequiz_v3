@@ -13,6 +13,8 @@
 		exit;
 	}
 	
+	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
+	
 	$code = 0;
 	$codeTxt = "";
 	$color = "red";
@@ -31,7 +33,7 @@
 			case -13:
 			case -14:
 			case -15:
-				$codeTxt = "Fehler in der Bearbeitung des Vorgangs (Code: " . $code .")";
+				$codeTxt = "Fehler in der Bearbeitung des Vorgangs (Code: " . htmlspecialchars($code) .")";
 				break;
 			case -4:
 				$codeTxt = "DB insert Fehler.";
@@ -64,7 +66,7 @@
 				$codeTxt = "Frage wurde bearbeitet";
 				break;
 			default:
-				$codeTxt = "Fehler (Code: " . $code .")";
+				$codeTxt = "Fehler (Code: " . htmlspecialchars($code) .")";
 				break;
 		}
 	}

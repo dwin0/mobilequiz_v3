@@ -53,6 +53,8 @@
 		exit;
 	}
 	
+	
+	////TODO: Ev. Duplicate Function handleCode & Extract to File 'HandleCode'
 	if(isset($_GET["code"]))
 	{
 		$code = $_GET["code"];

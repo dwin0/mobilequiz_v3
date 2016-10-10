@@ -1,4 +1,7 @@
 ﻿<?php 
+
+	//TODO: Extract to File 'HandleCode'	
+
 	$code = 0;
 	$codeTxt = "";
 	if(isset($_GET["code"]))
@@ -27,7 +30,7 @@
 				break;
 			case -1:
 			case -2:
-				$codeTxt = "Aktivierung fehlgeschlagen (Code: " . $code . ")";
+				$codeTxt = "Aktivierung fehlgeschlagen (Code: " . htmlspecialchars($code) . ")";
 				break;
 			case -6:
 				$codeTxt = "Senden der Passwort zur&uuml;cksetzen E-Mail fehlgeschlagen.";
@@ -63,7 +66,7 @@
 			case -14:
 			case -15:
 			default:
-				$codeTxt = "Allgemeiner Fehler (Code " . $code . ")";
+				$codeTxt = "Allgemeiner Fehler (Code " . htmlspecialchars($code) . ")";
 				break;
 		}
 	}

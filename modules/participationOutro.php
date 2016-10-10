@@ -78,6 +78,8 @@
 		}
 	}
 	
+	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
+	
 	$code = 0;
 	$codeTxt = "";
 	$color = "red";
@@ -86,11 +88,14 @@
 		$code = $_GET["code"];
 	}
 	if($code > 0)
+	{
 		$color = "green";
+	}
 	
 	switch ($code)
 	{
-		
+		case 1: $codeTxt = "OK"; //TODO: Successful-Text
+		break;
 	}
 ?>
 <script type="text/javascript">

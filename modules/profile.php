@@ -119,6 +119,7 @@
 	});
 </script>
 <?php 
+	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
 	
 	$codeTxt = "";
 	if(isset($_GET["code"]))

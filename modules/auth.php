@@ -414,7 +414,7 @@
 				$colcount = $stmt->rowCount();
 				if($colcount != 1)
 				{
-					header("Location: ?p=home&code=-9");
+					header("Location: ?p=home&code=-16");
 				}
 				else 
 				{

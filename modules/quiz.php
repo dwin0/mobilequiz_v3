@@ -6,6 +6,8 @@
 	}
 	include "modules/extraFunctions.php";
 
+	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
+	
 	$code = 0;
 	$codeTxt = "";
 	$color = "red";
@@ -23,7 +25,7 @@
 		case -10:
 		case -11:
 		case -6:
-			$codeTxt = $lang["quizUploadPicError"] . " (Code: " . $code .")";
+			$codeTxt = $lang["quizUploadPicError"] . " (Code: " . htmlspecialchars($code) .")";
 			break;
 		case -2:
 		case -7:
@@ -38,7 +40,7 @@
 		case -24:
 		case -25:
 		case -27:
-			$codeTxt = $lang["quizGeneralError"] . " (Code: " . $code .")";
+			$codeTxt = $lang["quizGeneralError"] . " (Code: " . htmlspecialchars($code) .")";
 			break;
 		case -15:
 			$codeTxt = $lang["quizNotAvailable"] . ".";
@@ -70,7 +72,7 @@
 		case -31:
 		case -32:
 		case -33:
-			$codeTxt = $lang["csvInsertError"] . " (Code: " . $code .")";
+			$codeTxt = $lang["csvInsertError"] . " (Code: " . htmlspecialchars($code) .")";
 			break;
 		case -34:
 			$codeTxt = $lang["csvQunaireError"] . ".";
