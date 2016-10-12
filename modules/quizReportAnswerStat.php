@@ -21,7 +21,7 @@ else
 	exit;
 }
 
-$stmt = $dbh->prepare("select name, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email, owner_id from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
+$stmt = $dbh->prepare("select questionnaire.name, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email, owner_id from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
 $stmt->bindParam(":quizId", $_GET["id"]);
 if(!$stmt->execute())
 {

@@ -21,7 +21,7 @@ else
 	exit;
 }
 
-$stmt = $dbh->prepare("select name, owner_id, quiz_passed from questionnaire where questionnaire.id = :quizId");
+$stmt = $dbh->prepare("select questionnaire.name, owner_id, quiz_passed from questionnaire where questionnaire.id = :quizId");
 $stmt->bindParam(":quizId", $_GET["id"]);
 if(!$stmt->execute())
 {
