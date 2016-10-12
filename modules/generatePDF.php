@@ -2,7 +2,7 @@
 session_start();
 
 ob_end_clean();
-include_once '../config/config.php';
+include_once(__DIR__ . '/../config/config.php');
 include "modules/extraFunctions.php";
 require_once('helper/tcpdf_min/tcpdf_import.php');
 
@@ -56,7 +56,7 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 	$w = 0;
 	$l = 18;
 	
-	$stmt = $dbh->prepare("select name, description, starttime, endtime, result_visible, last_modified, qnaire_token, firstname, lastname, email, owner_id, noParticipationPeriod from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
+	$stmt = $dbh->prepare("select questionnaire.name, description, starttime, endtime, result_visible, last_modified, qnaire_token, firstname, lastname, email, owner_id, noParticipationPeriod from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
 	$stmt->bindParam(":quizId", $_GET["quizId"]);
 	if(!$stmt->execute())
 	{
@@ -256,6 +256,7 @@ if($action == "getQuizTaskPaper")
 	// ---------------------------------------------------------
 	
 	//Close and output PDF document
+	ob_end_clean();
 	$pdf->Output($fetchQuiz["name"] . '_Fragen.pdf', 'I');
 } else if($action == "getQuizTaskPaperWithMyAnswers")
 {	
@@ -399,6 +400,7 @@ if($action == "getQuizTaskPaper")
 	}
 	
 	//Close and output PDF document
+	ob_end_clean();
 	$pdf->Output($fetchUser["lastname"] . "_" . $fetchUser["firstname"] . "_" . $fetchQuiz["name"] . ".pdf", 'I');
 } else 
 {
