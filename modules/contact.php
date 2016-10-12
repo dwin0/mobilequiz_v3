@@ -12,7 +12,7 @@
 				$message = "Von: " . $_POST["email"] . "<br />Vorname: " . $_POST["firstname"] . "<br />Vorname: " . $_POST["lastname"] . "<br /><br />Nachricht: ";
 				$message .= $_POST["message"];
 				
-				if(sendMail("pe@cnlab.ch", $_POST["subject"], $message))
+				if(sendMail("dwindler@hsr.ch", $_POST["subject"], $message))
 				{
 					$mailResultMessage = "<span style =\"color: green;\">Nachricht wurde erfolgreich versendet.</span>";
 					setcookie("sendContactMail", time() . "_" . $mailBlockSeconds, time()+$mailBlockSeconds);
@@ -28,12 +28,14 @@
 		}
 	}
 	
+	//TODO: Duplicate Function 'sendMail' & Extract to file 'handleMail'
+	
 	function sendMail($to, $subject, $text) {
 		try {
 			$mail = new PHPMailer();
-			$mail->isSMTP();                                      // Set mailer to use SMTP
-			$mail->Host = '152.96.56.82';  // Specify main and backup server
-			$mail->SMTPAuth = false; // Enable SMTP authentication
+			$mail->isSMTP();                // Set mailer to use SMTP
+			//$mail->Host = '10.20.20.22';  // Specify main and backup server. Default: localhost
+			$mail->SMTPAuth = false;        // Enable SMTP authentication
 			$mail->CharSet = 'utf-8';
 			$mail->isHTML();
 	
@@ -45,6 +47,14 @@
 			$mail->Body = $text;
 			return $mail->Send();
 		} catch (Exception $e) {
+			$file = "logs/mailErrorLog.txt";
+			$text = "Datum: " . date("d.m.Y H:i:s", time());
+			$text .= e.getMessage();
+			$text .= "------------------------------\n";
+			$fp = fopen($file, "a");
+			fwrite($fp, $text);
+			fclose($fp);
+			
 			return false;
 		}
 	}
