@@ -2,9 +2,9 @@
 session_start();
 
 include_once '../config/config.php';
-include_once 'helper/PHPMailer/class.phpmailer.php';
 include_once "../modules/extraFunctions.php";
 include_once "modules/extraFunctions.php";
+include_once 'mail.php';
 
 $serveraddress = "http://sinv-56082.edu.hsr.ch/index.php";
 if($_POST["action"] == 'changeRole')
@@ -111,7 +111,7 @@ if($_POST["action"] == 'changeRole')
 
 			if($fetchUser["email"] != $_POST["email"])
 			{
-				//verifizierungs-/bestätigungsmail schicken
+				//verifizierungs-/best�tigungsmail schicken
 				$randomKey = md5(uniqid(rand(), true));
 				$stmt = $dbh->prepare("insert into email_request (user_id, new_email, `key`) values (:uId, :newEmail, :randomKey)");
 				$stmt->bindParam(':uId', $_SESSION["id"]);
@@ -123,13 +123,13 @@ if($_POST["action"] == 'changeRole')
 				{
 					$activationLink =  $serveraddress . "?p=auth&action=email_request&key=" . $randomKey;
 					//$activationLink = $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']  . "?p=auth&action=email_request&key=" . $randomKey;
-					$text= "<b>Hoi</b> " . $nickname . "<br /><br />Sie haben eine neue E-Mail Adresse angegeben.<br />
+					$text= "<b>Guten Tag</b> " . $nickname . "<br /><br />Sie haben eine neue E-Mail Adresse angegeben.<br />
 						<br/>Diese lautet:<br />E-Mail: " . $_POST["email"] . "<br /><br />
-						Um diese Email zu aktivieren klicken Sie bitte auf diesen Aktivierungslink:<br />
+						Um diese Email zu aktivieren, klicken Sie bitte auf diesen Aktivierungslink:<br />
 						<a href=\"" . $activationLink . "\">" . $activationLink . "</a><br /><br />
-						Falls Sie keine neue E-Mail Adresse angegeben haben ignorieren Sie diese Mail.<br /><br />
-						Viele Gr&uuml;sse,<br />Ihr MobileQuiz Team";
-					if(!sendPasswordMail($fetchUser["email"], "Neue E-Mail bestätigen", $text))
+						Falls Sie keine neue E-Mail Adresse angegeben haben, ignorieren Sie diese Mail.<br /><br />
+						Freundliche Gr&uuml;sse,<br />Ihr MobileQuiz Team";
+					if(!sendMail($fetchUser["email"], "Neue E-Mail bestaetigen", $text))
 					{
 						header("Location: ?p=profile&code=-3&info=email3");
 						exit;
@@ -145,7 +145,7 @@ if($_POST["action"] == 'changeRole')
 			}
 			if(isset($_POST["newPassword"]) && isset($_POST["confirmNewPassword"]) && strlen($_POST["newPassword"]) > 1 && strlen($_POST["confirmNewPassword"]) > 1)
 			{
-				//verifizierungs-/bestätigungsmail schicken
+				//verifizierungs-/best�tigungsmail schicken
 				
 				$options = [
 					'cost' => 12,
@@ -163,12 +163,12 @@ if($_POST["action"] == 'changeRole')
 				{
 					$activationLink = $serveraddress  . "?p=auth&action=password_request&key=" . $randomKey;
 					//$activationLink = "http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']  . "?p=auth&action=password_request&key=" . $randomKey;
-					$text= "<b>Hoi</b> " . $nickname . "<br /><br />Sie haben eine neues Passwort angegeben.<br />
-						Wenn Sie das Passwort wirklich &auml;ndern wollen klicken Sie bitte auf diesen Aktivierungslink:<br />
+					$text= "<b>Guten Tag</b> " . $nickname . "<br /><br />Sie haben eine neues Passwort angegeben.<br />
+						Wenn Sie das Passwort wirklich &auml;ndern wollen, klicken Sie bitte auf diesen Aktivierungslink:<br />
 						<a href=\"" . $activationLink . "\">" . $activationLink . "</a><br /><br />
-						Falls Sie ihr Passwort nicht ge&auml;ndert haben ignorieren Sie diese Mail.<br /><br />
-						Viele Gr&uuml;sse,<br />Ihr MobileQuiz Team";
-					if(!sendPasswordMail($fetchUser["email"], "Neues Passwort bestätigen", $text))
+						Falls Sie Ihr Passwort nicht ge&auml;ndert haben, ignorieren Sie diese Mail.<br /><br />
+						Freundliche Gr&uuml;sse,<br />Ihr MobileQuiz Team";
+					if(!sendMail($fetchUser["email"], "Neues Passwort bestaetigen", $text))
 					{
 						header("Location: ?p=profile&code=-3&info=password3");
 						exit;
@@ -387,34 +387,4 @@ if($_POST["action"] == 'changeRole')
 	header("Location: ?p=quiz");
 }
 
-//TODO: Duplicate Function 'sendMail' & Extract to file 'handleMail'
-
-function sendPasswordMail($to, $subject, $text) {
-	try {
-		$mail = new PHPMailer();
-		$mail->isSMTP();                // Set mailer to use SMTP
-		//$mail->Host = '10.20.20.22';  // Specify main and backup server. Default: localhost
-		$mail->SMTPAuth = false;        // Enable SMTP authentication
-		$mail->CharSet = 'utf-8';
-		$mail->isHTML();
-
-		$mail->From = "mobilequiz@cnlab.ch";
-		$mail->FromName = "MobileQuiz.ch";
-		$mail->Subject = $subject;
-		$mail->AddAddress($to);
-
-		$mail->Body = $text;
-		return $mail->Send();
-	} catch (Exception $e) {
-		$file = "logs/mailErrorLog.txt";
-		$text = "Datum: " . date("d.m.Y H:i:s", time());
-		$text .= e.getMessage();
-		$text .= "------------------------------\n";
-		$fp = fopen($file, "a");
-		fwrite($fp, $text);
-		fclose($fp);
-		
-		return false;
-	}
-}
 ?>

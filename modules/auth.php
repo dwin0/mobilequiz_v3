@@ -1,6 +1,6 @@
 <?php
 
-	include_once 'helper/PHPMailer/class.phpmailer.php';
+	include_once 'mail.php';
 	include "modules/extraFunctions.php";
 
 	$action = -1;
@@ -149,12 +149,12 @@
 			
 			$activationLink = "http://sinv-56082.edu.hsr.ch/index.php?p=auth&action=verification&key=" . $randomKey;
 			//$activationLink = $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']  . "?p=auth&action=verification&key=" . $randomKey;
-			$text= "<b>Hoi</b> " . $nickname . "<br /><br />Vielen Dank, dass Sie sich auf MobileQuiz.ch angemeldet haben.<br />
+			$text= "<b>Guten Tag</b> " . $nickname . "<br /><br />Vielen Dank, dass Sie sich auf MobileQuiz.ch angemeldet haben.<br />
 				<br/>Ihre Logindaten lauten:<br />E-Mail: " . $email . "<br /><br />
 				Um Ihren Account in vollem Umfang nutzen zu k&ouml;nnen klicken Sie bitte auf diesen Aktivierungslink:<br />
 				<a href=\"" . $activationLink . "\">" . $activationLink . "</a><br /><br />
-				Viele Gr&uumlsse,<br />Ihr MobileQuiz Team";
-			if(!sendPasswordMail($email, "Registrierung abschliessen",$text))
+				Freundliche Gr&uumlsse,<br />Ihr MobileQuiz Team";
+			if(!sendMail($email, "Registrierung abschliessen",$text))
 			{
 				$allOk = false;
 				$registerErrorCode = -10;
@@ -254,11 +254,11 @@
 						$fetchActivation = $stmt->fetch(PDO::FETCH_ASSOC);
 						$activationLink = $serveraddress . "?p=auth&action=verification&key=" . $fetchActivation["verification_key"];
 						//$activationLink = $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']  . "?p=auth&action=verification&key=" . $fetchActivation["verification_key"];
-						$text= "<b>Hoi</b> " . $fetchUser["nickname"] . "<br /><br />Vielen Dank, dass Sie sich auf MobileQuiz.ch angemeldet haben.<br /><br />
+						$text= "<b>Guten Tag</b> " . $fetchUser["nickname"] . "<br /><br />Vielen Dank, dass Sie sich auf MobileQuiz.ch angemeldet haben.<br /><br />
 							Um Ihren Account in vollem Umfang nutzen zu k&ouml;nnen klicken Sie bitte auf diesen Aktivierungslink:<br />
 							<a href=\"" . $activationLink . "\">" . $activationLink . "</a><br /><br />
-							Viele Gr&uumlsse,<br />Ihr MobileQuiz Team";
-						if(sendPasswordMail($email, "Registrierung abschliessen",$text))
+							Freundliche Gr&uumlsse,<br />Ihr MobileQuiz Team";
+						if(sendMail($email, "Registrierung abschliessen",$text))
 						{
 							header("Location: ?p=home&code=3");
 						} else { header("Location: ?p=home&code=-18"); }
@@ -304,12 +304,12 @@
 				else {
 					$recoverLink = $serveraddress . "?p=auth&action=recoverPasswordVerification&key=" . $randomKey;
 					//$recoverLink = $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']  . "?p=auth&action=recoverPasswordVerification&key=" . $randomKey;
-					$text= "<b>Hoi</b> " . $fetchUser["nickname"] . "<br /><br />Soll ihr Passwort wirklich zur&uuml;ckgesetzt werden?<br />
-					<br/>Wenn ja, dann folge bitte diesem Link:<br />
+					$text= "<b>Guten Tag</b> " . $fetchUser["nickname"] . "<br /><br />Soll Ihr Passwort wirklich zur&uuml;ckgesetzt werden?<br />
+					<br/>Wenn ja, dann folgen Sie bitte diesem Link:<br />
 					<a href=\"" . $recoverLink . "\">" . $recoverLink . "</a><br /><br />
-					Falls nich, ignorieren Sie diese E-Mail<br /><br />
-					Viele Gr&uumlsse,<br />Ihr MobileQuiz Team";
-					if(!sendPasswordMail($email, "Passwort zur&uuml;cksetzen",$text))
+					Falls nich, ignorieren Sie diese E-Mail.<br /><br />
+					Freundliche Gr&uumlsse,<br />Ihr MobileQuiz Team";
+					if(!sendMail($email, "Passwort zuruecksetzen", $text))
 					{
 						header("Location: ?p=home&code=-6");
 					}
@@ -361,13 +361,13 @@
 					if($query_result)
 					{
 						$fetchUser = $stmt->fetch(PDO::FETCH_ASSOC);
-						$text= "<b>Hoi</b> " . $fetchUser["nickname"] . "<br /><br />Ihr Passwort wurde zur&uuml;ckgesetzt.<br />
+						$text= "<b>Guten Tag</b> " . $fetchUser["nickname"] . "<br /><br />Ihr Passwort wurde zur&uuml;ckgesetzt.<br />
 						<br />Ihr neues Passwort lautet:<br />
 						Passwort: " . $pwString . "<br /><br />
 						Bitte &auml;ndern Sie Ihr Passwort sofort nachdem Sie sich eingeloggt haben.<br />
-						Falls Sie nie ein neues Passwort angefordert haben wenden Sie sich bitte an einen Administrator.<br /><br />
-						Viele Gr&uumlsse,<br />Ihr MobileQuiz Team";
-						if(!sendPasswordMail($fetchUser["email"], "Passwort zurückgesetzt",$text))
+						Falls Sie nie ein neues Passwort angefordert haben, wenden Sie sich bitte an einen Administrator.<br /><br />
+						Freundliche Gr&uumlsse,<br />Ihr MobileQuiz Team";
+						if(!sendMail($fetchUser["email"], "Passwort zurueckgesetzt",$text))
 						{
 							header("Location: ?p=home&code=-12");
 						}
@@ -628,36 +628,6 @@
 		}
 	}
 	
-	//TODO: Duplicate Function 'sendMail' & Extract to file 'handleMail'
-	
-	function sendPasswordMail($to, $subject, $text) {
-		try {
-			$mail = new PHPMailer();
-			$mail->isSMTP();                // Set mailer to use SMTP
-			//$mail->Host = '10.20.20.22';  // Specify main and backup server. Default: localhost
-			$mail->SMTPAuth = false;        // Enable SMTP authentication
-			$mail->CharSet = 'utf-8';
-			$mail->isHTML();
-	
-			$mail->From = "mobilequiz@cnlab.ch";
-			$mail->FromName = "MobileQuiz.ch";
-			$mail->Subject = $subject;
-			$mail->AddAddress($to);
-	
-			$mail->Body = $text;
-			return $mail->Send();
-		} catch (Exception $e) {
-			$file = "logs/mailErrorLog.txt";
-			$text = "Datum: " . date("d.m.Y H:i:s", time());
-			$text .= e.getMessage();
-			$text .= "------------------------------\n";
-			$fp = fopen($file, "a");
-			fwrite($fp, $text);
-			fclose($fp);
-			
-			return false;
-		}
-	}
 	$stmt = null;
 	$dbh = null;
 ?>

@@ -4,6 +4,7 @@
 
 	$code = 0;
 	$codeTxt = "";
+	$color = "";
 	if(isset($_GET["code"]))
 	{
 		$code = $_GET["code"];

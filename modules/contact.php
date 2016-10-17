@@ -1,4 +1,6 @@
-<?php 	
+<?php
+	include_once 'mail.php';
+
 	$mailBlockSeconds = 3*60; //Seconds how long contact mail will blocked
 	$mailResultMessage = "";
 	if(isset($_POST["formContactSubmit"]))
@@ -9,7 +11,7 @@
 			{
 				include_once 'helper/PHPMailer/class.phpmailer.php';
 				
-				$message = "Von: " . $_POST["email"] . "<br />Vorname: " . $_POST["firstname"] . "<br />Vorname: " . $_POST["lastname"] . "<br /><br />Nachricht: ";
+				$message = "Von: " . $_POST["email"] . "<br />Vorname: " . $_POST["firstname"] . "<br />Nachname: " . $_POST["lastname"] . "<br /><br />Nachricht: ";
 				$message .= $_POST["message"];
 				
 				if(sendMail("dwindler@hsr.ch", $_POST["subject"], $message))
@@ -28,36 +30,6 @@
 		}
 	}
 	
-	//TODO: Duplicate Function 'sendMail' & Extract to file 'handleMail'
-	
-	function sendMail($to, $subject, $text) {
-		try {
-			$mail = new PHPMailer();
-			$mail->isSMTP();                // Set mailer to use SMTP
-			//$mail->Host = '10.20.20.22';  // Specify main and backup server. Default: localhost
-			$mail->SMTPAuth = false;        // Enable SMTP authentication
-			$mail->CharSet = 'utf-8';
-			$mail->isHTML();
-	
-			$mail->From = "mobilequiz@cnlab.ch";
-			$mail->FromName = "MobileQuiz.ch";
-			$mail->Subject = $subject;
-			$mail->AddAddress($to);
-	
-			$mail->Body = $text;
-			return $mail->Send();
-		} catch (Exception $e) {
-			$file = "logs/mailErrorLog.txt";
-			$text = "Datum: " . date("d.m.Y H:i:s", time());
-			$text .= e.getMessage();
-			$text .= "------------------------------\n";
-			$fp = fopen($file, "a");
-			fwrite($fp, $text);
-			fclose($fp);
-			
-			return false;
-		}
-	}
 	
 	if(isset($_SESSION["id"]))
 	{
