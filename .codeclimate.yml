@@ -42,6 +42,14 @@ engines:
         enabled: false
       Squiz ControlStructures ControlSignature NewlineAfterOpenBrace:
         enabled: false
+      PSR2 Files EndFileNewline NoneFound:
+        enabled: false
+      Squiz WhiteSpace ScopeClosingBrace ContentBefore:
+        enabled: false
+      Generic Functions FunctionCallArgumentSpacing NoSpaceAfterComma:
+        enabled: false
+      PSR2 ControlStructures ElseIfDeclaration NotAllowed:
+        enabled: false
   duplication:
     enabled: true
     config:
