@@ -83,3 +83,4 @@ exclude_paths:
 - js/**/*
 - PHPExcel/**/*
 - tests/**/*
+- language/**/*
