@@ -22,6 +22,14 @@ engines:
         enabled: false
       Generic ControlStructures InlineControlStructure NotAllowed:
         enabled: false
+      Generic WhiteSpace ScopeIndent IncorrectExact:
+        enabled: false
+      Squiz ControlStructures ControlSignature SpaceAfterKeyword:
+        enabled: false
+      Squiz ControlStructures ControlSignature SpaceAfterKeyword:
+        enabled: false
+      Squiz ControlStructures ControlSignature SpaceAfterCloseParenthesis:
+        enabled: false
   duplication:
     enabled: true
     config:
