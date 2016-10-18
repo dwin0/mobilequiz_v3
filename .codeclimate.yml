@@ -50,6 +50,8 @@ engines:
         enabled: false
       PSR2 ControlStructures ElseIfDeclaration NotAllowed:
         enabled: false
+      Generic WhiteSpace ScopeIndent Incorrect:
+        enabled: false
   duplication:
     enabled: true
     config:
