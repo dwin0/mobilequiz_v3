@@ -334,7 +334,7 @@
 			                    for($i = 0; $i < count($result); $i++){
 									if($result[$i]["subject_id"] == null)
 									{
-										$stmt = $dbh->prepare("select id from questionnaire where subject_id is null" . $filterWhereAnd );
+										$stmt = $dbh->prepare("select id from questionnaire where subject_id is null" . $filterWhereAnd);
 									}
 									else 
 										$stmt = $dbh->prepare("select id from questionnaire where subject_id = " . $result[$i]["subject_id"] . $filterWhereAnd);
@@ -531,13 +531,16 @@
 			                            $hint = "";
 			                            switch ($fetchQuestionnaire[$i]["priority"])
 			                            {
-			                            	case 0: $prio = "Green";
+			                            	case 0:
+			                            		$prio = "Green";
 			                            		$hint = $lang["lowPrio"];
 			                            		break;
-			                            	case 1: $prio = "Yellow";
+			                            	case 1:
+			                            		$prio = "Yellow";
 			                            		$hint = $lang["middlePrio"];
 			                            		break;
-			                            	case 2: $prio = "Red";
+			                            	case 2:
+			                            		$prio = "Red";
 			                            		$hint = $lang["highPrio"];
 			                            		break;
 			                            }

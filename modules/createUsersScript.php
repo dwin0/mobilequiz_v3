@@ -6,7 +6,7 @@
 
 	echo "<table>";
 	
-	for($i = 0; $i <$count ; $i++)
+	for($i = 0; $i <$count; $i++)
 	{
 		$randomKey = substr(md5(uniqid(rand(), true)), 0, 8);
 		

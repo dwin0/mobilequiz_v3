@@ -31,7 +31,8 @@
 			case -10:
 				$errStr = "Versenden der E-Mail fehlgeschlagen.";
 				break;
-			default: $errStr = "Allgemeiner Fehler. (Code " . htmlspecialchars($code) . ")";
+			default:
+				$errStr = "Allgemeiner Fehler. (Code " . htmlspecialchars($code) . ")";
 				break;
 		}
 	}

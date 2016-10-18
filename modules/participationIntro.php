@@ -124,7 +124,7 @@
 			<div class="td"><?php echo $lang["participant"];?></div>
 			<div class="td"><?php 
 				$stmt = $dbh->prepare("select firstname, lastname, email from user inner join user_data on user.id = user_data.user_id where user.id = :userId");
-				$stmt->bindParam(":userId",	$_SESSION["id"]);
+				$stmt->bindParam(":userId", $_SESSION["id"]);
 				$stmt->execute();
 				$fetchUser = $stmt->fetch(PDO::FETCH_ASSOC);
 				echo $fetchUser["firstname"] . " " . $fetchUser["lastname"] . " (" . $fetchUser["email"] . ")";

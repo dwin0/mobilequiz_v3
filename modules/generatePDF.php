@@ -81,8 +81,8 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 	}
 	
 	$stmt = $dbh->prepare("select id from user_qunaire_session where user_id = :user_id and questionnaire_id = :qunaire_id");
-	$stmt->bindParam ( ":user_id", $uId );
-	$stmt->bindParam ( ":qunaire_id", $_GET["quizId"]);
+	$stmt->bindParam (":user_id", $uId);
+	$stmt->bindParam (":qunaire_id", $_GET["quizId"]);
 	$stmt->execute();
 	$ownParticipationAmount = $stmt->rowCount();
 
@@ -277,19 +277,19 @@ if($action == "getQuizTaskPaper")
 	
 	$choosedSession = null;
 	$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id");
-	$stmt->bindParam ( ":user_id", $uId );
-	$stmt->bindParam ( ":questionnaire_id", $_GET["quizId"]);
-	if (! $stmt->execute ()) {
-		header ( "Location: index.php?p=quiz&code=-14" );
-		exit ();
+	$stmt->bindParam(":user_id", $uId);
+	$stmt->bindParam(":questionnaire_id", $_GET["quizId"]);
+	if (!$stmt->execute()) {
+		header("Location: index.php?p=quiz&code=-14");
+		exit();
 	}
-	$fetchSession = $stmt->fetchAll ( PDO::FETCH_ASSOC );
+	$fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	
 	$tmpPoints = null;
 	$fetchPoints = [0,0,0];
 	
-	for($j = 0; $j < count ( $fetchSession ); $j ++) {
-		$tmpPoints = getPoints ( $dbh, $_GET["quizId"], $fetchSession[$j]["id"], 0 );
+	for($j = 0; $j < count($fetchSession); $j ++) {
+		$tmpPoints = getPoints($dbh, $_GET["quizId"], $fetchSession[$j]["id"], 0);
 		if ($j == 0 || $tmpPoints [0] >= $fetchPoints [0])
 		{
 			$fetchPoints = $tmpPoints;

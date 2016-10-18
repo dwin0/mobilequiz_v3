@@ -2,7 +2,8 @@
 
 	include_once 'helper/PHPMailer/class.phpmailer.php';
 
-	function sendMail($to, $subject, $text) {
+	function sendMail($to, $subject, $text)
+	{
 		try {
 			$mail = new PHPMailer();
 			$mail->isSMTP();                // Set mailer to use SMTP
@@ -21,7 +22,7 @@
 		} catch (Exception $e) {
 			$file = "logs/mailErrorLog.txt";
 			$text = "Datum: " . date("d.m.Y H:i:s", time());
-			$text .= e.getMessage();
+			$text .= $e->getMessage();
 			$text .= "------------------------------\n";
 			$fp = fopen($file, "a");
 			fwrite($fp, $text);

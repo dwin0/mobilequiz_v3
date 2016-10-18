@@ -625,11 +625,14 @@
 									$cookieData = json_decode($_COOKIE['pollId' . $pollId["id"]],true);
 									switch ($cookieData[$fetchAnswersForPrint[$i]["id"]])
 									{
-										case -1:$checked1 = "checked";
+										case -1:
+											$checked1 = "checked";
 											break;
-										case 0:$checked2 = "checked";
+										case 0:
+											$checked2 = "checked";
 											break;
-										case 1:$checked3 = "checked";
+										case 1:
+											$checked3 = "checked";
 											break;
 									}
 								}

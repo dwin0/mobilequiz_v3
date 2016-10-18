@@ -191,7 +191,7 @@ if($action == "startQuiz")
 			//$stmt->bindValue(":time_needed", 0);
 			if(!$stmt->execute())
 			{
-				header("Location: index.php?p=quiz&code=-23&info=participationTime" . "selected:" . $isSelected . "timeNeeded: " . $timeNeeded . "Error: " . $stmt->errorInfo()[0] . " POSTANSWER: " . $_POST["answer"] . " FETCHANSWER: " . $fetchAnswers[$i]["id"] . " equal: " . ($_POST["answer"] == $fetchAnswers[$i]["id"]) );
+				header("Location: index.php?p=quiz&code=-23&info=participationTime" . "selected:" . $isSelected . "timeNeeded: " . $timeNeeded . "Error: " . $stmt->errorInfo()[0] . " POSTANSWER: " . $_POST["answer"] . " FETCHANSWER: " . $fetchAnswers[$i]["id"] . " equal: " . ($_POST["answer"] == $fetchAnswers[$i]["id"]));
 				exit;
 			}
 		} 

@@ -504,7 +504,8 @@ $roleNames = array(
 	
 	switch ($code)
 	{
-		case 1: $codeTxt = "Benutzer erfolgreich erstellt.";
+		case 1:
+			$codeTxt = "Benutzer erfolgreich erstellt.";
 			break;
 	}
 

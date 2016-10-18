@@ -94,8 +94,9 @@
 	
 	switch ($code)
 	{
-		case 1: $codeTxt = "OK"; //TODO: Successful-Text
-		break;
+		case 1:
+			$codeTxt = "OK"; //TODO: Successful-Text
+			break;
 	}
 ?>
 <script type="text/javascript">

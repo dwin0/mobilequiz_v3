@@ -117,7 +117,8 @@
 										case 'errorReport':
 											echo "Error report";
 											break;
-										default: echo "";
+										default:
+											echo "";
 											break;
 									}
 								}
