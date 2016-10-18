@@ -73,7 +73,6 @@ engines:
         enabled: false
       PhanUndeclaredClassMethod:
         enabled: false
-		
 ratings:
   paths:
   - "**.php"
