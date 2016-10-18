@@ -30,6 +30,18 @@ engines:
         enabled: false
       Squiz ControlStructures ControlSignature SpaceAfterCloseParenthesis:
         enabled: false
+      PSR2 ControlStructures SwitchDeclaration BreakIndent:
+        enabled: false
+      Squiz WhiteSpace ScopeClosingBrace Indent:
+        enabled: false
+      Squiz WhiteSpace SuperfluousWhitespace EndLine:
+        enabled: false
+      Squiz ControlStructures ControlSignature SpaceAfterCloseBrace:
+        enabled: false
+      PSR2 Files ClosingTag NotAllowed:
+        enabled: false
+      Squiz ControlStructures ControlSignature NewlineAfterOpenBrace:
+        enabled: false
   duplication:
     enabled: true
     config:
