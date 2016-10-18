@@ -10,6 +10,18 @@ engines:
         enabled: false
       Generic WhiteSpace DisallowTabIndent NonIndentTabsUsed:
         enabled: false
+      Generic Formatting DisallowMultipleStatements SameLine:
+        enabled: false
+      Generic PHP LowerCaseConstant Found:
+        enabled: false
+      Squiz WhiteSpace ControlStructureSpacing SpacingBeforeClose:
+        enabled: false
+      Generic PHP LowerCaseKeyword Found:
+        enabled: false
+      Generic Files LineLength TooLong:
+        enabled: false
+      Generic ControlStructures InlineControlStructure NotAllowed:
+        enabled: false
   duplication:
     enabled: true
     config:
