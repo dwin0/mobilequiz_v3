@@ -66,7 +66,14 @@ engines:
     enabled: true
     config:
       file_extensions: "php"
-
+    checks:
+      PhanUndeclaredVariable:
+        enabled: false
+      PhanNonClassMethodCall:
+        enabled: false
+      PhanUndeclaredClassMethod:
+        enabled: false
+		
 ratings:
   paths:
   - "**.php"
