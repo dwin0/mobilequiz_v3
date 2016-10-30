@@ -202,6 +202,16 @@ $roleNames = array(
 		});
 	}
 
+	//TODO: falls noch in anderen Files gebraucht wird, auslagern!
+	function escapeHtml(text) {
+		return text
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;")
+			.replace(/'/g, "&#039;");
+	}
+
 	function addUserToGroup(groupId)
 	{
 		var userEmail = $('#autocompleteUsers_' + groupId).val();
@@ -216,7 +226,7 @@ $roleNames = array(
 				if(output[0] == "ok" && output[1] > 0)
 				{
 					$('#ajaxAnswer5').html('<span style="color: green;">Benutzer hinzugef&uuml;gt.</span>');
-					$('#listOfUsersAdded_' + groupId).append("<b>-</b> " + userEmail + "<br />");
+					$('#listOfUsersAdded_' + groupId).append("<b>-</b> " + escapeHtml(userEmail) + "<br />");
 					$('#autocompleteUsers_' + groupId).val('');
 				}
 				if(output[0] == "failed")
@@ -561,13 +571,13 @@ $roleNames = array(
 			                        <?php echo $fetchUsers[$i]["id"];?>
 			                    </td>
 							<td>
-			                        <?php echo $fetchUsers[$i]["firstname"] . " " . $fetchUsers[$i]["lastname"];?>
+			                        <?php echo htmlspecialchars($fetchUsers[$i]["firstname"]) . " " . htmlspecialchars($fetchUsers[$i]["lastname"]);?>
 			                    </td>
 							<td>
-			                        <?php echo $fetchUsers[$i]["nickname"];?>
+			                        <?php echo htmlspecialchars($fetchUsers[$i]["nickname"]);?>
 			                    </td>
 							<td>
-			                        <?php echo $fetchUsers[$i]["email"];?>
+			                        <?php echo htmlspecialchars($fetchUsers[$i]["email"]);?>
 			                    </td>
 							<td><?php 
 			                    	echo $lang[$roleNames[$fetchUsers[$i]["rName"]]];
@@ -645,7 +655,7 @@ $roleNames = array(
 		                		<?php echo $fetchGroup[$i]["id"];?>
 		                	</td>
 							<td>
-		                		<a onclick="changeGroupTo(<?php echo $fetchGroup[$i]["id"];?>)" style="cursor: pointer;"><?php echo $fetchGroup[$i]["name"];?></a>
+		                		<a onclick="changeGroupTo(<?php echo $fetchGroup[$i]["id"];?>)" style="cursor: pointer;"><?php echo htmlspecialchars($fetchGroup[$i]["name"]);?></a>
 		                	</td>
 		                	<td>
 		                		<?php 
@@ -655,7 +665,7 @@ $roleNames = array(
 		                		echo $stmt->rowCount();
 		                		?>
 		                	</td>
-							<td>
+				 			<td>
 								<?php
 								if($fetchGroup[$i]["owner_id"] == $_SESSION["id"] || $_SESSION["role"]["admin"] == 1) 
 									echo $fetchGroup[$i]["token"];
@@ -687,7 +697,7 @@ $roleNames = array(
 				}
 			?>
 			<div id="<?php echo "groupDetail_" . $fetchGroup[$i]["id"];?>" class="control-group groupDetails" style="display: none; padding: 0px 5px 0px 5px; width: 55%; float: right; border: 1px solid #000; margin-top: 35px;">
-		        <h4 style="float: left;"><?php echo "Name: " . $fetchGroup[$i]["name"] . $groupToken . $delImg;?></h4><span style="float: right; margin: 9px 5px 0px 0px; font-size: 10px;"><?php echo $lang["groupOwner"] . ": " . $fetchGroup[$i]["firstname"] . " " . $fetchGroup[$i]["lastname"];?></span>
+		        <h4 style="float: left;"><?php echo "Name: " . htmlspecialchars($fetchGroup[$i]["name"]) . $groupToken . $delImg;?></h4><span style="float: right; margin: 9px 5px 0px 0px; font-size: 10px;"><?php echo $lang["groupOwner"] . ": " . htmlspecialchars($fetchGroup[$i]["firstname"]) . " " . htmlspecialchars($fetchGroup[$i]["lastname"]);?></span>
 		        <div style="clear: both;"></div>
 		        <div id="<?php echo "groupContent_" . $i;?>">
 		        	<div id="<?php echo "listOfUsersAdded_" . $fetchGroup[$i]["id"];?>"><?php echo $lang["groupAddedUsers"];?>:<br />
@@ -697,7 +707,7 @@ $roleNames = array(
 						{
 							$delUserFromGroup = '<img id="delUserFromGroup_'. $fetchUserFromGroup[$j]["id"].'" class="delUserFromGroup delUserFromGroupImg" src="assets/icon_delete.png" style="cursor: pointer; margin: -4px 0px 0px 5px;" alt="" original-title="Benutzer aus Gruppe l&ouml;schen" height="18px" width="18px" onclick="delUserFromGroupFunc('.$fetchUserFromGroup[$j]["id"].', '.$fetchGroup[$i]["id"].')">';
 						}
-		        		echo "<span id=\"userInGroup_" . $fetchUserFromGroup[$j]["id"] . "\"> <b>-</b> " . $fetchUserFromGroup[$j]["email"];
+		        		echo "<span id=\"userInGroup_" . $fetchUserFromGroup[$j]["id"] . "\"> <b>-</b> " . htmlspecialchars($fetchUserFromGroup[$j]["email"]);
 		        		echo $delUserFromGroup;
 		        		echo "<br /></span>";	        				        		
 		        	}?>
@@ -754,10 +764,10 @@ $roleNames = array(
 	                	<?php for($i = 0; $i < count($fetchRequestedRoles); $i++) {?>
 	                	<tr id="<?php echo "role_" . $i;?>">
 							<td>
-		                		<?php echo $fetchRequestedRoles[$i]["firstname"] . " " . $fetchRequestedRoles[$i]["lastname"];?>
+		                		<?php echo htmlspecialchars($fetchRequestedRoles[$i]["firstname"]) . " " . htmlspecialchars($fetchRequestedRoles[$i]["lastname"]);?>
 		                	</td>
 							<td>
-		                		<?php echo $fetchRequestedRoles[$i]["email"];?>
+		                		<?php echo htmlspecialchars($fetchRequestedRoles[$i]["email"]);?>
 		                	</td>
 							<td>
 		                		<?php echo $lang[$roleNames[$fetchRequestedRoles[$i]["cRole"]]];?>
@@ -822,16 +832,16 @@ $roleNames = array(
 	                	<?php for($i = 0; $i < count($fetchLanguageRequest); $i++) {?>
 	                	<tr id="<?php echo "lang_" . $i;?>">
 							<td>
-		                		<?php echo $fetchLanguageRequest[$i]["firstname"] . " " . $fetchLanguageRequest[$i]["lastname"];?>
+		                		<?php echo htmlspecialchars($fetchLanguageRequest[$i]["firstname"]) . " " . htmlspecialchars($fetchLanguageRequest[$i]["lastname"]);?>
 		                	</td>
 							<td>
-		                		<?php echo $fetchLanguageRequest[$i]["email"];?>
+		                		<?php echo htmlspecialchars($fetchLanguageRequest[$i]["email"]);?>
 		                	</td>
 							<td>
-		                		<?php echo $fetchLanguageRequest[$i]["name"];?>
+		                		<?php echo htmlspecialchars($fetchLanguageRequest[$i]["name"]);?>
 							</td>
 							<td>
-		                		<?php echo $fetchLanguageRequest[$i]["language"];?>
+		                		<?php echo htmlspecialchars($fetchLanguageRequest[$i]["language"]);?>
 		                	</td>
 							<td>
 		                		<?php echo date("d.m.Y H:i:s", $fetchLanguageRequest[$i]["timestamp"]);?>
@@ -890,16 +900,16 @@ $roleNames = array(
 	                	<?php for($i = 0; $i < count($fetchTopicRequest); $i++) {?>
 	                	<tr id="<?php echo "topic_" . $i;?>">
 							<td>
-		                		<?php echo $fetchTopicRequest[$i]["firstname"] . " " . $fetchTopicRequest[$i]["lastname"];?>
+		                		<?php echo htmlspecialchars($fetchTopicRequest[$i]["firstname"]) . " " . htmlspecialchars($fetchTopicRequest[$i]["lastname"]);?>
 		                	</td>
 							<td>
-		                		<?php echo $fetchTopicRequest[$i]["email"];?>
+		                		<?php echo htmlspecialchars($fetchTopicRequest[$i]["email"]);?>
 		                	</td>
 							<td>
-		                		<?php echo $fetchTopicRequest[$i]["name"];?>
+		                		<?php echo htmlspecialchars($fetchTopicRequest[$i]["name"]);?>
 							</td>
 							<td>
-		                		<?php echo $fetchTopicRequest[$i]["topic"];?>
+		                		<?php echo htmlspecialchars($fetchTopicRequest[$i]["topic"]);?>
 		                	</td>
 							<td>
 		                		<?php echo date("d.m.Y H:i:s", $fetchTopicRequest[$i]["timestamp"]);?>
