@@ -546,7 +546,7 @@
 				?>
 				<label for="pollIdWrapper">Umfragenummer:</label>
 				<div id="pollIdWrapper">
-					<input type="text" id="goToPollToken" name="goToPollToken" class="form-control" style="width: 116px; float: left;" value="" />
+					<input type="number" id="goToPollToken" name="goToPollToken" class="form-control" style="width: 116px; float: left;" />
 					<img style="margin-left: 8px; cursor: pointer;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="showPoll()">
 				</div>
 			</div>
@@ -657,8 +657,12 @@
 								echo '</tr>';
 								
 							} else if($pollId["question_type"] == "0"){ //singlechoise
-								echo '<div id="answer_'.$fetchAnswersForPrint[$i]["id"].'"><input type="radio" style="float: left; margin-right: 5px;" name="voteAnswers" value="'.$fetchAnswersForPrint[$i]["id"].'" '.$disabled.' '.$checked.'>';
-								echo '<p>'.$fetchAnswersForPrint[$i]["text"] . $yourAnswer. ' ' . $voteResult . '</p></div>';
+								echo '<div id="answer_'.$fetchAnswersForPrint[$i]["id"].'">
+        								<label class="radio-inline">
+        									<input type="radio" style="float: left; margin-right: 5px;" name="voteAnswers" value="'.$fetchAnswersForPrint[$i]["id"].'" '.$disabled.' '.$checked.'>';
+											echo '<p>'.$fetchAnswersForPrint[$i]["text"] . $yourAnswer. ' ' . $voteResult . '</p>
+        								</label>
+        						</div>';
 							}
 							$totalVotes += ($fetchAnswersForPrint[$i]["yesVotes"] + $fetchAnswersForPrint[$i]["noVotes"] + $fetchAnswersForPrint[$i]["neutralVotes"]);
 						}

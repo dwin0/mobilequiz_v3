@@ -63,7 +63,7 @@
 						<?php echo $lang["yourEMail"] . "*";?>
 					</label>
 					<div class="controls">
-						<input type="text"
+						<input type="email"
 							class="form-control"
 							name="email" placeholder="<?php echo $lang["yourEMail"];?>"
 							maxlength="50"

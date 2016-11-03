@@ -452,7 +452,7 @@
 						<?php echo $lang["description"];?>
 					</label>
 					<div class="col-md-10 col-sm-9">
-						<textarea type="text" name="description" id="description" onchange="setConfirm(true, 'desc')"
+						<textarea name="description" id="description" onchange="setConfirm(true, 'desc')"
 							class="form-control text-input" wrap="soft" placeholder="<?php echo $lang["descriptionOfQuiz"] . " (" . $lang["maximum"] . " " . $maxCharactersQuizDesc . " " . $lang["characters"] . ")";?>"><?php 
 							if($mode == "edit")
 							{
@@ -624,7 +624,6 @@
 						<label for="noParticipationPeriod0" class="radio-inline"> 
 						<input type="radio" id="noParticipationPeriod0" name="noParticipationPeriod" onchange="setDatesEnabled()"
 							value="0" <?php echo $noParticipationPeriod2 == 0 ? 'checked':'';?> />
-						</label>
 						<?php echo $lang["quizStartDate"];?>
 						<input type="text" id="startDate" name="startDate" 
 							style="width: 120px; display: inline;"
@@ -636,10 +635,11 @@
 							}
 							echo date("d.m.Y", $displayedTime);
 							?>" class="form-control" required="required"/>
-						<input type="text" id="startTime" name="startTime" onchange="setConfirm(true, 'starttime')"
-							style="width: 80px; display: inline;"
+						<input type="time" id="startTime" name="startTime" onchange="setConfirm(true, 'starttime')"
+							style="width: 90px; display: inline;"
 							value="<?php echo date("H:i", $displayedTime); ?>" class="form-control" required="required"/> (h:min)
-						<label><?php echo $lang["quizEndDate"];?> *</label>
+						<br />
+						<?php echo $lang["quizEndDate"];?>
 						<input type="text" id="endDate" name="endDate"
 							style="width: 120px; display: inline;"
 							value="<?php 
@@ -651,9 +651,10 @@
 							echo date("d.m.Y", $displayedTime);
 							?>"
 							class="form-control" required="required"/> 
-						<input type="text" id="endTime" onchange="setConfirm(true, 'endTime')"
-							name="endTime" style="width: 80px; display: inline;"
+						<input type="time" id="endTime" onchange="setConfirm(true, 'endTime')"
+							name="endTime" style="width: 90px; display: inline;"
 							value="<?php echo date("H:i", $displayedTime);?>" class="form-control" required="required"/> (h:min)
+						</label>
 					</div>
 				</div>
 				<div class="row">
@@ -677,11 +678,11 @@
 						<input type="radio" id="radioNoneTimeLimit" name="timeLimitMode" onchange="setConfirm(true, 'timelimit')"
 							value="0" <?php echo $noLimitChecked ? 'checked':'';?> /> <?php echo $lang["noLimitation"];?>
 		                </label>
-						<div class="radio-inline" style="margin-left: 22px;">
+						<label for="radioQuizTimeLimit" class="radio-inline" style="margin-left: 22px;">
 							<input style="margin-top: 11px;" type="radio" id="radioQuizTimeLimit" onchange="setConfirm(true, 'timelimit2')" name="timeLimitMode" value="1" <?php echo $noLimitChecked ? '':'checked';?> /> 
-							<input type="text" id="quizTimeLimit" class="form-control" onchange="setConfirm(true)" name="quizTimeLimit" style="width: 80px; display: inline;" 
+							<input type="time" id="quizTimeLimit" class="form-control" onchange="setConfirm(true)" name="quizTimeLimit" style="width: 90px; display: inline;" 
 								value="<?php echo $timeLimit;?>" onfocus="switchTimeLimit()"/> (min:s)
-						</div>
+						</label>
 					</div>
 				</div>
 				<div class="row">
@@ -689,28 +690,28 @@
 						<label><?php echo $lang["amountOfQuestions"];?>*</label>
 					</div>
 					<div class="col-md-10 col-sm-10 radio-inline">
-					<?php 
-						$questionAmount = "0";
-						$questionAmountChecked = true;
-						if($mode == "edit")
-						{
-							if($quizFetch["amount_of_questions"] != 0)
+						<?php 
+							$questionAmount = "0";
+							$questionAmountChecked = true;
+							if($mode == "edit")
 							{
-								$questionAmount = $quizFetch["amount_of_questions"];
-								$questionAmountChecked = false;
+								if($quizFetch["amount_of_questions"] != 0)
+								{
+									$questionAmount = $quizFetch["amount_of_questions"];
+									$questionAmountChecked = false;
+								}
 							}
-						}
-					?>
-					<label for="radioNoneQuestionAmount" class="radio-inline"> 
-						<input type="radio" id="radioNoneQuestionAmount" name="amountQuestionMode" onchange="setConfirm(true, 'questionamount')"
-							value="0" <?php echo $questionAmountChecked ? 'checked':'';?> /> <?php echo $lang["noQuestionAmount"];?>
+						?>
+						<label for="radioNoneQuestionAmount" class="radio-inline"> 
+							<input type="radio" id="radioNoneQuestionAmount" name="amountQuestionMode" onchange="setConfirm(true, 'questionamount')"
+								value="0" <?php echo $questionAmountChecked ? 'checked':'';?> /> <?php echo $lang["noQuestionAmount"];?>
 		                </label>
-						<div class="radio-inline">
+						<label for="radioNoneQuestionMode" class="radio-inline">
 							<input style="margin-top: 11px;" type="radio" id="radioNoneQuestionMode" onchange="setConfirm(true, 'questionamount2')" name="amountQuestionMode" value="1" <?php echo $questionAmountChecked ? '':'checked';?> />
-							<input type="text" id="amountOfQuestions" name="amountOfQuestions" onchange="setConfirm(true, 'questionamount3')" class="form-control" style="width: 80px; display: inline;" value="<?php 
+							<input type="number" id="amountOfQuestions" name="amountOfQuestions" onchange="setConfirm(true, 'questionamount3')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 								echo $questionAmount;
 							?>" required="required"  onfocus="switchAmountQuestions()"/>
-						</div>
+						</label>
 					</div>
 				</div>
 				<div class="row">
@@ -734,12 +735,12 @@
 						<input type="radio" id="radioNoneMaxParticipations" name="maxParticipationsMode" onchange="setConfirm(true, 'maxpart')"
 							value="0" <?php echo $maxParticipationsChecked ? 'checked':'';?> /> <?php echo $lang["maxParticipations"];?>
 		                </label>
-						<div class="radio-inline">
+						<label for="maxParticipationsMode" class="radio-inline">
 							<input style="margin-top: 11px;" type="radio" id="maxParticipationsMode" onchange="setConfirm(true, 'maxpart')" name="maxParticipationsMode" value="1" <?php echo $maxParticipationsChecked ? '':'checked';?> />
-							<input type="text" id="maxParticipations" name="maxParticipations" onchange="setConfirm(true, 'maxpart')" class="form-control" style="width: 80px; display: inline;" value="<?php 
+							<input type="number" id="maxParticipations" name="maxParticipations" onchange="setConfirm(true, 'maxpart')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 								echo $maxParticipations;
 							?>" required="required"  onfocus="switchMaxParticipations()"/>
-						</div>
+						</label>
 					</div>
 				</div>
 				<div class="row">
@@ -779,16 +780,16 @@
 								}
 							}
 						?>
-						<label for="radioNoneMaxParticipations" class="radio-inline"> 
+						<label for="radioNoneQuizPassed" class="radio-inline"> 
 						<input type="radio" id="radioNoneQuizPassed" name="quizPassedMode" onchange="setConfirm(true, 'passedmode')" 
 							value="0" <?php echo $quizPassedChecked ? 'checked':'';?> /> <?php echo $lang["noPassing"];?>
 		                </label>
-						<div class="radio-inline">
+						<label for="quizPassedMode" class="radio-inline">
 							<input style="margin-top: 11px;" type="radio" id="quizPassedMode" onchange="setConfirm(true, 'passedmode2')" name="quizPassedMode" value="1" <?php echo $quizPassedChecked ? '':'checked';?> />
-							<input type="text" id="quizPassed" name="quizPassed" onchange="setConfirm(true, 'passedmode3')" class="form-control" style="width: 80px; display: inline;" value="<?php 
+							<input type="number" id="quizPassed" name="quizPassed" onchange="setConfirm(true, 'passedmode3')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 								echo $quizPassed;
 							?>" required="required"  onfocus="switchQuizPassed()"/>%
-						</div>
+						</label>
 					</div>
 				</div>
 				<div class="row">
@@ -803,7 +804,7 @@
 							$singlechoiseMult = $quizFetch["singlechoise_multiplier"];
 						}
 						?>
-						<input type="text" id="singlechoiseMult" name="singlechoiseMult" onchange="setConfirm(true, 'singlechoise')" class="form-control" style="width: 80px; display: inline;" value="<?php 
+						<input type="number" id="singlechoiseMult" name="singlechoiseMult" onchange="setConfirm(true, 'singlechoise')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 							echo $singlechoiseMult; ?>" required="required" /><img id="singlechoiseMultHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Um Singlechoisefragen gegen&uuml;ber Multiplechoisefragen nicht abzuwerten k&ouml;nnen diese mit einem Multiplizierer aufgewertet werden" width="18" height="18">
 					</div>
 				</div>
@@ -819,14 +820,17 @@
 							$showQuizTaskPaper = $quizFetch["showTaskPaper"];
 						}
 						?>
-						<label style="float: left;">
-							<input type="checkbox" id="showQuizTaskPaper" name="showQuizTaskPaper" onchange="setConfirm(true, 'showQuizTaskPaper')" class="form-control" <?php if($showQuizTaskPaper == 1) echo "checked";?>/>
+						<label for="showQuizTaskPaper" style="float: left;">
+							<input type="checkbox" id="showQuizTaskPaper" name="showQuizTaskPaper" onchange="setConfirm(true, 'showQuizTaskPaper')" <?php if($showQuizTaskPaper == 1) echo "checked";?>/>
 						</label>
 						<img id="showQuizTaskPaperHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 10px; margin-top: 11px;" original-title="Wenn eingeschalten, k&ouml;nnen die Aufgabenbl&auml;tter nur eingesehen werden, wenn mind. einmal dran teilgenommen wurde, ansonsten immer." width="18" height="18">
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-6 col-sm-6" style="float: left;">
+					<div class="col-md-2 col-sm-2"> 
+						<label><?php echo $lang["moreOptions"];?></label>
+					</div>
+					<div class="col-md-10 col-sm-10 radio-inline">
 						<div>
 							<div class="checkbox">
 								<label> <input type="checkbox" name="randomizeQuestions"
@@ -866,30 +870,46 @@
 			                    </label>
 							</div>
 						</div>
-						<br />
 					</div>
-					<div class="col-md-6 col-sm-6">
-						<div class="checkbox">
-							<label>
-		                    	<?php 
-		                    	
-		                    	$resultChecked = 1;
-		                    	$pointsChecked = 1;
-		                    	if($mode == "edit")
-		                    	{
-		                    		$resultChecked = $quizFetch["result_visible"];
-		                    		$pointsChecked = $quizFetch["result_visible_points"];
-		                    	}
-		                    	
-		                    	echo $lang["quizResultShow"];?>:<br /> 
-		                    	<?php echo $lang["showPointsOption"] . ":";?><br /> 
-		                    	<input type="radio" name="reportAfterQuizPoints" value="1" id="reportAfterQuizPoints1" <?php echo $pointsChecked == 1 ? 'checked':'';?>/> <?php echo $lang["showResultAtTheEndPointsYes"];?><br />
-								<input type="radio" name="reportAfterQuizPoints" value="2" id="reportAfterQuizPoints2" <?php echo $pointsChecked == 2 ? 'checked':'';?>/> <?php echo $lang["showResultAtTheEndPointsNo"];?><br />
-		                    	<?php echo $lang["showDetailedInformationOption"] . ":";?><br /> 
-								<input type="radio" name="reportAfterQuizResults" value="3" id="reportAfterQuizResults3" <?php echo $resultChecked == 3 ? 'checked':'';?>/> <?php echo $lang["showResultNever"];?><br />
-								<input type="radio" name="reportAfterQuizResults" value="2" id="reportAfterQuizResults2" <?php echo $resultChecked == 2 ? 'checked':'';?>/> <?php echo $lang["showResultAtTheEnd"];?><br />
+				</div>
+				<div class="row">
+					<div class="col-md-2 col-sm-2"> 
+						<label><?php echo $lang["quizResultShow"];?></label>
+					</div>
+					<div class="col-md-10 col-sm-10 radio-inline">
+                    	<?php 
+                    	
+                    	$resultChecked = 1;
+                    	$pointsChecked = 1;
+                    	if($mode == "edit")
+                    	{
+                    		$resultChecked = $quizFetch["result_visible"];
+                    		$pointsChecked = $quizFetch["result_visible_points"];
+                    	}
+                    	?>
+                    	
+                    	<?php echo $lang["showPointsOption"] . ":";?><br />
+                    	<label class="radio-inline">
+                    		<input type="radio" name="reportAfterQuizPoints" value="1" id="reportAfterQuizPoints1" <?php echo $pointsChecked == 1 ? 'checked':'';?>/>
+                    		 <?php echo $lang["showResultAtTheEndPointsYes"];?>
+                    	</label>
+                    	<label class="radio-inline">
+                    		<input type="radio" name="reportAfterQuizPoints" value="2" id="reportAfterQuizPoints2" <?php echo $pointsChecked == 2 ? 'checked':'';?>/>
+                    		<?php echo $lang["showResultAtTheEndPointsNo"];?>
+                    	</label>
+                    	
+                    	<br /><br />
+                    	<div>
+	                    	<?php echo $lang["showDetailedInformationOption"] . ":";?><br />
+	                    	<label class="radio" style="font-weight: normal">
+	                    		<input type="radio" name="reportAfterQuizResults" value="3" id="reportAfterQuizResults3" <?php echo $resultChecked == 3 ? 'checked':'';?>/> <?php echo $lang["showResultNever"];?>
+	                    	</label>
+							<label class="radio" style="font-weight: normal">
+								<input type="radio" name="reportAfterQuizResults" value="2" id="reportAfterQuizResults2" <?php echo $resultChecked == 2 ? 'checked':'';?>/> <?php echo $lang["showResultAtTheEnd"];?>
+							</label>
+							<label class="radio" style="font-weight: normal">
 								<input type="radio" name="reportAfterQuizResults" value="1" id="reportAfterQuizResults1" <?php echo $resultChecked == 1 ? 'checked':'';?>/> <?php echo $lang["showResultAtTheEndDetailed"];?>
-		                    </label>
+							</label>
 						</div>
 					</div>
 				</div>
@@ -985,7 +1005,14 @@
 		        <div style="margin-top: 54px;">
 					<input id="btnAddQuestion" name="btnAddQuestion" class="btn" onclick="setConfirm(false, 'btn3')" type="submit" value="<?php echo $lang["addNewQuestion"];?>" /><br />
 					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromCSV"];?>" onclick="openFileDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
-					<input type="radio" name="addOrReplaceQuestions" value="0" style="margin-left: 30px; margin-top: 10px;"> <?php echo $lang["replaceQuestions"];?><br /><input type="radio" name="addOrReplaceQuestions"  value="1" checked style="margin-left: 30px;"> <?php echo $lang["addQuestions"];?>
+					<label class="radio-inline">
+						<input type="radio" name="addOrReplaceQuestions" value="0" style="margin-left: 30px;">
+						<?php echo $lang["replaceQuestions"];?>
+					</label><br />
+					<label class="radio-inline">
+						<input type="radio" name="addOrReplaceQuestions" value="1" checked style="margin-left: 30px;">
+						<?php echo $lang["addQuestions"];?>
+					</label>
 				</div>
 				<input type="file" style="opacity:0;position:absolute;top:-999px;left:-999px;display:none;" name="btnImportQuestionsFromCSV2" id="btnImportQuestionsFromCSV2" accept=".csv" />
 			</div>
@@ -1060,7 +1087,7 @@
 						<label><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
 					</div>
 					<div class="col-md-9 col-sm-9 radio-inline" style="padding-top: 0px;">
-						<input id="autocompleteUsers"><img style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
+						<input type="email" id="autocompleteUsers"><img style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
 					</div>
 				</div>
 				<div class="row">

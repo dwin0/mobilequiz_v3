@@ -203,7 +203,7 @@
 			            <?php echo $lang["email"]?>*
 			        </label>
 			        <div class="controls">
-			        	<input type="text" class="form-control text-input" value="<?php echo $fetchUser["email"];?>" name="email" placeholder="<?php echo $lang["your"] . " " .$lang["email"]?>" maxlength="100" />
+			        	<input type="email" class="form-control text-input" value="<?php echo $fetchUser["email"];?>" name="email" placeholder="<?php echo $lang["your"] . " " .$lang["email"]?>" maxlength="100" />
 			        </div>
 			    </div>
 		        <div class="control-group">
@@ -261,7 +261,7 @@
 			            <?php echo $lang["zipcode"]?>
 			        </label>
 			        <div class="controls">
-			            <input type="text" class="form-control text-input" value="<?php echo $fetchUser["plz"];?>" name="plz" placeholder="<?php echo $lang["your"] . " " .$lang["zipcode"]?>" maxlength="25" value="" />
+			            <input type="number" class="form-control text-input" value="<?php echo $fetchUser["plz"];?>" name="plz" placeholder="<?php echo $lang["your"] . " " .$lang["zipcode"]?>" maxlength="25" value="" />
 			        </div>
 			    </div>
 			    <div class="control-group">
@@ -277,7 +277,7 @@
 			            <?php echo $lang["telnumber"]?>
 			        </label>
 			        <div class="controls">
-			            <input type="text" class="form-control text-input" value="<?php echo $fetchUser["tel"];?>" name="telephone" placeholder="<?php echo $lang["your"] . " " .$lang["telnumber"]?>" maxlength="25" value="" />
+			            <input type="tel" class="form-control text-input" value="<?php echo $fetchUser["tel"];?>" name="telephone" placeholder="<?php echo $lang["your"] . " " .$lang["telnumber"]?>" maxlength="25" value="" />
 			        </div>
 			    </div>
 			    <div style="height: 20px;"></div>

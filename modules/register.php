@@ -55,7 +55,7 @@
 			            <?php echo $lang["email"]?> *
 			        </label>
 			        <div class="controls">
-			        	<input type="text" class="form-control validate[required,custom[email]] text-input" name="email" placeholder="<?php echo $lang["your"] . " " .$lang["email"]?>" required="required" maxlength="100" />
+			        	<input type="email" class="form-control validate[required,custom[email]] text-input" name="email" placeholder="<?php echo $lang["your"] . " " .$lang["email"]?>" required="required" maxlength="100" />
 			        </div>
 			    </div>
 		        <div class="control-group">
@@ -114,7 +114,7 @@
 			            <?php echo $lang["zipcode"]?>
 			        </label>
 			        <div class="controls">
-			            <input type="text" class="form-control validate[minSize[2],maxSize[20],custom[onlyLetterNumber]] text-input" name="plz" placeholder="<?php echo $lang["your"] . " " .$lang["zipcode"]?>" maxlength="25" value="" />
+			            <input type="number" class="form-control validate[minSize[2],maxSize[20],custom[onlyLetterNumber]] text-input" name="plz" placeholder="<?php echo $lang["your"] . " " .$lang["zipcode"]?>" maxlength="25" value="" />
 			        </div>
 			    </div>
 			    <div class="control-group">
@@ -130,7 +130,7 @@
 			            <?php echo $lang["telnumber"]?>
 			        </label>
 			        <div class="controls">
-			            <input type="text" class="form-control validate[minSize[2],maxSize[20],custom[phone]] text-input" name="telephone" placeholder="<?php echo $lang["your"] . " " .$lang["telnumber"]?>" maxlength="25" value="" />
+			            <input type="tel" class="form-control validate[minSize[2],maxSize[20],custom[phone]] text-input" name="telephone" placeholder="<?php echo $lang["your"] . " " .$lang["telnumber"]?>" maxlength="25" value="" />
 			        </div>
 			    </div>
 			    <div style="height: 20px;"></div>

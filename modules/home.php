@@ -95,7 +95,7 @@
 		</div>
 		<div class="panel-body">
 	        <form id="loginForm" class="form-signin" action="?p=auth&action=login" method="post" onsubmit="return checkFields()">
-	            <input type="text" name="email" id="email"  class="form-control text-input" maxlength="100" value="" required="required" placeholder="<?php echo $lang["yourEMail"]?>"/>
+	            <input type="email" name="email" id="email"  class="form-control text-input" maxlength="100" value="" required="required" placeholder="<?php echo $lang["yourEMail"]?>"/>
 	            <input type="password" name="password" id="password"  class="form-control text-input" value="" required="required" maxlength="100" placeholder="<?php echo $lang["yourPassword"]?>" />
 	            <input type="hidden" name="toQuiz" value="<?php echo isset($_GET["toQuiz"]) ? $_GET["toQuiz"] : '';?>">
 	            <p><a href="?p=recoverPassword"><?php echo $lang["recoverPassword"]?></a></p>

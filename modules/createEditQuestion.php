@@ -165,6 +165,9 @@
 								echo $questionFetch["text"];
 							}
 							?></textarea>
+							<?php
+							//TODO: Link to Help-Site
+							?>
 							<p id="questionTextHelp" title="Wie m&uuml;ssen Texte eingegeben werden?" style="cursor: pointer; text-decoration: underline;"><?php echo $lang["help"];?></p>
 					</div>
 				</div>
@@ -393,7 +396,7 @@
 					<div class="col-md-10 col-sm-9 radio-inline">
 						<label class="radio-inline"> <input type="radio"
 							name="questionType" id="questionTypeSingleChoice"
-							value="singelchoise" required="reqiured"
+							value="singelchoise" required
 							<?php if($mode == "create") { echo "checked"; }
 							else if($mode == "edit") {
 								if($questionFetch["type_id"] == 1)
@@ -427,7 +430,7 @@
 					</div>
 					<div class="col-md-10 col-sm-9 radio-inline">
 						<label class="radio-inline"> <input type="radio" name="isPrivate"
-							value="0" required="reqiured" 
+							value="0" required 
 							<?php if($mode == "create") { echo "checked"; }
 							else if($mode == "edit") {
 								if($questionFetch["public"] == 0)

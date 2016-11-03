@@ -14,7 +14,7 @@
 						<?php echo $lang["email"]?> * 
 					</label>
 					<div class="controls">
-						<input type="text" class="form-control validate[required,custom[email]] text-input"  name="emailforgot" value="" maxlength="100" placeholder="Ihre E-Mail Adresse" required="required"/>
+						<input type="email" class="form-control validate[required,custom[email]] text-input"  name="emailforgot" value="" maxlength="100" placeholder="Ihre E-Mail Adresse" required="required"/>
 					</div>
 				</div>
 				<div style="height: 20px;"></div>

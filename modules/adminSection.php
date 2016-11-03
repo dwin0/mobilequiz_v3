@@ -610,7 +610,7 @@ $roleNames = array(
 						<input style="width: 200px; float: left; margin-right: 10px;" type="text" placeholder="Vorname" width="200" class="form-control" name="firstname">
 						<input style="width: 200px; float: left; margin-right: 10px;" type="text" placeholder="Nachname" width="200" class="form-control" name="lastname">
 						<input style="width: 200px; float: left; margin-right: 10px;" type="password" placeholder="Passwort" width="200" class="form-control" name="password">
-						<input style="width: 200px; float: left; margin-right: 10px;" type="text" placeholder="Email" width="200" class="form-control" name="email">
+						<input style="width: 200px; float: left; margin-right: 10px;" type="email" placeholder="Email" width="200" class="form-control" name="email">
 						<input style="width: 200px;" type="text" placeholder="Pseudonym" width="200" class="form-control" name="nickname">
 						<input style="width: 200px; margin-top: 10px;" type="submit" name="submit" class="btn" value="Erstellen">
 					</form>

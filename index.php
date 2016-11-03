@@ -63,18 +63,18 @@ ob_end_clean();
 <meta name="author" content="Patrick Eichler" />
 <meta name="revised" content="September 2015" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-width=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-width=1.0" />
 <title>MobileQuiz</title>
-<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
-<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
-<link rel="stylesheet" type="text/css" href="css/sticky-footer-navbar.css">
-<link rel="stylesheet" type="text/css" href="js/css/jquery.powertip.min.css">
-<link rel="stylesheet" type="text/css" href="css/jquery.dataTables.css">
-<link rel="stylesheet" type="text/css" href="css/bootstrap-tagsinput.css">
-<link rel="stylesheet" type="text/css" href="css/tipsy.css">
-<link rel="stylesheet" type="text/css" href="css/bootstrap-datepicker3.min.css">
-<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="css/sticky-footer-navbar.css" />
+<link rel="stylesheet" type="text/css" href="js/css/jquery.powertip.min.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery.dataTables.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap-tagsinput.css" />
+<link rel="stylesheet" type="text/css" href="css/tipsy.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap-datepicker3.min.css" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
 
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/bootstrap.js"></script>
