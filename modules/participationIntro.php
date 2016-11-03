@@ -1,4 +1,6 @@
-<?php	
+<?php
+	setlocale(LC_ALL, 'de_DE', 'deu_deu');
+
 	//Query Quiz
 	$quizId = -1;
 	if(isset($_GET["quizId"]))
@@ -80,11 +82,11 @@
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizStartDate"];?></div>
-			<div class="td"><?php echo date("d. F Y H:i:s", $fetchQunaire["starttime"]) . " Uhr";?></div>
+			<div class="td"><?php echo strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["starttime"]) . " Uhr";?></div>
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizEndDate"];?></div>
-			<div class="td"><?php echo date("d. F Y H:i:s", $fetchQunaire["endtime"]) . " Uhr";?></div>
+			<div class="td"><?php echo strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["endtime"]) . " Uhr";?></div>
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizTableAmountQuestions"];?></div>

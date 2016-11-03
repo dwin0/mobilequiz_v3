@@ -10,7 +10,7 @@ if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off"){
 }
 */
 
-setlocale(LC_ALL, 'de_DE');
+setlocale(LC_ALL, 'de_DE', 'deu_deu');
 
 $langArray = array("ger", "en");
 if(!isset($_SESSION["language"]))
