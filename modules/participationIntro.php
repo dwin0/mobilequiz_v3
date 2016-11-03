@@ -86,7 +86,13 @@
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizEndDate"];?></div>
-			<div class="td"><?php echo strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["endtime"]) . " Uhr";?></div>
+			<div class="td"><?php
+				if($fetchQunaire["noParticipationPeriod"]) {
+					echo $lang["quizOpenForever"];
+				} else {
+					echo strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["endtime"]) . " Uhr";
+				}
+			?></div>
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizTableAmountQuestions"];?></div>

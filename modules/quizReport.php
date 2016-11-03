@@ -24,7 +24,7 @@ else
 
 //TODO: Duplicated SQL-Query
 
-$stmt = $dbh->prepare("select questionnaire.name, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email, owner_id from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
+$stmt = $dbh->prepare("select questionnaire.name, noParticipationPeriod, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email, owner_id from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
 $stmt->bindParam(":quizId", $_GET["id"]);
 if(!$stmt->execute())
 {
@@ -81,7 +81,13 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizEndDate"];?>
 							</label>
 							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php echo strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]);?></p>
+								<p class="form-control-static"><?php
+									if($fetchQuiz["noParticipationPeriod"]) {
+										echo $lang["quizOpenForever"];
+									} else {
+										echo strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]);
+									}
+								?></p>
 							</div>
 						</div>
 						<div class="form-group">
@@ -147,7 +153,14 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 						<?php 
 						$quizLink = str_replace("/index.php", "", $_SERVER["HTTP_HOST"].$_SERVER['PHP_SELF']);
 						$showedLink = $quizLink . "/?quiz=" . $fetchQuiz["qnaire_token"];
-						$text = $lang["showQuiz"];
+						
+						$text;
+						if($fetchQuiz["noParticipationPeriod"]) {
+							$text = $lang["showQuizForever"];
+						} else {
+							$text = $lang["showQuiz"];
+						}
+						
 						$text = str_replace("[0]", "<a href=\"?quiz=" . $fetchQuiz["qnaire_token"] . "\">" . $showedLink . "</a>", $text);
 						$text = str_replace("[1]", strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"]), $text);
 						$text = str_replace("[2]", strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]), $text);
