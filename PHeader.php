@@ -96,19 +96,16 @@
 		<?php 
 			if(isset($_SESSION["quizSession"]) && $_SESSION["quizSession"] >= 0)
 			{
-				$stmt = $dbh->prepare("select question_id from an_qu_user where session_id = :session_id group by question_id");
-				$stmt->bindParam(":session_id", $_SESSION["idSession"]);
-				$stmt->execute();
-				$finishedQuestions = $stmt->rowCount();
-				
 				$stmt = $dbh->prepare("select question.id from questionnaire inner join qunaire_qu on qunaire_qu.questionnaire_id = questionnaire.id inner join question on question.id = qunaire_qu.question_id where questionnaire.id = :questionnaire_id");
 				$stmt->bindParam(":questionnaire_id", $id);
 				$stmt->execute();
 				$remainingQuestions = $stmt->rowCount();
 				
 				echo '<div class="left">';
-				if($finishedQuestions+1 <= $remainingQuestions)
-					echo ($finishedQuestions+1) . ' / ' . $remainingQuestions ;
+				if($_SESSION["questionNumber"] +1 <= $remainingQuestions) {
+					echo ($_SESSION["questionNumber"] +1) . ' / ' . $remainingQuestions ;
+				}
+				
 				echo '</div>';
 				echo '<div class="center">';
 				$showLimitedTime = $limited_time;

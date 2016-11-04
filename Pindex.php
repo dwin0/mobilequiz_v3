@@ -40,12 +40,12 @@ ob_end_clean();
 <meta name="author" content="Patrick Eichler" />
 <meta name="revised" content="September 2015" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MobileQuiz - Quiz</title>
-<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css">
-<link rel="stylesheet" type="text/css" href="css/jquery.mobile.theme-1.4.5.min.css">
-<link rel="stylesheet" type="text/css" href="css/tipsy.css">
-<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery.mobile.theme-1.4.5.min.css" />
+<link rel="stylesheet" type="text/css" href="css/tipsy.css" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
 
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
