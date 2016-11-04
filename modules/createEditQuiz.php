@@ -153,7 +153,7 @@
 	{
 		var userEmail = $('#autocompleteUsers').val();
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=addAssignation&userEmail="+userEmail+"&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>,
 			success: function(output) 
@@ -182,7 +182,7 @@
 	{
 		console.log("del: " + userId);
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=delAssignation&userId="+userId+"&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>,
 			success: function(output) 
@@ -210,7 +210,7 @@
 	{
 		console.log("del: " + qId);
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=delQuestionFromQuiz&questionId="+qId+"&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>,
 			success: function(output) 
@@ -254,7 +254,7 @@
 		});   
 		console.log(JSON.stringify(qOrder));
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&qOrder="+JSON.stringify(qOrder),
 			success: function(output) 
@@ -374,7 +374,7 @@
 					});
 					console.log("assignedGroups: " + JSON.stringify(assignedGroups));
 					$.ajax({
-						url: 'modules/do.php',
+						url: 'modules/actionHandler.php',
 						type: "get",
 						data: "action=changeAssignedGroups&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&groups="+JSON.stringify(assignedGroups),
 						success: function(output) 
@@ -412,7 +412,7 @@
 	<?php }?>
 	<p><?php echo $lang["requiredFields"];?></p>
 	<form id="createQuiz"
-		action="<?php echo "?p=do&action=insertQuiz&mode=" . $mode;?>"
+		action="<?php echo "?p=actionHandler&action=insertQuiz&mode=" . $mode;?>"
 		class="form-horizontal" method="POST" enctype="multipart/form-data"
 		onsubmit="return formCheck()">
 		<div class="panel panel-default">

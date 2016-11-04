@@ -117,7 +117,7 @@
 	function delPicture(id)
 	{
 	    $.ajax({
-		      url: 'modules/do.php',
+		      url: 'modules/actionHandler.php',
 		      type: 'get',
 		      data: 'action=delPicture&questionId=' + id,
 		      success: function(output) {
@@ -146,7 +146,7 @@
 	<?php if($code != 0) {?>
 	<p style="color:red"><?php echo $codeText;?></p>
 	<?php }?>
-	<form id="createQuestion" action="<?php echo "?p=do&action=insertQuestion&mode=" . $mode;?>" class="form-horizontal" method="POST" enctype="multipart/form-data" onsubmit="return formCheck()">
+	<form id="createQuestion" action="<?php echo "?p=actionHandler&action=insertQuestion&mode=" . $mode;?>" class="form-horizontal" method="POST" enctype="multipart/form-data" onsubmit="return formCheck()">
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h3 class="panel-title"><?php echo $lang["generalInformations"]?></h3>

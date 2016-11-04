@@ -193,7 +193,7 @@
 			    </div>
 			    <input type="hidden" name="quizId" value="<?php echo $quizId; ?>">
 		    </form>
-		    <form id="addQuestions" class="form-horizontal" action="?p=do&action=addQuestions" method="POST">
+		    <form id="addQuestions" class="form-horizontal" action="?p=actionHandler&action=addQuestions" method="POST">
 			    <div class="listOfQuizzes">
 			        <table class="tblListOfQuizzes" id="questions" style="width: 100%">
 			            <thead>

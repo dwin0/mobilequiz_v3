@@ -118,7 +118,7 @@ $roleNames = array(
 	{
 		console.log("del: " + groupId);
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=delGroup&groupId="+groupId,
 			success: function(output) 
@@ -151,7 +151,7 @@ $roleNames = array(
 	function addGroup()
 	{
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=addGroup&groupName="+$('#newGroupName').val(),
 			success: function(output) 
@@ -180,7 +180,7 @@ $roleNames = array(
 	function delUserFromGroupFunc(userId, gId)
 	{
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=delUserFromGroup&userId="+userId+"&groupId="+gId,
 			success: function(output) 
@@ -217,7 +217,7 @@ $roleNames = array(
 		var userEmail = $('#autocompleteUsers_' + groupId).val();
 		console.log(userEmail + " " + groupId);
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=addUserToGroup&userEmail="+userEmail+"&groupId="+groupId,
 			dataType: "json",
@@ -244,7 +244,7 @@ $roleNames = array(
 	function changeActive(uId)
 	{
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=changeActive&userId="+uId,
 			dataType: "json",

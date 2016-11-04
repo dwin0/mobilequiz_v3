@@ -75,7 +75,7 @@ $objPHPExcel->getProperties()->setTitle("Mobilequiz_results");
 	function revealName(uId)
 	{
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: "get",
 			data: "action=revealUserName&questionnaireId="+<?php echo $_GET["id"];?>+"&userId="+uId,
 			dataType: 'json',

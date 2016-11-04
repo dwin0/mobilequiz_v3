@@ -137,7 +137,7 @@
 		if(confirm("<?php echo $lang["deleteConfirmation"];?>"))
 		{
 		    $.ajax({
-				url: 'modules/do.php',
+				url: 'modules/actionHandler.php',
 				type: 'get',
 				data: 'action=delQuiz&quizId=' + id,
 				success: function(output) {

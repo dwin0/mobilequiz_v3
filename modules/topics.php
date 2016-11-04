@@ -41,7 +41,7 @@
 	{
 	    console.log("delTopic " + id);
 		$.ajax({
-		      url: 'modules/do.php',
+		      url: 'modules/actionHandler.php',
 		      type: 'get',
 		      data: 'action=delTopic&userId='+<?php echo $_SESSION["id"]; ?>+'&topicId=' + id,
 		      success: function(output) {
@@ -191,7 +191,7 @@
 		        <br />
 		        <br />
 		        <p id="topicActionResult" style="color:<?php echo $color;?>;"><?php echo $codeTxt;?></p>
-		        <form action="?p=do&action=insertTopic" method="post">
+		        <form action="?p=actionHandler&action=insertTopic" method="post">
 		        	<input style="float:left; width: 300px;" type="text" name="topicName" required="required" value="" class="form-control" placeholder="<?php echo $lang["topicName"]; ?>" />
 		        	<input style="margin-left:20px;" type="submit" name="submit" class="btn" value="<?php echo $lang["create"]; ?>">
 		        </form>

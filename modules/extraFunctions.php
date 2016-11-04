@@ -110,4 +110,16 @@
 		$stmt->bindParam(":msg", $message);
 		return $stmt->execute();
 	}
+	
+	function checkStringIn($str)
+	{
+		$stringsToCheck = [["number", 0], ["nr", 0], ["nummer", 0], ["question", 1], ["frage", 1], ["answer", 2], ["antwort", 2], ["keyword", 3], ["schl", 3]];
+	
+		for ($i = 0; $i < count($stringsToCheck); $i++)
+		{
+			if(strpos(strtolower($str), $stringsToCheck[$i][0]) !== false)
+				return [true, $stringsToCheck[$i][1]];
+		}
+		return [false];
+	}
 ?>

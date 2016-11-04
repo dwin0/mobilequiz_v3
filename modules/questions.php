@@ -76,7 +76,7 @@
 	function delQuestion(id)
 	{
 	    $.ajax({
-		      url: 'modules/do.php',
+		      url: 'modules/actionHandler.php',
 		      type: 'get',
 		      data: 'action=delQuestion&userId='+<?php echo $_SESSION["id"]; ?>+'&questionId=' + id,
 		      success: function(output) {
@@ -95,7 +95,7 @@
 	function openDialog(qId)
 	{
 		$.ajax({
-			url: 'modules/do.php',
+			url: 'modules/actionHandler.php',
 			type: 'get',
 			data: 'action=queryAnswers&questionId='+qId,
 			dataType: 'json',

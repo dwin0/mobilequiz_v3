@@ -34,7 +34,7 @@
 		function switchPollState(pId)
 		{
 			$.ajax({
-				url: 'modules/do.php',
+				url: 'modules/actionHandler.php',
 				type: 'get',
 				data: 'action=switchPollState&newActive=' + pId,
 				dataType: "json",
@@ -142,7 +142,7 @@
 		function refreshPoll(pId)
 		{
 			$.ajax({
-				url: 'modules/do.php',
+				url: 'modules/actionHandler.php',
 				type: 'get',
 				data: 'action=getPollVotes&pollToken=' + pId,
 				dataType: 'json',
@@ -413,7 +413,7 @@
 		{
 			console.log("toggled R");
 			$.ajax({
-				url: 'modules/do.php',
+				url: 'modules/actionHandler.php',
 				type: 'get',
 				data: 'action=getCorrectAnswers&pollId=' + pollId,
 				dataType: "json",
@@ -570,7 +570,7 @@
 					{
 						$totalVotes = 0;
 						if(!isset($_COOKIE['pollId' . $pollId["id"]])){
-							echo '<form method="post" action="?p=do&action=sendVote">'; 
+							echo '<form method="post" action="?p=actionHandler&action=sendVote">'; 
 						}
 						
 						if(((isset($_COOKIE['pollId' . $pollId["id"]]) && $pollId["open"] == 1) || $pollId["open"] == 0) || $_SESSION["role"]["creator"] == 1){
@@ -779,7 +779,7 @@
 				{ 
 				?>
 				<div class="contentWrapper" id="createPollContent">
-					<form action="?p=do&action=createPoll" method="post" enctype="multipart/form-data">
+					<form action="?p=actionHandler&action=createPoll" method="post" enctype="multipart/form-data">
 						<label for="question">Frage:</label>
 						<textarea type="text" name=question id="question" class="form-control text-input" wrap="soft"></textarea>
 						<p style="margin-top: 5px;">Bild zur Frage hinzuf&uuml;gen:</p>
