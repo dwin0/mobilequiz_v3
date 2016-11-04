@@ -436,7 +436,7 @@
 			                			$whereStatement .= "starttime > :time ";
 			                		} else if($selectedState == 'current')
 			                		{
-			                			$whereStatement .= "starttime < :time and endtime > :time or noParticipationPeriod = :noParticipationPeriod ";
+			                			$whereStatement .= "((starttime < :time and endtime > :time) or noParticipationPeriod = :noParticipationPeriod) ";
 			                			$noParticipationTime = true;
 			                		} else if($selectedState == 'finished')
 			                		{

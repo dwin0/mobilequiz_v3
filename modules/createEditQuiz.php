@@ -100,7 +100,7 @@
     function setConfirm(val, elem)
     {
     	shouldConfirm = val;
-    	console.log("e:" + elem);
+    	//console.log("e:" + elem);
     }
 
 	function openFileDialog()
@@ -108,24 +108,9 @@
         $('#btnImportQuestionsFromCSV2').click();
     }
 
-	function switchTimeLimit()
+	function setChecked(id)
 	{
-		$('#radioQuizTimeLimit').prop('checked', true);
-	}
-
-	function switchMaxParticipations()
-	{
-		$('#maxParticipationsMode').prop('checked', true);
-	}
-
-	function switchAmountQuestions()
-	{
-		$('#radioNoneQuestionMode').prop('checked', true);
-	}
-
-	function switchQuizPassed()
-	{
-		$('#quizPassedMode').prop('checked', true);
+		$('#' + id).prop('checked', true);
 	}
 
 	function showNewLanguageInput()
@@ -152,11 +137,16 @@
 	{
 		var val = false;
 		if($("#noParticipationPeriod1").prop('checked'))
+		{
 			val = true;
-		$("#startDate").prop('readonly', val);
-		$("#startTime").prop('readonly', val);
-		$("#endDate").prop('readonly', val);
-		$("#endTime").prop('readonly', val);
+		}
+
+		var timeBoxes = ["startDate", "startTime", "endDate", "endTime"];
+
+		$.each(timeBoxes, function()
+		{
+			$("#" + this).prop('readonly', val);
+		});
 	}
 
 	function addCreator()
@@ -275,14 +265,14 @@
 	}
 
 	$(function() {
-		$('#singlechoiseMultHelp').tipsy({gravity: 'n'});
-		$('#assignationHelp').tipsy({gravity: 'n'});
-		$('.delAssignedImg').tipsy({gravity: 'n'});
-		$('.delQuestionImg').tipsy({gravity: 'n'});
-		$('.editQuestion').tipsy({gravity: 'n'});
-		$('.groupName').tipsy({gravity: 'n'});
-    	$('.questionTypeInfo').tipsy({gravity: 'n'});
-    	$('#showQuizTaskPaperHelp').tipsy({gravity: 'n'});
+		var tooltipElements = ['#singlechoiseMultHelp', '#assignationHelp', '.delAssignedImg', '.delQuestionImg',
+			'.editQuestion', '.groupName', '.questionTypeInfo', '#showQuizTaskPaperHelp'];
+
+		$.each(tooltipElements, function(i, string)
+			{
+				$(string).tipsy({gravity: 'n'});
+				console.log($(string));
+			});
 
 		setDatesEnabled();
 		$("#groupAddSuccess").hide();
@@ -681,7 +671,7 @@
 						<label for="radioQuizTimeLimit" class="radio-inline" style="margin-left: 22px;">
 							<input style="margin-top: 11px;" type="radio" id="radioQuizTimeLimit" onchange="setConfirm(true, 'timelimit2')" name="timeLimitMode" value="1" <?php echo $noLimitChecked ? '':'checked';?> /> 
 							<input type="time" id="quizTimeLimit" class="form-control" onchange="setConfirm(true)" name="quizTimeLimit" style="width: 90px; display: inline;" 
-								value="<?php echo $timeLimit;?>" onfocus="switchTimeLimit()"/> (min:s)
+								value="<?php echo $timeLimit;?>" onfocus="setChecked('radioQuizTimeLimit')"/> (min:s)
 						</label>
 					</div>
 				</div>
@@ -710,7 +700,7 @@
 							<input style="margin-top: 11px;" type="radio" id="radioNoneQuestionMode" onchange="setConfirm(true, 'questionamount2')" name="amountQuestionMode" value="1" <?php echo $questionAmountChecked ? '':'checked';?> />
 							<input type="number" id="amountOfQuestions" name="amountOfQuestions" onchange="setConfirm(true, 'questionamount3')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 								echo $questionAmount;
-							?>" required="required"  onfocus="switchAmountQuestions()"/>
+							?>" required="required"  onfocus="setChecked('radioNoneQuestionMode')"/>
 						</label>
 					</div>
 				</div>
@@ -739,7 +729,7 @@
 							<input style="margin-top: 11px;" type="radio" id="maxParticipationsMode" onchange="setConfirm(true, 'maxpart')" name="maxParticipationsMode" value="1" <?php echo $maxParticipationsChecked ? '':'checked';?> />
 							<input type="number" id="maxParticipations" name="maxParticipations" onchange="setConfirm(true, 'maxpart')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 								echo $maxParticipations;
-							?>" required="required"  onfocus="switchMaxParticipations()"/>
+							?>" required="required"  onfocus="setChecked('maxParticipationsMode')"/>
 						</label>
 					</div>
 				</div>
@@ -788,7 +778,7 @@
 							<input style="margin-top: 11px;" type="radio" id="quizPassedMode" onchange="setConfirm(true, 'passedmode2')" name="quizPassedMode" value="1" <?php echo $quizPassedChecked ? '':'checked';?> />
 							<input type="number" id="quizPassed" name="quizPassed" onchange="setConfirm(true, 'passedmode3')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 								echo $quizPassed;
-							?>" required="required"  onfocus="switchQuizPassed()"/>%
+							?>" required="required"  onfocus="setChecked('quizPassedMode')"/>%
 						</label>
 					</div>
 				</div>
