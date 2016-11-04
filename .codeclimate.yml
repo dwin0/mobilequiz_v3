@@ -62,6 +62,9 @@ engines:
     checks:
       Naming/ShortVariable:
         enabled: false
+      Controversial/Superglobals:
+        enabled: false
+
   phan:
     enabled: true
     config:
