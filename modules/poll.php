@@ -1,4 +1,5 @@
 <?php
+	include_once 'errorCodeHandler.php';
 ?>
 <script src="js/highcharts.js"></script>
 <script type="text/javascript">
@@ -481,41 +482,10 @@
 		}
 	
 	<?php
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
-	
-	$codeTxt = "";
-	$codeClr = "green";
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		switch ($_GET["code"]){
-			case 1:
-				$codeTxt = "";
-				break;
-			case -1:
-				$codeTxt = "Unzureichende Berechtigungen";
-				break;
-			case -2:
-			case -7:
-				$codeTxt = "Nicht alle Parameter gesetzt";
-				break;
-			case -3:
-				$codeTxt = "DB insert error poll";
-				break;
-			case -4:
-				$codeTxt = "DB insert error poll answers";
-				break;
-			case -5:
-				$codeTxt = "Umfrage schon durchgef&uuml;hrt";
-				break;
-			case -6:
-				$codeTxt = "Umfrage nicht aktiv";
-				break;
-			default:
-				$codeTxt = "Unbekannter Fehler";
-				break;
-		}
-		if($_GET["code"] < 0)
-			$codeClr = "red";
+		$errorCode = handlePollError($_GET["code"]);
 	}
 	?>
 	
@@ -529,7 +499,7 @@
 			<h3 class="panel-title">Do the poll!</h3>
 		</div>
 		<div class="panel-body">
-			<p style="color: <?php echo $codeClr;?>;"><?php echo $codeTxt;?></p>
+			<p style="color: <?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 			<div class="col-md-2 col-sm-2">
 				<input style="margin-bottom: 5px; width: 116px;" id="goToPoll" name="goToPoll" class="btn" onclick="switchDisplay('goToPollContent')" type="button" value="<?php echo $lang["goToPoll"];?>" />
 				<?php if($_SESSION["role"]["creator"] == 1) {?><input style="margin-bottom: 5px; width: 116px;" id="yourPolls" name="yourPolls" class="btn" onclick="switchDisplay('yourPollsContent')" type="button" value="<?php echo $lang["yourPoll"];?>" />
@@ -781,7 +751,7 @@
 				<div class="contentWrapper" id="createPollContent">
 					<form action="?p=actionHandler&action=createPoll" method="post" enctype="multipart/form-data">
 						<label for="question">Frage:</label>
-						<textarea type="text" name=question id="question" class="form-control text-input" wrap="soft"></textarea>
+						<textarea name=question id="question" class="form-control text-input" wrap="soft"></textarea>
 						<p style="margin-top: 5px;">Bild zur Frage hinzuf&uuml;gen:</p>
 						<input type="file" id="picture" name="picture" class="btn" accept=".jpeg,.jpg,.bmp,.png,.gif" />
 						<br />
@@ -806,4 +776,5 @@
 			</div>
 		</div>
 	</div>
+</div>
 </div>

@@ -6,7 +6,8 @@
 		exit;
 	}
 	
-	include "modules/extraFunctions.php";	
+	include "modules/extraFunctions.php";
+	include_once 'errorCodeHandler.php';
 	
 	function getMultiplechoiseChar($val)
 	{
@@ -78,25 +79,11 @@
 		}
 	}
 	
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
 	
-	$code = 0;
-	$codeTxt = "";
-	$color = "red";
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$code = $_GET["code"];
-	}
-	if($code > 0)
-	{
-		$color = "green";
-	}
-	
-	switch ($code)
-	{
-		case 1:
-			$codeTxt = "OK"; //TODO: Successful-Text
-			break;
+		$errorCode = handleQuestionsError($_GET["code"]);
 	}
 ?>
 <script type="text/javascript">
@@ -121,7 +108,7 @@
 	</div>
 	<div id="participationStatistics">
 		<p><?php echo $lang["thanksForParticipate"]; ?></p>
-		<p id="codeResult" style="color:<?php echo $color;?>;"><?php echo $codeTxt;?></p>
+		<p id="codeResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 		<div>
 			<?php 
 			$stmt = $dbh->prepare("select id from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id and endtime is not null order by id desc");

@@ -5,125 +5,18 @@
 		exit;
 	}
 	include "modules/extraFunctions.php";
-
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
+	include_once 'errorCodeHandler.php';
 	
-	$code = 0;
-	$codeTxt = "";
-	$color = "red";
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$code = $_GET["code"];
-	}
-	if($code > 0)
-		$color = "green";
-	
-	switch ($code)
-	{
-		case -8:
-		case -9:
-		case -10:
-		case -11:
-		case -6:
-			$codeTxt = $lang["quizUploadPicError"] . " (Code: " . htmlspecialchars($code) .")";
-			break;
-		case -2:
-		case -7:
-		case -12:
-		case -13:
-		case -14:
-		case -16:
-		case -17:
-		case -21:
-		case -22:
-		case -23:
-		case -24:
-		case -25:
-		case -27:
-			$codeTxt = $lang["quizGeneralError"] . " (Code: " . htmlspecialchars($code) .")";
-			break;
-		case -15:
-			$codeTxt = $lang["quizNotAvailable"] . ".";
-			break;
-		case -18:
-			$codeTxt = $lang["quizAborted"] . ".";
-			break;
-		case -19:
-			$codeTxt = $lang["quizNotFinished"] . ".";
-			break;
-		case -20:
-			$codeTxt = $lang["quizNotStarted"] . ".";
-			break;
-		case -25:
-			$codeTxt = $lang["quizNotPublic"] . ".";
-			break;
-		case -26:
-			$codeTxt = $lang["quizNotInTimeWindow"] . ".";
-			break;
-		case -28:
-			$codeTxt = $lang["errorWhileUploading"] . ".";
-			break;
-		case -29:
-			$codeTxt = $lang["noCSVFile"] . ".";
-			break;
-		case -30:
-			$codeTxt = $lang["uploadeCSVHandleError"] . ".";
-			break;
-		case -31:
-		case -32:
-		case -33:
-			$codeTxt = $lang["csvInsertError"] . " (Code: " . htmlspecialchars($code) .")";
-			break;
-		case -34:
-			$codeTxt = $lang["csvQunaireError"] . ".";
-			break;
-		case -35:
-			$codeTxt = $lang["reachedMaximumOfParticipations"] . ".";
-			break;
-		case -36:
-			$codeTxt = $lang["PDFCreationError"] . ".";
-			if(isset($_GET["info"]) && $_GET["info"] == 'noAccess4')
-				$codeTxt .= "<br />Lernkontrolle muss mindestens einmal durchgef&uuml;hrt werden um das Aufgabenblatt einsehen zu k&ouml;nnen.";
-			break;
-		case -37:
-			$codeTxt = "End quiz db error.";
-			break;
-		case -38:
-			$codeTxt = "Diese Lernkontrolle darf nur von bestimmten Gruppen durchgef&uuml;hrt werden.";
-			break;
-		case -3:
-			$codeTxt = $lang["dateOrTimeFormatError"] . ".";
-			break;
-		case -4:
-			$codeTxt = $lang["numericFormatError"] . ".";
-			break;
-		case -1:
-			$codeTxt = $lang["noAccessError"] . ".";
-			break;
-		case 1:
-			$codeTxt = $lang["successfullySavedQuiz"] . ".";
-			if(isset($_GET["qwna"]) && $_GET["qwna"] != 0) //qwna(v) - question with no answer (value)
-				$codeTxt .= "<br /><span style=\"color: red;\">".$_GET["qwna"]." Fragen ohne mindestens eine richtie Antwort vorhanden. Bitte &uuml;berpr&uuml;fen Sie Ihre Lernkontrolle sonst kann es zu Fehlern kommen.";
-				$qwnav = explode(",", $_GET["qwnav"]);
-				for($i = 0; $i < count($qwnav); $i++)
-				{
-					if($i == 0)
-						$codeTxt .= "<ul>";
-					$codeTxt .= "<li>".$qwnav[$i]."</li>";
-					if($i == count($qwnav)-1)
-						$codeTxt .= "</ul>";
-				}
-				$codeTxt .= "</span>";
-			break;
-		case 2:
-			$codeTxt = $lang["successfullySavedQuizAsBlueprint"] . ".";
-			break;
+		$errorCode = handleQuizError($_GET["code"]);
 	}
 	
-	if($code < 0)
+	if($_GET["code"] < 0)
 	{
 		$file = "logs/errorLog.txt";
-		$text = "Datum: " . date("d.m.Y H:i:s", time()) . "\nfromSite: ".$_SERVER['HTTP_REFERER']."\nCode: " . $code . "\nUsersession: " . $_SESSION["id"] . "\nQuizId: " . $_SESSION["quizSession"] . "\nSessionId: " . $_SESSION["idSession"] . "\nQuestionnumber: " . $_SESSION["questionNumber"] . "\n";
+		$text = "Datum: " . date("d.m.Y H:i:s", time()) . "\nfromSite: ".$_SERVER['HTTP_REFERER']."\nCode: " . $_GET["code"] . "\nUsersession: " . $_SESSION["id"] . "\nQuizId: " . $_SESSION["quizSession"] . "\nSessionId: " . $_SESSION["idSession"] . "\nQuestionnumber: " . $_SESSION["questionNumber"] . "\n";
 		$text .= "------------------------------\n";
 		$fp = fopen($file, "a");
 		fwrite($fp, $text);
@@ -264,7 +157,7 @@
 	<div class="page-header">
 		<h1><?php echo $lang["quizzes"];?></h1>
 	</div>
-	<p id="topicActionResult" style="color:<?php echo $color;?>;"><?php echo $codeTxt;?></p>
+	<p id="topicActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<?php //echo "a: " . $selectedTopic;?>
 	<div class="panel panel-default">
 		<div class="panel-body">

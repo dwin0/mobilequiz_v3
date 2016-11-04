@@ -1,4 +1,7 @@
-<?php 
+<?php
+	
+	include_once 'errorCodeHandler.php';
+	
 	if($_SESSION["role"]["user"] != 1)
 	{
 		header("Location: ?p=home&code=-20");
@@ -118,63 +121,20 @@
 		});
 	});
 </script>
-<?php 
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
+<?php
 	
-	$codeTxt = "";
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		switch ($_GET["code"])
+		if(isset($_GET["subcode"]))
 		{
-			case 1:
-				$codeTxt = "Daten erfolgreich ge&auml;ndert.";
-				break;
-			case 2:
-				$codeTxt = "Ihre E-Mail wurde erfolgreich ge&auml;ndert.";
-				break;
-			case 3:
-				$codeTxt = "Ihr Passwort wurde erfolgreich ge&auml;ndert.";
-				break;
-			case -1:
-				$codeTxt = "Passwort falsch.";
-				break;
-			case -2:
-				$codeTxt = "Nicht alle notwendigen Felder ausgef&uuml;llt.";
-				break;
-			case -3:
-				$codeTxt = "Daten fehlerhaft.";
-				break;
-			case -4:
-				$codeTxt = "DB Fehler.";
-				break;
-			case -5:
-				$codeTxt = "Key nicht vorhanden.";
-				break;
-			case -6:
-				$codeTxt = "DB Fehler (Update Email).";
-				break;
-			case -7:
-				$codeTxt = "DB Fehler (Delete Email request).";
-				break;
-			case -8:
-				$codeTxt = "DB Fehler (Update Passwort).";
-				break;
-			case -9:
-				$codeTxt = "DB Fehler (Delete Passwort request).";
-				break;
+			$errorCode = handleProfileError($_GET["code"], $_GET["subcode"]);
+		} else
+		{
+			$errorCode = handleProfileError($_GET["code"], NULL);
 		}
 	}
-	$subCode = "";
-	if(isset($_GET["subCode"]))
-	{
-		switch ($_GET["code"])
-		{
-			case 1:
-			case 2:
-				$subCode = "<br />Best&auml;tigungsmail wurde versendet.";
-				break;
-		}
-	}
+	
 	$stmt = $dbh->prepare("select * from user inner join user_data on id = user_id where id = :id");
 	$stmt->bindParam(":id", $_SESSION["id"]);
 	if(!$stmt->execute())
@@ -189,7 +149,7 @@
 		<h1><?php echo $lang["profileHeadline"];?></h1>
 	</div>
 	<p><?php echo $lang["profileWelcome"]?></p>
-	<p style="color:<?php echo isset($_GET["code"]) && $_GET["code"] > 0 ? ' green' : ' red'; ?>;"><?php echo $codeTxt . $subCode;?></p>
+	<p style="color:<?php echo $errorCode->getColor(); ?>;"><?php echo $errorCode->getText();?></p>
 	<div class="panel panel-default" >
 		<div class="panel-heading" id="profileHeading">
 			<span id="arrowMain" style="float:left; margin-right: 7px;">&#9654;</span>  <h3 class="panel-title"><?php echo $lang["pwRecoverySectionHeadline"]?></h3>
@@ -356,9 +316,9 @@
 		        </label>
 		        <div class="controls" id="askForRole">
 		        <select id="requestedRole">
-		            <option type="checkbox" name="role_creator" value="creator"> <?php echo $lang["roleCreator"]?><br />
-		            <option type="checkbox" name="role_manager" value="manager"> <?php echo $lang["roleManager"]?><br />
-		            <option type="checkbox" name="role_admin" value="admin"> <?php echo $lang["roleAdmin"]?><br />
+		            <option value="creator"> <?php echo $lang["roleCreator"]?>
+		            <option value="manager"> <?php echo $lang["roleManager"]?>
+		            <option value="admin"> <?php echo $lang["roleAdmin"]?>
 		        </select>
 		        </div>
 		        <p id="roleMsg" style="height: 20px;"> </p>

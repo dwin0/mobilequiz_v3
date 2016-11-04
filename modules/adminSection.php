@@ -1,4 +1,7 @@
 <?php
+
+include_once 'errorCodeHandler.php';
+
 if($_SESSION["role"]["user"] == 1)
 {
 	if($_SESSION["role"]["creator"] != 1)
@@ -498,26 +501,12 @@ $roleNames = array(
 </script>
 <?php 
 
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
-	
-	$code = 0;
-	$codeTxt = "";
-	$color = "red";
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$code = $_GET["code"];
+		$errorCode = handleAdminSectionError($_GET["code"]);
 	}
-	if($code > 0)
-	{
-		$color = "green";
-	}
-	
-	switch ($code)
-	{
-		case 1:
-			$codeTxt = "Benutzer erfolgreich erstellt.";
-			break;
-	}
+
 
 	$stmt = $dbh->prepare("select user.*, user_data.*, role.name as rName from user inner join user_data on id = user_id inner join role on role.id = user.role_id");
 	$stmt->execute();
@@ -528,7 +517,7 @@ $roleNames = array(
 	<div class="page-header">
 		<h1><?php echo $lang["adminSectionHeadline"];?></h1>
 	</div>
-	<p id="result" style="color:<?php echo $color;?>;"><?php echo $codeTxt;?></p>
+	<p id="result" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<?php if($_SESSION["role"]["admin"] == 1) {?>
 	<div class="panel panel-default">
 		<div class="panel-heading" id="adminSection1Heading">

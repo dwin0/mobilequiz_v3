@@ -1,7 +1,10 @@
-<?php 
-	if($_SESSION["role"]["user"] == 1)
+<?php
+
+	include_once 'errorCodeHandler.php';
+	
+	if($_SESSION["role"]["user"])
 	{
-		if($_SESSION["role"]["creator"] != 1)
+		if( ! $_SESSION["role"]["creator"])
 		{
 			header("Location: ?p=quiz&code=-1");
 			exit;
@@ -13,63 +16,12 @@
 		exit;
 	}
 	
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
-	
-	$code = 0;
-	$codeTxt = "";
-	$color = "red";
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$code = $_GET["code"];
-	
-		if($code > 0)
-			$color = "green";
-		switch ($code)
-		{
-			case -1:
-			case -2:
-			case -3:
-			case -5:
-			case -13:
-			case -14:
-			case -15:
-				$codeTxt = "Fehler in der Bearbeitung des Vorgangs (Code: " . htmlspecialchars($code) .")";
-				break;
-			case -4:
-				$codeTxt = "DB insert Fehler.";
-				break;
-			case -6:
-				$codeTxt = "Datentransfer fehlgeschlagen.";
-				break;
-			case -7:
-				$codeTxt = "Bild&uumlberpr&uumlfung fehlgeschlagen.";
-				break;
-			case -8:
-				$codeTxt = "Keine Datei gefunden.";
-				break;
-			case -9:
-				$codeTxt = "Datei schon vorhanden.";
-				break;
-			case -10:
-				$codeTxt = "Datei zu gross.";
-				break;
-			case -11:
-				$codeTxt = "Dateityp wird nicht unterst&uuml;tzt.";
-				break;
-			case -12:
-				$codeTxt = "Unzureichende Berechtigungen.";
-				break;
-			case 1:
-				$codeTxt = "Neue Frage erstellt";
-				break;
-			case 2:
-				$codeTxt = "Frage wurde bearbeitet";
-				break;
-			default:
-				$codeTxt = "Fehler (Code: " . htmlspecialchars($code) .")";
-				break;
-		}
+		$errorCode = handleQuestionsError($_GET["code"]);
 	}
+	
 ?>
 <script type="text/javascript">
 
@@ -195,7 +147,7 @@
 	<div class="page-header">
 		<h1><?php echo $lang["questionsHeadline"];?></h1>
 	</div>
-	<p id="questionActionResult" style="color:<?php echo $code < 1 ? 'red':'green'?>;"><?php echo $codeTxt;?></p>
+	<p id="questionActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<div class="panel panel-default">
 		<div class="panel-body">
 			<form id="quizFilter" class="form-horizontal" action="?p=questions" method="POST">
