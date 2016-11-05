@@ -56,12 +56,13 @@ $content = ob_get_contents();
 ob_end_clean();
 ?>
 <!DOCTYPE html>
+<html>
 <head>
 <meta name="description" content="Eine freie Plattform für die Erstellung von Lernkontrollen, an denen von mobilen Geräten teilgenommen werden kann." />
 <meta name="keywords" content="HTML,CSS,JavaScript,Lernkontrolle,Quiz,Fragen,Antworten" />
 <meta name="author" content="Patrick Eichler" />
 <meta name="revised" content="September 2015" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-width=1.0" />
 <title>MobileQuiz</title>
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
