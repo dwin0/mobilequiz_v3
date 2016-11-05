@@ -83,7 +83,7 @@
 	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$errorCode = handleQuestionsError($_GET["code"]);
+		$errorCode = handleParticipationOutroError($_GET["code"]);
 	}
 ?>
 <script type="text/javascript">

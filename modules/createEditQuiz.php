@@ -1,5 +1,7 @@
 <?php
-	include "modules/extraFunctions.php";
+	include_once 'modules/extraFunctions.php';
+	include_once 'errorCodeHandler.php';
+	
 
 	if(!isset($_GET["id"]))
 	{
@@ -19,9 +21,9 @@
 		$mode = $_GET["mode"];
 	}
 	
-	if($_SESSION["role"]["user"] == 1)
+	if($_SESSION["role"]["user"])
 	{
-		if($_SESSION["role"]["creator"] != 1 && ($mode == 'edit' && !amIAssignedToThisQuiz($dbh, $_GET["id"])))
+		if(! $_SESSION["role"]["creator"] && ($mode == 'edit' && !amIAssignedToThisQuiz($dbh, $_GET["id"])))
 		{
 			header("Location: ?p=quiz&code=-1&info=qqq");
 			exit;
@@ -48,30 +50,19 @@
 	}
 	
 	// can be merged with the upper role comparation
-	if($_SESSION['role']['creator'] != 1 && $quizFetch["owner_id"] != $_SESSION["id"] && !amIAssignedToThisQuiz($dbh, $_GET["id"])) {
+	if(! $_SESSION['role']['creator'] && $quizFetch["owner_id"] != $_SESSION["id"] && !amIAssignedToThisQuiz($dbh, $_GET["id"])) {
 		header("Location: ?p=quiz&code=-1&info=lll");
 		exit;
 	}
 	
 	
-	////TODO: Ev. Duplicate Function handleCode & Extract to File 'HandleCode'
+	
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$code = $_GET["code"];
+		$errorCode = handleCreateEditQuizError($_GET["code"]);
 	}
 	
-	switch ($code)
-	{
-		case -1:
-			$codeText = "ID nicht gesetzt.";
-			break;
-		case -2:
-			$codeText = "ID nicht gefunden.";
-			break;
-		case -3:
-			$codeText = "Beantragte Sprache oder Themenbereich darf nicht leer sein.";
-			break;
-	}
 	
 	$stmt = $dbh->prepare("select id, email from user");
 	$stmt->execute();
@@ -407,8 +398,8 @@
 	<div class="page-header">
 		<h1><?php echo $mode == "create" ? $lang["createQuiz"] : str_replace("[1]", '&laquo;' . $quizFetch["name"] . '&raquo;', $lang["editQuiz"]);?></h1>
 	</div>
-	<?php if($code != 0) {?>
-	<p style="color: red"><?php echo $codeText;?></p>
+	<?php if($_GET["code"] != 0) {?>
+	<p id="createEditQuizActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<?php }?>
 	<p><?php echo $lang["requiredFields"];?></p>
 	<form id="createQuiz"

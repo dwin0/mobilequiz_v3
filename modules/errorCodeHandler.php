@@ -7,7 +7,7 @@
 		
 		public function __construct($text, $color)
 		{
-			$this->text = $text;
+			$this->text = htmlspecialchars($text);
 			$this->color = $color;
 		}
 		
@@ -50,7 +50,7 @@
 			case -13:
 			case -14:
 			case -15:
-				return "Fehler in der Bearbeitung des Vorgangs (Code: " . htmlspecialchars($code) .")";
+				return "Fehler in der Bearbeitung des Vorgangs (Code: " . $code .")";
 			case -4:
 				return "DB insert Fehler.";
 			case -6:
@@ -72,7 +72,7 @@
 			case 2:
 				return "Frage wurde bearbeitet";
 			default:
-				return "Fehler (Code: " . htmlspecialchars($code) .")";
+				return "Fehler (Code: " . $code .")";
 		}
 	}
 	
@@ -175,9 +175,10 @@
 		return $codeText;
 	}
 	
-	
 	function getQuizErrorText($code)
 	{
+		global $lang;
+		
 		switch ($code)
 		{
 			case -8:
@@ -185,7 +186,7 @@
 			case -10:
 			case -11:
 			case -6:
-				return $lang["quizUploadPicError"] . " (Code: " . htmlspecialchars($code) .")";
+				return $lang["quizUploadPicError"] . " (Code: " . $code .")";
 			case -2:
 			case -7:
 			case -12:
@@ -199,7 +200,7 @@
 			case -24:
 			case -25:
 			case -27:
-				return $lang["quizGeneralError"] . " (Code: " . htmlspecialchars($code) .")";
+				return $lang["quizGeneralError"] . " (Code: " . $code .")";
 			case -15:
 				return $lang["quizNotAvailable"] . ".";
 			case -18:
@@ -221,7 +222,7 @@
 			case -31:
 			case -32:
 			case -33:
-				return $lang["csvInsertError"] . " (Code: " . htmlspecialchars($code) .")";
+				return $lang["csvInsertError"] . " (Code: " . $code .")";
 			case -34:
 				return $lang["csvQunaireError"] . ".";
 			case -35:
@@ -266,6 +267,100 @@
 	}
 	
 	
+	function getHomeErrorText($code)
+	{
+		switch ($code)
+		{
+			case 1:
+				return "Anmeldung erfolgreich!<br />Bitte &uuml;berpr&uuml;fen Sie ihre E-Mails und aktivieren Sie ihren Account um sich einloggen zu k&ouml;nnen.";
+			case 2:
+				return "Aktivierung erfolgreich!<br />Sie k&ouml;nnen sich nun mit Ihren Anmeldedaten anmelden.";
+			case 3:
+				return "Ihnen wurde eine E-Mail gesendet.";
+			case 4:
+				return "Ihnen wurde eine E-Mail mit einem neuen Passwort zugesendet.";
+			case 5:
+				return "Sie wurden ausgeloggt.";
+			case -1:
+			case -2:
+				return "Aktivierung fehlgeschlagen (Code: " . $code . ")";
+			case -6:
+				return "Senden der Passwort zur&uuml;cksetzen E-Mail fehlgeschlagen.";
+			case -7:
+				return "Passwort reaktivierung fehlgeschagen.";
+			case -9:
+				return "E-Mail nicht gefunden.";
+			case -10:
+				return "Key nicht gefunden.";
+			case -16:
+				return "Benutzer oder Passwort nicht gefunden.";
+			case -17:
+				return "Account noch nicht aktiviert.<br />Sollten Sie keine Best&auml;tigungsmail bekommen haben klicken Sie <a href=\"?p=auth&action=resendVerification&email=" . $_GET["email"] . "\">hier</a>.";
+			case -18:
+				return "Versenden der E-Mail fehlgeschlagen.";
+			case -20:
+				return "Sie sind nicht eingeloggt.";
+			case -3:
+			case -4:
+			case -5:
+			case -8:
+			case -11:
+			case -12:
+			case -13:
+			case -14:
+			case -15:
+			default:
+				return "Allgemeiner Fehler (Code " . $code . ")";
+		}
+	}
+	
+	
+	function getCreateQuizErrorText($code)
+	{
+		switch ($code)
+		{
+			case -1:
+				return "ID nicht gesetzt.";
+			case -2:
+				return "ID nicht gefunden.";
+			case -3:
+				return "Beantragte Sprache oder Themenbereich darf nicht leer sein.";
+		}
+	}
+	
+	function getRegisterErrorText($code)
+	{
+		switch($code)
+		{
+			case 0:
+				return "Allgemeiner Fehler. (Code " . $code . ")";
+			case -1:
+				return "E-Mail Fehler.";
+			case -2:
+				return "Passwort Fehler.";
+			case -3:
+				return "Vorname Fehler.";
+			case -4:
+				return "Nachname Fehler.";
+			case -5:
+				return "E-Mail schon vorhanden.";
+			case -10:
+				return "Versenden der E-Mail fehlgeschlagen.";
+			default:
+				return "Allgemeiner Fehler. (Code " . $code . ")";
+		}
+	}
+	
+	function getTopicsErrorText($code)
+	{
+		switch ($code)
+		{
+			case 1:
+				return "Themengebiet erfolgreich hinzugef&uuml;gt.";
+			default:
+				return "Fehler (Code: " . $code .")";
+		}
+	}
 	
 	
 	
@@ -302,6 +397,26 @@
 	function handleQuizError($code)
 	{
 		return new mobileError(getQuizErrorText($code), getErrorColor($code));
+	}
+	
+	function handleHomeError($code)
+	{
+		return new mobileError(getHomeErrorText($code), getErrorColor($code));
+	}
+	
+	function handleCreateEditQuizError($code)
+	{
+		return new mobileError(getCreateQuizErrorText($code), getErrorColor($code));
+	}
+	
+	function handleRegisterError($code)
+	{
+		return new mobileError(getRegisterErrorText($code), getErrorColor($code));
+	}
+	
+	function handleTopicsError($code)
+	{
+		return new mobileError(getTopicsErrorText($code), getErrorColor($code));
 	}
 	
 ?>

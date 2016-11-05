@@ -1,47 +1,18 @@
-<?php 
-
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
-	$code = 0;
-	$errStr = "";
+<?php
+	include_once 'errorCodeHandler.php';
 	
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$code = $_GET["code"];
-		
-		switch($code)
-		{
-			case 0:
-				$errStr = "Allgemeiner Fehler. (Code " . htmlspecialchars($code) . ")";
-				break;
-			case -1:
-				$errStr = "E-Mail Fehler.";
-				break;
-			case -2:
-				$errStr = "Passwort Fehler.";
-				break;
-			case -3:
-				$errStr = "Vorname Fehler.";
-				break;
-			case -4:
-				$errStr = "Nachname Fehler.";
-				break;
-			case -5:
-				$errStr = "E-Mail schon vorhanden.";
-				break;
-			case -10:
-				$errStr = "Versenden der E-Mail fehlgeschlagen.";
-				break;
-			default:
-				$errStr = "Allgemeiner Fehler. (Code " . htmlspecialchars($code) . ")";
-				break;
-		}
+		$errorCode = handleRegisterError($_GET["code"]);
 	}
+	
 ?>
 <div class="container theme-showcase">
 	<div class="page-header">
 		<h1><?php echo $lang["registerHeadline"]?></h1>
 	</div>
-	<p style="color:<?php echo $code <= 0 ? "red" : "green";?>;"><?php echo $errStr; ?></p>
+	<p style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h3 class="panel-title"><?php echo $lang["pwRecoverySectionHeadline"]?></h3>

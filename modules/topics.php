@@ -1,7 +1,9 @@
 <?php 
-	if($_SESSION["role"]["user"] == 1)
+	include_once 'errorCodeHandler.php';
+
+	if($_SESSION["role"]["user"])
 	{
-		if($_SESSION["role"]["creator"] != 1)
+		if(! $_SESSION["role"]["creator"])
 		{
 			header("Location: ?p=quiz&code=-1");
 			exit;
@@ -13,26 +15,10 @@
 		exit;
 	}
 	
-	//TODO: Duplicate Function handleCode & Extract to File 'HandleCode'
-	
-	$code = 0;
-	$codeTxt = "";
-	$color = "green";
+	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
-		$code = $_GET["code"];
-	
-		if($code < 0)
-			$color = "red";
-		switch ($code)
-		{
-			case 1:
-				$codeTxt = "Themengebiet erfolgreich hinzugef&uuml;gt.";
-				break;
-			default:
-				$codeTxt = "Fehler (Code: " . htmlspecialchars($code) .")";
-				break;
-		}
+		$errorCode = handleTopicsError($_GET["code"]);
 	}
 ?>
 <script type="text/javascript">
@@ -134,7 +120,7 @@
 		                            ?>
 		                        </td>
 		                        <td>
-		                        	<?php if($_SESSION['role']['creator'] == 1) {?>
+		                        	<?php if($_SESSION['role']['creator']) {?>
 			                            <img style="cursor:pointer" id="deleteTopic" class="deleteTopic" src="assets/icon_delete.png" alt="" original-title="Themengebiet l&ouml;schen" height="18px" width="18px" <?php echo "onclick=\"delTopic(" . $resultArray[$i]["id"] . ")\"";?>>
 		                        	<?php }?>
 		                        </td>
@@ -190,7 +176,7 @@
 		        </table>
 		        <br />
 		        <br />
-		        <p id="topicActionResult" style="color:<?php echo $color;?>;"><?php echo $codeTxt;?></p>
+		        <p id="topicActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 		        <form action="?p=actionHandler&action=insertTopic" method="post">
 		        	<input style="float:left; width: 300px;" type="text" name="topicName" required="required" value="" class="form-control" placeholder="<?php echo $lang["topicName"]; ?>" />
 		        	<input style="margin-left:20px;" type="submit" name="submit" class="btn" value="<?php echo $lang["create"]; ?>">
