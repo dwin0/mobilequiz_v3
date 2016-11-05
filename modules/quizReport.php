@@ -172,7 +172,7 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 				</div>
 				<div class="col-md-4 col-sm-4">
 					<img
-						src="http://chart.apis.google.com/chart?chs=300x300&cht=qr&chld=H|0&chl=<?php echo $showedLink;?>"
+						src="https://chart.apis.google.com/chart?chs=300x300&cht=qr&chld=H|0&chl=<?php echo $showedLink;?>"
 						alt="QR code" widthHeight="300" widthHeight="300"
 						style="max-width: 100%" />
 				</div>

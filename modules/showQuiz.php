@@ -149,7 +149,7 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 				</div>
 				<div class="col-md-4 col-sm-4">
 					<img
-						src="http://chart.apis.google.com/chart?chs=300x300&cht=qr&chld=H|0&chl=<?php echo $showedLink;?>"
+						src="https://chart.apis.google.com/chart?chs=300x300&cht=qr&chld=H|0&chl=<?php echo $showedLink;?>"
 						alt="QR code" widthHeight="300" widthHeight="300"
 						style="max-width: 100%" />
 				</div>
@@ -163,7 +163,7 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 		</div>
 		<div class="panel-body">
 			<p>
-				<a href="http://sinv-56082.edu.hsr.ch/index.php?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $_GET["quizId"];?>" target="_blank"><?php echo $lang["showPrintTasksheet"];?></a>
+				<a href="https://sinv-56082.edu.hsr.ch/index.php?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $_GET["quizId"];?>" target="_blank"><?php echo $lang["showPrintTasksheet"];?></a>
 			</p>
 		</div>
 	</div>
