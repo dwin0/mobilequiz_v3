@@ -664,8 +664,10 @@ $roleNames = array(
 						<?php }?>
 	                </tbody>
 	                <tfoot>
-	                	<td><?php echo $lang["addGroup"];?>:</td>
-	                	<td colspan="2"><input id="newGroupName" style="width: 200px; float: left; margin-right: 10px;" type="text" placeholder="Gruppenname" width="200" class="form-control" name="groupName" maxlength="30"><img style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addGroup()"></td>
+	                	<tr>
+		                	<td><?php echo $lang["addGroup"];?>:</td>
+		                	<td colspan="2"><input id="newGroupName" style="width: 200px; float: left; margin-right: 10px;" type="text" placeholder="Gruppenname" width="200" class="form-control" name="groupName" maxlength="30"><img style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addGroup()"></td>
+	                	</tr>
 	                </tfoot>
 				</table>
 			</div>

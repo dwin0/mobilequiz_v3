@@ -5,9 +5,18 @@
 		$quizId = $_GET["id"];
 
 ?>
-<a class="quizReportNav" href="?p=quizReport&id=<?php echo $quizId;?>"><h5><?php echo $lang["participationStat"];?></h5></a>
-<a class="quizReportNav" href="?p=quizReportAnswerStat&id=<?php echo $quizId;?>"><h5><?php echo $lang["answerStat"];?></h5></a>
-<a class="quizReportNav" href="?p=quizReportLadder&id=<?php echo $quizId;?>"><h5><?php echo $lang["ladder"];?></h5></a>
-<a class="quizReportNav" href="?p=quizReportLadder&id=<?php echo $quizId;?>&displayMode=prof"><h5><?php echo $lang["ladderProf"];?></h5></a>
-<a class="quizReportNav" href="?p=quizReportLadder&id=<?php echo $quizId;?>&displayMode=anonym"><h5><?php echo $lang["ladderAnonym"];?></h5></a>
+
+<style>
+
+.headerLinkH5 {
+    display: inline-block;
+}
+
+</style>
+
+<h5 class="headerLinkH5"><a class="quizReportNav" href="?p=quizReport&id=<?php echo $quizId;?>"><?php echo $lang["participationStat"];?></a></h5>
+<h5 class="headerLinkH5"><a class="quizReportNav" href="?p=quizReportAnswerStat&id=<?php echo $quizId;?>"><?php echo $lang["answerStat"];?></a></h5>
+<h5 class="headerLinkH5"><a class="quizReportNav" href="?p=quizReportLadder&id=<?php echo $quizId;?>"><?php echo $lang["ladder"];?></a></h5>
+<h5 class="headerLinkH5"><a class="quizReportNav" href="?p=quizReportLadder&id=<?php echo $quizId;?>&displayMode=prof"><?php echo $lang["ladderProf"];?></a></h5>
+<h5 class="headerLinkH5"><a class="quizReportNav" href="?p=quizReportLadder&id=<?php echo $quizId;?>&displayMode=anonym"><?php echo $lang["ladderAnonym"];?></a></h5>
 <div style="clear: both;"></div>

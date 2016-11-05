@@ -5,14 +5,14 @@ function addAssignation($dbh)
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["questionaireId"]);
+		$stmt->bindParam(":id", $_GET["questionnaireId"]);
 		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $_GET["questionaireId"]))
+		if($_SESSION["id"] == $fetchOwner["owner_id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
 		{
 			$stmt = $dbh->prepare("select id from questionnaire where id = :qId");
-			$stmt->bindParam(":qId", $_GET["questionaireId"]);
+			$stmt->bindParam(":qId", $_GET["questionnaireId"]);
 			$stmt->execute();
 			if($stmt->rowCount() != 1)
 			{
@@ -26,7 +26,7 @@ function addAssignation($dbh)
 				$userId = $stmt->fetch(PDO::FETCH_ASSOC);
 	
 				$stmt = $dbh->prepare("insert into qunaire_assigned_to values (:questionnaireId, :user_id)");
-				$stmt->bindParam(":questionnaireId", $_GET["questionaireId"]);
+				$stmt->bindParam(":questionnaireId", $_GET["questionnaireId"]);
 				$stmt->bindParam(":user_id", $userId["id"]);
 				if($stmt->execute())
 				{
@@ -44,14 +44,14 @@ function deleteAssignation($dbh)
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["questionaireId"]);
+		$stmt->bindParam(":id", $_GET["questionnaireId"]);
 		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1)
+		if($_SESSION["id"] == $fetchOwner["owner_id"] || $_SESSION['role']['admin'] == 1)
 		{
 			$stmt = $dbh->prepare("delete from qunaire_assigned_to where user_id = :uId and questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["questionaireId"]);
+			$stmt->bindParam(":qId", $_GET["questionnaireId"]);
 			$stmt->bindParam(":uId", $_GET["userId"]);
 			if($stmt->execute())
 			{
@@ -95,11 +95,11 @@ function deleteGroup($dbh)
 		$stmt = $dbh->prepare("select owner_id, name from `group` where id = :id");
 		$stmt->bindParam(":id", $_GET["groupId"]);
 		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 			
 		//if owner_id == NULL -> means the creator of this group grant access to all manager to manage this group
 		//in the future it can changed to assign additional owners
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1 || $fetchOwer["owner_id"] == NULL)
+		if($_SESSION["id"] == $fetchOwner["owner_id"] || $_SESSION['role']['admin'] == 1 || $fetchOwner["owner_id"] == NULL)
 		{
 			$stmt = $dbh->prepare("update user set group_id = :newGroupId where group_id = :oldGroupId");
 			$stmt->bindValue(":newGroupId", NULL);
@@ -112,7 +112,7 @@ function deleteGroup($dbh)
 	
 			if($executeUpdateUser && $executeDelGroup)
 			{
-				addEvent($dbh, "delGroup", $_SESSION["id"] . " deleted the group " . $fetchOwer["name"]);
+				addEvent($dbh, "delGroup", $_SESSION["id"] . " deleted the group " . $fetchOwner["name"]);
 				echo "ok";
 			}
 			else
@@ -129,11 +129,11 @@ function addUserToGroup($dbh)
 		$stmt = $dbh->prepare("select owner_id from `group` where id = :id");
 		$stmt->bindParam(":id", $_GET["groupId"]);
 		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 			
 		//if owner_id == NULL -> means the creator of this group grant access to all manager to manage this group
 		//in the future it can changed to assign additional owners
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1 || $fetchOwer["owner_id"] == NULL)
+		if($_SESSION["id"] == $fetchOwner["owner_id"] || $_SESSION['role']['admin'] == 1 || $fetchOwner["owner_id"] == NULL)
 		{
 			$stmt = $dbh->prepare("update user set group_id = :newGroupId where email = :uEmail");
 			$stmt->bindValue(":newGroupId", $_GET["groupId"]);
@@ -154,11 +154,11 @@ function deleteUserFromGroup($dbh)
 		$stmt = $dbh->prepare("select owner_id from `group` where id = :id");
 		$stmt->bindParam(":id", $_GET["groupId"]);
 		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
 		//if owner_id == NULL -> means the creator of this group grant access to all manager to manage this group
 		//in the future it can changed to assign additional owners
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1 || $fetchOwer["owner_id"] == NULL)
+		if($_SESSION["id"] == $fetchOwner["owner_id"] || $_SESSION['role']['admin'] == 1 || $fetchOwner["owner_id"] == NULL)
 		{
 			$stmt = $dbh->prepare("update user set group_id = :newGroupId where id = :uId");
 			$stmt->bindValue(":newGroupId", NULL);
@@ -176,22 +176,22 @@ function changeAssignedGroups($dbh)
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["questionaireId"]);
+		$stmt->bindParam(":id", $_GET["questionnaireId"]);
 		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionaireId"]))
+		if($_SESSION["id"] == $fetchOwner["owner_id"] || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
 		{
 			$groups=json_decode($_GET["groups"]);
 	
 			$stmt = $dbh->prepare("delete from assign_group_qunaire where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["questionaireId"]);
+			$stmt->bindParam(":qId", $_GET["questionnaireId"]);
 			$stmt->execute();
 	
 			for ($i = 0; $i < count($groups); $i++) {
 				$stmt = $dbh->prepare("insert into assign_group_qunaire (group_id, questionnaire_id) values (:gId, :qId)");
 				$stmt->bindParam(":gId", $groups[$i]);
-				$stmt->bindParam(":qId", $_GET["questionaireId"]);
+				$stmt->bindParam(":qId", $_GET["questionnaireId"]);
 				if(!$stmt->execute())
 					echo "fail";
 			}
@@ -206,11 +206,11 @@ function revealUserName($dbh)
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["questionaireId"]);
+		$stmt->bindParam(":id", $_GET["questionnaireId"]);
 		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 			
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
+		if($_SESSION["id"] == $fetchOwner['owner_id'] || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
 		{
 			$stmt = $dbh->prepare("select firstname, lastname from user_data where user_id = :uId");
 			$stmt->bindParam(":uId", $_GET["userId"]);

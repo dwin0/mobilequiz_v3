@@ -35,7 +35,7 @@ ob_end_clean();
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="description" content="Eine freie Plattform fÃ¼r die Erstellung von Lernkontrollen, an denen von mobilen GerÃ¤ten teilgenommen werden kann." />
+<meta name="description" content="Eine freie Plattform für die Erstellung von Lernkontrollen, an denen von mobilen Geräten teilgenommen werden kann." />
 <meta name="keywords" content="HTML,CSS,JavaScript,Lernkontrolle,Quiz,Fragen,Antworten" />
 <meta name="author" content="Patrick Eichler" />
 <meta name="revised" content="September 2015" />

@@ -1033,7 +1033,7 @@
 					</div>
 					<div class="col-md-1 col-sm-1" style="margin-top: 25px; text-align: center;"> 
 						<img style="margin-left: 8px;" alt="drag and drop" src="assets/arrow-leftRight.png" width="56" height="32">
-						<span style="font-size: 10px;">Drag & Drop</span>
+						<span style="font-size: 10px;">Drag &amp; Drop</span>
 					</div>
 					<div class="col-md-3 col-sm-3" style="margin: 20px 0px 20px 0px;"> 
 						<label><?php echo $lang["assignQuizToGroupInfo2"];?></label>
