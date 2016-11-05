@@ -1,7 +1,9 @@
 <?php
 
-function createPoll($dbh)
+function createPoll()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		if(isset($_POST["question"]) && isset($_POST["answer_0"]) && isset($_POST["answer_1"]) && isset($_POST["questionType"]))
@@ -115,8 +117,10 @@ function createPoll($dbh)
 }
 
 
-function getPollVotes($dbh)
+function getPollVotes()
 {
+	global $dbh;
+	
 	if(isset($_GET["pollToken"]))
 	{
 		$stmt = $dbh->prepare("select * from poll_answers where poll_id = :pollToken");
@@ -141,8 +145,10 @@ function getPollVotes($dbh)
 }
 
 
-function switchPollState($dbh)
+function switchPollState()
 {
+	global $dbh;
+	
 	if(isset($_GET["newActive"]) && $_SESSION["role"]["creator"])
 	{
 		$stmt = $dbh->prepare("select open from poll where id = :pId");
@@ -169,8 +175,10 @@ function switchPollState($dbh)
 }
 
 
-function sendVote($dbh)
+function sendVote()
 {
+	global $dbh;
+	
 	//prüfen ob cookie schon vorhanden
 	if(isset($_COOKIE['pollId' . $_POST["pollId"]])){
 		header("Location: ?p=poll&code=-5");
@@ -254,8 +262,10 @@ function sendVote($dbh)
 }
 
 
-function getCorrectPollAnswers($dbh)
+function getCorrectPollAnswers()
 {
+	global $dbh;
+	
 	if(isset($_GET["pollId"]) && $_GET["pollId"] != ""){
 			
 		$stmt = $dbh->prepare("select poll_answers.id, correct, question_type, open from poll_answers inner join poll on poll_id = poll.id where poll_id = :pollId");

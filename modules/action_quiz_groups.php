@@ -1,7 +1,9 @@
 <?php
 
-function addAssignation($dbh)
+function addAssignation()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
@@ -39,8 +41,10 @@ function addAssignation($dbh)
 }
 
 
-function deleteAssignation($dbh)
+function deleteAssignation()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
@@ -62,8 +66,10 @@ function deleteAssignation($dbh)
 }
 
 
-function addGroup($dbh)
+function addGroup()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		do{
@@ -88,8 +94,10 @@ function addGroup($dbh)
 }
 
 
-function deleteGroup($dbh)
+function deleteGroup()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id, name from `group` where id = :id");
@@ -122,8 +130,10 @@ function deleteGroup($dbh)
 }
 
 
-function addUserToGroup($dbh)
+function addUserToGroup()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from `group` where id = :id");
@@ -147,8 +157,10 @@ function addUserToGroup($dbh)
 }
 
 
-function deleteUserFromGroup($dbh)
+function deleteUserFromGroup()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from `group` where id = :id");
@@ -171,8 +183,10 @@ function deleteUserFromGroup($dbh)
 	} else {echo "failed";}
 }
 
-function changeAssignedGroups($dbh)
+function changeAssignedGroups()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
@@ -201,8 +215,26 @@ function changeAssignedGroups($dbh)
 }
 
 
-function revealUserName($dbh)
+function revealUserName()
 {
+	global $dbh;
+	
+	if(amIQuizCreator() || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
+	{
+		$stmt = $dbh->prepare("select firstname, lastname from user_data where user_id = :uId");
+		$stmt->bindParam(":uId", $_GET["userId"]);
+		$stmt->execute();
+		$fetchUserName = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		echo json_encode(["ok", $fetchUserName["lastname"] . " " . $fetchUserName["firstname"]]);
+	} else {echo json_encode(["failed"]);}
+}
+
+//TODO Duplizierter Code: neues File erstellen und noch schauen, was in die gleiche Kategorie gehört
+function amIQuizCreator() 
+{
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
@@ -210,16 +242,10 @@ function revealUserName($dbh)
 		$stmt->execute();
 		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 			
-		if($_SESSION["id"] == $fetchOwner['owner_id'] || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
-		{
-			$stmt = $dbh->prepare("select firstname, lastname from user_data where user_id = :uId");
-			$stmt->bindParam(":uId", $_GET["userId"]);
-			$stmt->execute();
-			$fetchUserName = $stmt->fetch(PDO::FETCH_ASSOC);
-	
-			echo json_encode(["ok", $fetchUserName["lastname"] . " " . $fetchUserName["firstname"]]);
-		} else {echo json_encode(["failed"]);}
-	} else {echo json_encode(["failed"]);}
+		return $_SESSION["id"] == $fetchOwner['owner_id'];
+	} else {
+		return false;
+	}
 }
 
 ?>

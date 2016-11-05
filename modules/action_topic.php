@@ -1,7 +1,9 @@
 <?php
 
-function insertTopic($dbh)
+function insertTopic()
 {
+	global $dbh;
+	
 	if(isset($_POST["topicName"]) && strlen($_POST["topicName"]) > 1 && isset($_POST["submit"]))
 	{
 		$stmt = $dbh->prepare("insert into subjects (name) values (:name)");
@@ -15,8 +17,10 @@ function insertTopic($dbh)
 	}
 }
 
-function deleteTopic($dbh)
+function deleteTopic()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'] == 1)
 	{
 		$stmt = $dbh->prepare("select id from subjects where name = 'undefined'");

@@ -1,7 +1,9 @@
 <?php
 
-function insertQuestion($dbh)
+function insertQuestion()
 {
+	global $dbh;
+	
 	if($_SESSION["role"]["creator"])
 	{
 		if(isset($_POST["mode"]) && (isset($_POST["btnSave"]) || isset($_POST["btnSaveAndNext"])) &&
@@ -367,8 +369,10 @@ function insertQuestion($dbh)
 }
 
 
-function deleteQuestion($dbh)
+function deleteQuestion()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from question where id = :questionId");
@@ -438,8 +442,10 @@ function deleteQuestion($dbh)
 	}
 }
 
-function queryAnswers($dbh)
+function queryAnswers()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'] && isset($_GET["questionId"]))
 	{
 		$stmt = $dbh->prepare("select question.id, question.text qText, answer.* from question inner join answer_question on question.id = answer_question.question_id inner join answer on answer.id = answer_question.answer_id where question.id = :id");

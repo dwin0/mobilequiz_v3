@@ -19,79 +19,79 @@
 	
 	switch($action) {
 		case "insertTopic":
-			insertTopic($dbh);
+			insertTopic();
 			break;
 		case "delTopic":
-			deleteTopic($dbh);
+			deleteTopic();
 			break;
 		case "insertQuestion":
-			insertQuestion($dbh);
+			insertQuestion();
 			break;
 		case "delQuestion":
-			deleteQuestion($dbh);
+			deleteQuestion();
 			break;
 		case "delPicture":
-			deletePicture($dbh);
+			deletePicture();
 			break;
 		case "insertQuiz":
-			insertQuiz($dbh);
+			insertQuiz();
 			break;
 		case "addQuestions":
-			addQuestions($dbh);
+			addQuestions();
 			break;
 		case "delQuestionFromQuiz":
-			deleteQuestionFromQuiz($dbh);
+			deleteQuestionFromQuiz();
 			break;
 		case "delQuiz":
-			deleteQuiz($dbh);
+			deleteQuiz();
 			break;
 		case "addAssignation":
-			addAssignation($dbh);
+			addAssignation();
 			break;
 		case "delAssignation":
-			deleteAssignation($dbh);
+			deleteAssignation();
 			break;
 		case "moveQuestion":
-			moveQuestion($dbh);
+			moveQuestion();
 			break;
 		case "delGroup":
-			deleteGroup($dbh);
+			deleteGroup();
 			break;
 		case "addGroup":
-			addGroup($dbh);
+			addGroup();
 			break;
 		case "delUserFromGroup":
-			deleteUserFromGroup($dbh);
+			deleteUserFromGroup();
 			break;
 		case "addUserToGroup":
-			addUserToGroup($dbh);
+			addUserToGroup();
 			break;
 		case "createPoll":
-			createPoll($dbh);
+			createPoll();
 			break;
 		case "getPollVotes":
-			getPollVotes($dbh);
+			getPollVotes();
 			break;
 		case "switchPollState":
-			switchPollState($dbh);
+			switchPollState();
 			break;
 		case "sendVote":
-			sendVote($dbh);
+			sendVote();
 			break;
 		case "changeActive":
-			changeActiveStateUser($dbh);
+			changeActiveStateUser();
 			break;
 		case "getCorrectAnswers":
-			getCorrectPollAnswers($dbh);
+			getCorrectPollAnswers();
 			break;
 		case "changeAssignedGroups":
-			changeAssignedGroups($dbh);
+			changeAssignedGroups();
 			break;
 		case "revealUserName":
-			revealUserName($dbh);
+			revealUserName();
 			break;
 		case "queryAnswers":
-			queryAnswers($dbh);
+			queryAnswers();
 			break;
 		default:
 			header("Location: ?p=quiz&code=-1&info=ppp");

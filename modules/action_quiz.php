@@ -1,7 +1,9 @@
 <?php
 
-function deletePicture($dbh)
+function deletePicture()
 {
+	global $dbh;
+	
 	$stmt = $dbh->prepare("select owner_id from question where id = :question_id");
 	$stmt->bindParam(":question_id", $_GET["questionId"]);
 	$stmt->execute();
@@ -25,8 +27,10 @@ function deletePicture($dbh)
 	}
 }
 
-function insertQuiz($dbh)
+function insertQuiz()
 {
+	global $dbh;
+	
 	if(isset($_POST["mode"]) && (isset($_POST["btnSave"]) || isset($_POST["btnSaveAsDraft"]) || isset($_POST["btnAddQuestion"])) &&
 			isset($_POST["quizText"]) && isset($_POST["topic"]) && isset($_POST["language"]) &&
 			isset($_POST["endDate"]) && isset($_POST["endTime"]) &&
@@ -579,8 +583,10 @@ function insertQuiz($dbh)
 }
 
 
-function addQuestions($dbh)
+function addQuestions()
 {
+	global $dbh;
+	
 	//addQuestions to Quiz
 	//questions[]
 	if(!isset($_POST["quizId"]))
@@ -629,8 +635,10 @@ function addQuestions($dbh)
 }
 
 
-function deleteQuestionFromQuiz($dbh)
+function deleteQuestionFromQuiz()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
@@ -652,8 +660,10 @@ function deleteQuestionFromQuiz($dbh)
 }
 
 
-function deleteQuiz($dbh)
+function deleteQuiz()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
@@ -703,8 +713,10 @@ function deleteQuiz($dbh)
 	}
 }
 
-function moveQuestion($dbh)
+function moveQuestion()
 {
+	global $dbh;
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");

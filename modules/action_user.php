@@ -1,7 +1,9 @@
 <?php
 
-function changeActiveStateUser($dbh)
+function changeActiveStateUser()
 {
+	global $dbh;
+	
 	if($_SESSION["role"]["admin"] && isset($_GET["userId"]))
 	{
 		$stmt = $dbh->prepare("select isActivated from user where id = :uId");

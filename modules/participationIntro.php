@@ -28,14 +28,17 @@
 	
 	include_once 'modules/extraFunctions.php';
 	
+	//TODO duplizierten Code von participation, participationOutro und participationIntro auslagern
 	//Quiz enabled? (time, special access)
 	//maybe assigned Quiz?
-	if($_SESSION['role']['admin'] != 1)
+	if(! $_SESSION['role']['admin'])
 	{
-		if($fetchQunaire["public"] != 1)
+		if(! $fetchQunaire["public"])
 		{
-			header("Location: index.php?p=quiz&code=-25");
-			exit;
+			if(!amIQuizCreator()) {
+				header("Location: index.php?p=quiz&code=-25");
+				exit;
+			}
 		}
 		if(($fetchQunaire["starttime"] > time() || $fetchQunaire["endtime"] < time()) && $fetchQunaire["noParticipationPeriod"] == 0)
 		{
@@ -46,6 +49,25 @@
 		{
 			header("Location: index.php?p=quiz&code=-38");
 			exit;
+		}
+	}
+	
+	//TODO Duplizierter Code: neues File erstellen und noch schauen, was in die gleiche Kategorie gehört
+	function amIQuizCreator()
+	{
+		global $dbh;
+		
+		if($_SESSION['role']['creator'])
+		{
+			$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
+			//TODO: quizId und questionnaireId vereinheitlichen
+			$stmt->bindParam(":id", $_GET["quizId"]);
+			$stmt->execute();
+			$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
+			
+			return $_SESSION["id"] == $fetchOwner['owner_id'];
+		} else {
+			return false;
 		}
 	}
 ?>
