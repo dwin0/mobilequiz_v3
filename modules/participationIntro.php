@@ -82,7 +82,7 @@
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizStartDate"];?></div>
-			<div class="td"><?php echo strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["starttime"]) . " Uhr";?></div>
+			<div class="td"><?php echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["starttime"]) . " Uhr");?></div>
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizEndDate"];?></div>
@@ -90,7 +90,7 @@
 				if($fetchQunaire["noParticipationPeriod"]) {
 					echo $lang["quizOpenForever"];
 				} else {
-					echo strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["endtime"]) . " Uhr";
+					echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQunaire["endtime"]) . " Uhr");
 				}
 			?></div>
 		</div>

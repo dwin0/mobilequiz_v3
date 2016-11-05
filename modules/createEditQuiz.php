@@ -262,7 +262,6 @@
 		$.each(tooltipElements, function(i, string)
 			{
 				$(string).tipsy({gravity: 'n'});
-				console.log($(string));
 			});
 
 		setDatesEnabled();
@@ -701,7 +700,7 @@
 					</div>
 					<div class="col-md-10 col-sm-10 radio-inline">
 						<?php 
-							$maxParticipations = "0";
+							$maxParticipations = "1";
 							$maxParticipationsChecked = true;
 							if($mode == "edit")
 							{
@@ -720,7 +719,7 @@
 							<input style="margin-top: 11px;" type="radio" id="maxParticipationsMode" onchange="setConfirm(true, 'maxpart')" name="maxParticipationsMode" value="1" <?php echo $maxParticipationsChecked ? '':'checked';?> />
 							<input type="number" id="maxParticipations" name="maxParticipations" onchange="setConfirm(true, 'maxpart')" class="form-control" style="width: 90px; display: inline;" value="<?php 
 								echo $maxParticipations;
-							?>" required="required"  onfocus="setChecked('maxParticipationsMode')"/>
+							?>" min="1" required="required" onfocus="setChecked('maxParticipationsMode')"/>
 						</label>
 					</div>
 				</div>

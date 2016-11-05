@@ -74,7 +74,7 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizStartDate"];?>
 							</label>
 							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php echo strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"]);?></p>
+								<p class="form-control-static"><?php echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"]));?></p>
 							</div>
 						</div>
 						<div class="form-group">
@@ -85,7 +85,7 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 									if($fetchQuiz["noParticipationPeriod"]) {
 										echo $lang["quizOpenForever"];
 									} else {
-										echo strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]);
+										echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]));
 									}
 								?></p>
 							</div>
@@ -162,8 +162,8 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 						}
 						
 						$text = str_replace("[0]", "<a href=\"?quiz=" . $fetchQuiz["qnaire_token"] . "\">" . $showedLink . "</a>", $text);
-						$text = str_replace("[1]", strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"]), $text);
-						$text = str_replace("[2]", strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]), $text);
+						$text = str_replace("[1]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"]), $text));
+						$text = str_replace("[2]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"])), $text);
 						$text = str_replace("[3]", $fetchQuiz["firstname"] . " " . $fetchQuiz["lastname"], $text);
 						$text = str_replace("[4]", $fetchQuiz["email"], $text);
 						echo $text;

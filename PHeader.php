@@ -91,7 +91,7 @@
 			$abortLink = "window.location='index.php?p=quiz';";
 		}?>
 		<div class="right">
-			<input style="margin: 13px 0px;" type="button" id="abortQuiz" name="abortQuiz" value="<?php echo $lang["buttonCancel"];?>" data-icon="arrow-l" data-iconpos="left" onclick="<?php echo $abortLink;?>"/>
+			<input type="button" id="abortQuiz" name="abortQuiz" value="<?php echo $lang["buttonCancel"];?>" data-icon="arrow-l" data-iconpos="left" onclick="<?php echo $abortLink;?>"/>
 		</div>
 		<?php 
 			if(isset($_SESSION["quizSession"]) && $_SESSION["quizSession"] >= 0)
