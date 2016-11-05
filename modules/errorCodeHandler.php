@@ -7,7 +7,7 @@
 		
 		public function __construct($text, $color)
 		{
-			$this->text = htmlspecialchars($text);
+			$this->text = htmlspecialchars($text, ENT_QUOTES, "ISO-8859-1", false);
 			$this->color = $color;
 		}
 		
