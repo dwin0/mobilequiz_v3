@@ -153,6 +153,10 @@
 			<form id="quizFilter" class="form-horizontal" action="?p=questions" method="POST">
 			    <div id="hiddenFilter" style="display: none;">
 			    		
+			    	<div class="control-group">
+			    		<span class="glyphicon glyphicon-download-alt"></span>
+			    		<a href="uploadedImages/Frage_Template.xlsx" download> Download Frage-Template</a>
+					</div>
 			        <div class="control-group">
 			            <label class="control-label" for="language">
 			                <?php echo $lang["quizLanguage"]?>
