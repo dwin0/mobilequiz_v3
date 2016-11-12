@@ -340,12 +340,41 @@ function insertQuiz()
 										}
 										$imageFileType = pathinfo($_FILES["btnImportQuestionsFromCSV2"]["name"], PATHINFO_EXTENSION);
 										$imageFileType = strtolower($imageFileType);
-										if($imageFileType != "csv")
+										
+										
+										if($imageFileType != "xlsx")
 										{
 											header("Location: ?p=quiz&code=-29");
 											exit;
 										}
-
+										
+										include_once 'importExcel.php';
+										
+										$excelContent;
+										$questions;
+										
+										if($imageFileType == "xlsx")
+										{
+											$questionUploadFileName = $_FILES["btnImportQuestionsFromCSV2"]["name"];
+												
+											move_uploaded_file($_FILES["btnImportQuestionsFromCSV2"]["tmp_name"], "uploadedImages/" . $questionUploadFileName);
+												
+											$questionUploadFileName = "uploadedImages/".$questionUploadFileName;
+											
+											$excelContent = importExcel($questionUploadFileName);
+											$questions = createQuestionArray($excelContent);
+										}
+										
+										if(count($questions) == 0)
+										{
+											header("Location: ?p=quiz&code=-39");
+											exit;
+										}
+										
+										//OK___________________________________________________________
+										
+										//TODO: Save answers into DB
+										
 										if($_POST["addOrReplaceQuestions"] == 0 && $_POST["mode"] == "edit") //replace questions
 										{
 											//unlink all existing questions

@@ -263,6 +263,8 @@
 				return $text;
 			case 2:
 				return $lang["successfullySavedQuizAsBlueprint"] . ".";
+			case -39:
+				return "Keine Fragen in Excel-Datei vorhanden.";
 		}
 	}
 	

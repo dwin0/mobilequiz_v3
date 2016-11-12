@@ -994,7 +994,7 @@
 						<?php echo $lang["addQuestions"];?>
 					</label>
 				</div>
-				<input type="file" style="opacity:0;position:absolute;top:-999px;left:-999px;display:none;" name="btnImportQuestionsFromCSV2" id="btnImportQuestionsFromCSV2" accept=".csv" />
+				<input type="file" style="opacity:0;position:absolute;top:-999px;left:-999px;display:none;" name="btnImportQuestionsFromCSV2" id="btnImportQuestionsFromCSV2" accept=".xlsx" />
 			</div>
 		</div>
 		<div class="panel panel-default">
