@@ -74,7 +74,7 @@ function insertQuestion()
 					$fetchCheckQuestion = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					for($i = 0; $i < count($fetchCheckQuestion); $i++) //all answers- from quesy inc. questionstring
 					{
-						for($j = 0; $j < 6; $j++) //all answers in csv
+						for($j = 0; $j < 6; $j++) //all answers in Excel
 						{
 							if(isset($_POST["answerText_" . $j]) && $_POST["answerText_" . $j] != "")
 							{

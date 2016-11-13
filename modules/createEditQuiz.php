@@ -96,7 +96,7 @@
 
 	function openFileDialog()
     {
-        $('#btnImportQuestionsFromCSV2').click();
+        $('#btnImportQuestionsFromExcel').click();
     }
 
 	function setChecked(id)
@@ -271,9 +271,9 @@
 	    $( "#sortable" ).sortable({
 		    stop: updateData}).disableSelection();
 		
-		document.getElementById("btnImportQuestionsFromCSV2").addEventListener("change",function(){
+		document.getElementById("btnImportQuestionsFromExcel").addEventListener("change",function(){
 		    document.getElementById("fileName").innerHTML=
-		        document.getElementById("btnImportQuestionsFromCSV2").files[0].name;
+		        document.getElementById("btnImportQuestionsFromExcel").files[0].name;
 		    shouldConfirm = true;
 		});
 
@@ -984,7 +984,7 @@
 		        <br />
 		        <div style="margin-top: 54px;">
 					<input id="btnAddQuestion" name="btnAddQuestion" class="btn" onclick="setConfirm(false, 'btn3')" type="submit" value="<?php echo $lang["addNewQuestion"];?>" /><br />
-					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromCSV"];?>" onclick="openFileDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
+					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openFileDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
 					<label class="radio-inline">
 						<input type="radio" name="addOrReplaceQuestions" value="0" style="margin-left: 30px;">
 						<?php echo $lang["replaceQuestions"];?>
@@ -994,7 +994,7 @@
 						<?php echo $lang["addQuestions"];?>
 					</label>
 				</div>
-				<input type="file" style="opacity:0;position:absolute;top:-999px;left:-999px;display:none;" name="btnImportQuestionsFromCSV2" id="btnImportQuestionsFromCSV2" accept=".xlsx" />
+				<input type="file" style="opacity:0;position:absolute;top:-999px;left:-999px;display:none;" name="btnImportQuestionsFromExcel" id="btnImportQuestionsFromExcel" accept=".xlsx" />
 			</div>
 		</div>
 		<div class="panel panel-default">

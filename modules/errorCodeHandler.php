@@ -216,15 +216,15 @@
 			case -28:
 				return $lang["errorWhileUploading"] . ".";
 			case -29:
-				return $lang["noCSVFile"] . ".";
+				return $lang["noExcelFile"] . ".";
 			case -30:
-				return $lang["uploadeCSVHandleError"] . ".";
+				return $lang["uploadeExcelHandleError"] . ".";
 			case -31:
 			case -32:
 			case -33:
-				return $lang["csvInsertError"] . " (Code: " . $code .")";
+				return $lang["ExcelInsertError"] . " (Code: " . $code .")";
 			case -34:
-				return $lang["csvQunaireError"] . ".";
+				return $lang["ExcelQunaireError"] . ". M&ouml;glicherweise wurde eine identische Frage mehrmals zum Quiz hinzugef&uuml;gt.";
 			case -35:
 				return $lang["reachedMaximumOfParticipations"] . ".";
 			case -36:
@@ -245,26 +245,29 @@
 			case -1:
 				return $lang["noAccessError"] . ".";
 			case 1:
-				$text = $lang["successfullySavedQuiz"] . ".";
-				if(isset($_GET["qwna"]) && $_GET["qwna"] != 0) //qwna(v) - question with no answer (value)
-				{
-					$text .= "<br /><span style=\"color: red;\">".$_GET["qwna"]." Fragen ohne mindestens eine richtie Antwort vorhanden. Bitte &uuml;berpr&uuml;fen Sie Ihre Lernkontrolle sonst kann es zu Fehlern kommen.";
-					$qwnav = explode(",", $_GET["qwnav"]);
-					for($i = 0; $i < count($qwnav); $i++)
-					{
-						if($i == 0)
-							$text .= "<ul>";
-							$text .= "<li>".$qwnav[$i]."</li>";
-							if($i == count($qwnav)-1)
-								$text .= "</ul>";
-					}
-					$text .= "</span>";
-				}
-				return $text;
+				return "Lernkontrolle erfolgreich gespeichert" . ".";
 			case 2:
 				return $lang["successfullySavedQuizAsBlueprint"] . ".";
 			case -39:
 				return "Keine Fragen in Excel-Datei vorhanden.";
+			case -40:
+				$text = $lang["savedQuizAndQuestions"] . ". ";
+				if(isset($_GET["qwna"]) && $_GET["qwna"] != 0) //qwna(v) - question with no answer (value)
+				{
+					$text .= $_GET["qwna"]." Singlechoice-Frage mit mehr oder weniger als 1 richtiger Antwort. Bitte &uuml;berpr&uuml;fen Sie Ihre Lernkontrolle sonst kann es zu Fehlern kommen. Fragen: ";
+					$qwnav = explode(",", $_GET["qwnav"]);
+					for($i = 0; $i < count($qwnav); $i++)
+					{
+						if($i == 0)
+						{
+							$text .= $qwnav[$i];
+						} else
+						{
+							$text .= ", " . $qwnav[$i];
+						}
+					}
+				}
+				return $text;
 		}
 	}
 	

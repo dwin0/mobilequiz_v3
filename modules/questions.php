@@ -155,7 +155,7 @@
 			    		
 			    	<div class="control-group">
 			    		<span class="glyphicon glyphicon-download-alt"></span>
-			    		<a href="uploadedImages/Frage_Template.xlsx" download> Download Frage-Template</a>
+			    		<a href="excelTemplate/Frage_Template.xlsx" download> Download Frage-Template</a>
 					</div>
 			        <div class="control-group">
 			            <label class="control-label" for="language">

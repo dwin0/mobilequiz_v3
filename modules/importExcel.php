@@ -4,13 +4,15 @@ include 'PHPExcel/Classes/PHPExcel.php';
 include 'PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 function importExcel($inputFileName)
-{	
+{
 	try {
 		$objReader = new PHPExcel_Reader_Excel2007();
 		$objReader->setReadDataOnly(true);
 		$objPHPExcel = $objReader->load($inputFileName);
 	} catch(Exception $e) {
-		exit('Error loading file "'	.pathinfo($inputFileName,PATHINFO_BASENAME).'": '.$e->getMessage());
+		$fileName = str_replace("excelTemplate/", "", $inputFileName);
+		header("Location: ?p=quiz&code=-30&info=".$fileName);
+		exit;
 	}
 	
 	$sheet = $objPHPExcel->getSheet(0);
@@ -21,13 +23,14 @@ function importExcel($inputFileName)
 	$excelContent = array();
 	
 	for ($row = 1; $row <= $highestRow; $row++){
-		$rowData = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $row, NULL, TRUE, FALSE);
+		$rowData = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $row, NULL, FALSE, FALSE);
 		if($row >=3)
 		{
 			if(!isset($rowData[0][0]))
 			{
 				break;
 			}
+			
 			$excelContent = array_merge($excelContent, $rowData);
 		}
 	}
@@ -53,6 +56,16 @@ function createQuestionArray($excelContent)
 			if(!isset($answerText))
 			{
 				continue;
+			}
+			
+			//If Excel-Cell contains 'FALSCH', PHPExcel converts value into false. 'WAHR' turns into true
+			if($answerText === false)
+			{
+				$answerText = "FALSCH";
+			}
+			if($answerText === true)
+			{
+				$answerText = "WAHR";
 			}
 			
 			$isCorrect = isset($excelContent[$i][$j+1]);
@@ -86,15 +99,53 @@ class question
 	{
 		return $this->type;
 	}
+	
+	public function getTypeCode()
+	{
+		switch($this->type)
+		{
+			case "Singlechoice Text":
+				return 1;
+			case "Multiplechoice Text":
+				return 2;
+		}
+	}
 
 	public function getText()
 	{
 		return $this->questionText;
 	}
 
-	public function getColor()
+	public function getAnswers()
 	{
 		return $this->answers;
+	}
+	
+	public function getNumberOfAnswers()
+	{
+		return count($this->answers);
+	}
+	
+	public function getNumberOfCorrectAnswers()
+	{
+		$counter = 0;
+		foreach($this->answers as $answer)
+		{
+			if($answer->isCorrect())
+			{
+				$counter++;
+			}
+		}
+		return $counter;
+	}
+	
+	public function isValid()
+	{
+		if($this->type == "Singlechoice Text" && $this->getNumberOfCorrectAnswers() != 1)
+		{
+			return false;
+		}
+		return true;
 	}
 }
 
@@ -116,7 +167,7 @@ class answer
 	
 	public function isCorrect()
 	{
-		return $this->correct;
+		return $this->isCorrect;
 	}
 }
 

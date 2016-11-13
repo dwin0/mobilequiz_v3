@@ -329,20 +329,21 @@ function insertQuiz()
 									{
 										$insertedQuizId = $_POST["quiz_id"];
 									}
-
-
-									//questions with csv upload
-									if(isset($_FILES["btnImportQuestionsFromCSV2"]) && $_FILES["btnImportQuestionsFromCSV2"]["name"] != "")
+									
+									
+									//questions with Excel upload
+									if(isset($_FILES["btnImportQuestionsFromExcel"]) && $_FILES["btnImportQuestionsFromExcel"]["name"] != "")
 									{
+										//error while uploading
 										if ($_FILES["file"]["error"] > 0) {
 											header("Location: ?p=quiz&code=-28");
 											exit;
 										}
-										$imageFileType = pathinfo($_FILES["btnImportQuestionsFromCSV2"]["name"], PATHINFO_EXTENSION);
-										$imageFileType = strtolower($imageFileType);
+										$fileType = pathinfo($_FILES["btnImportQuestionsFromExcel"]["name"], PATHINFO_EXTENSION);
+										$fileType = strtolower($fileType);
 										
 										
-										if($imageFileType != "xlsx")
+										if($fileType != "xlsx")
 										{
 											header("Location: ?p=quiz&code=-29");
 											exit;
@@ -353,27 +354,20 @@ function insertQuiz()
 										$excelContent;
 										$questions;
 										
-										if($imageFileType == "xlsx")
-										{
-											$questionUploadFileName = $_FILES["btnImportQuestionsFromCSV2"]["name"];
-												
-											move_uploaded_file($_FILES["btnImportQuestionsFromCSV2"]["tmp_name"], "uploadedImages/" . $questionUploadFileName);
-												
-											$questionUploadFileName = "uploadedImages/".$questionUploadFileName;
-											
-											$excelContent = importExcel($questionUploadFileName);
-											$questions = createQuestionArray($excelContent);
-										}
+										$questionUploadFileName = $_FILES["btnImportQuestionsFromExcel"]["name"];
+										move_uploaded_file($_FILES["btnImportQuestionsFromExcel"]["tmp_name"], "excelTemplate/" . $questionUploadFileName);
+										$questionFileLocation = "excelTemplate/".$questionUploadFileName;
 										
+										$excelContent = importExcel($questionFileLocation);
+										$questions = createQuestionArray($excelContent);
+										
+										//Excel contains no questions
 										if(count($questions) == 0)
 										{
 											header("Location: ?p=quiz&code=-39");
 											exit;
 										}
 										
-										//OK___________________________________________________________
-										
-										//TODO: Save answers into DB
 										
 										if($_POST["addOrReplaceQuestions"] == 0 && $_POST["mode"] == "edit") //replace questions
 										{
@@ -382,182 +376,132 @@ function insertQuiz()
 											$stmt->bindParam(":qId", $_POST["quiz_id"]);
 											$stmt->execute();
 										}
+										
+										
+										$invalidQuestions = array();
+										
+										foreach($questions as $question)
+										{											
+											//check if questiontext AND all answers are already there
+											//if yes use this id instead of insert the same question
+											$stmt = $dbh->prepare("select question.id as qId, question.text as qText from question where question.text = :text");
+											$stmt->bindParam(":text", $question->getText());
+											$stmt->execute();
 											
-										$questionUploadFileName = $_FILES["btnImportQuestionsFromCSV2"]["name"];
+											$numOfEqualQuestions = $stmt->rowCount();
+											$allIn = false;
 											
-										move_uploaded_file($_FILES["btnImportQuestionsFromCSV2"]["tmp_name"], "uploadedImages/" . $questionUploadFileName);
-											
-										$questionUploadFileName = "uploadedImages/".$questionUploadFileName;
-											
-										if (($handle = fopen($questionUploadFileName, "r")) !== FALSE) {
-
-											$orderCounter = 0;
-											$amountQuestionsWithNoRightAnswer = 0;
-											$amountQuestionsWithNoRightAnswerWhichOne = [];
-											$firstline = true;
-											$csvAnswerStart = false;
-											$csvNumber = $csvKeyword = -1;
-											$csvQuestion = 0;
-											$csvAnswer = 1;
-											while (($data = fgetcsv($handle, 0, ";")) !== FALSE) {
-													
-												for($j = 0; $j < count($data); $j++) //all answers in scv
-												{
-													$data[$j] = mb_convert_encoding($data[$j], "UTF-8");
-													if($firstline && !$csvAnswerStart)
-													{
-														$headingData = checkStringIn(strtolower($data[$j]));
-														if($headingData[0])
-														{
-															switch ($headingData[1])
-															{
-																case 0:
-																	$csvNumber = $j;
-																	break;
-																case 1:
-																	$csvQuestion = $j;
-																	break;
-																case 2:
-																	$csvAnswer = $j;
-																	$csvAnswerStart = true;
-																	break;
-																case 3:
-																	$csvKeyword = $j;
-																	break;
-															}
-														}
-													}
-												}
-													
-												//check first line if its a header "question / Answer" line
-												if($firstline && (strpos(strtolower($data[0]), "question") !== false || strpos(strtolower($data[0]), "frage") !== false || strpos(strtolower($data[1]), "answer") !== false || strpos(strtolower($data[1]), "antwort") !== false ))
-												{
-													$firstline = false;
-													continue;
-												}
-													
-												//check if questiontext AND all answers are already there
-												//if yes use this id instead of insert the same question
-													
+											if($numOfEqualQuestions > 0) //Question already exists
+											{
 												$stmt = $dbh->prepare("select question.id as qId, question.text as qText, answer.id as aId, answer.text as aText, is_correct from question inner join answer_question on answer_question.question_id = question.id inner join answer on answer.id = answer_question.answer_id where question.text = :text");
-												$stmt->bindParam(":text", $data[$csvQuestion]);
+												$stmt->bindParam(":text", $question->getText());
 												$stmt->execute();
-												$allIn = false;
-												$fetchCheckQuestion = null;
-												$questionCheckRowCount = $stmt->rowCount();
-												if($questionCheckRowCount > 0) //Question already exists
+												
+												$allInCount = 0;
+												$fetchCheckQuestion = $stmt->fetchAll(PDO::FETCH_ASSOC);
+												
+												//compare all DB-Answers to all Excel-Answers
+												for($i = 0; $i < count($fetchCheckQuestion); $i++) //DB-Answers
 												{
-													$allInCount = 0;
-													$fetchCheckQuestion = $stmt->fetchAll(PDO::FETCH_ASSOC);
-													for($i = 0; $i < count($fetchCheckQuestion); $i++) //all answers- from query inc. questionstring
+													for($j = 0; $j < $question->getNumberOfAnswers(); $j++) //Excel-Answers
 													{
-														for($j = $csvAnswer; $j < count($data); $j++) //all answers in scv
+														$dbQuestionText = $fetchCheckQuestion[$i]["aText"];
+														$excelQuestionText = $question->getAnswers()[$j]->getText();
+														if($dbQuestionText == $excelQuestionText)
 														{
-															if($fetchCheckQuestion[$i]["aText"] == str_replace("*", "", $data[$j]))
-															{
-																$allInCount++;
-															}
+															$allInCount++;
 														}
 													}
-													if($questionCheckRowCount == $allInCount)
+													
+													if($allInCount == $question->getNumberOfAnswers())
+													{
 														$allIn = true;
+													}
 												}
-													
-												if(!$allIn)
+											}											
+											
+											if(!$allIn)
+											{
+												//Singlechoice with != 1 correct Answers
+												if(!$question->isValid())
 												{
-													$amountofCorrectAnswers = 0;
-													for($i = $csvAnswer; $i < count($data); $i++)
-													{
-														if(strpos($data[$i], "*") == true && (strlen($data[$i])-1 == strpos($data[$i], "*") || strlen($data[$i])-2 == strpos($data[$i], "*")))
-														{
-															$amountofCorrectAnswers++;
-														}
-													}
-
-													if($amountofCorrectAnswers == 0)
-													{
-														$amountQuestionsWithNoRightAnswer++;
-														array_push($amountQuestionsWithNoRightAnswerWhichOne, htmlspecialchars($data[$csvQuestion]));
-													}
-
-													$type_id = 1;
-													if($amountofCorrectAnswers > 1)
-														$type_id = 2;
-
-														$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link)
-								values (:text, ". $_SESSION["id"] .", :type_id, :subject_id, :language, ".time().", :public, ".time().", :picLink)");
-														$stmt->bindParam(":text", $data[$csvQuestion]);
-														$stmt->bindParam(":type_id", $type_id);
-														$stmt->bindValue(":subject_id", NULL);
-														$stmt->bindValue(":language", "Deutsch");
-														$stmt->bindValue(":public", 0);
-														$stmt->bindValue(":picLink", NULL);
-														if(!$stmt->execute())
-														{
-															header("Location: ?p=quiz&code=-31");
-															exit;
-														}
-														$insertedQuestionId = $dbh->lastInsertId();
-
-														for($i = $csvAnswer; $i < count($data); $i++)
-														{
-															if($data[$i] == "")
-																continue;
-																$isCorrect = false;
-																$answerInsertText = $data[$i];
-																$stmt = $dbh->prepare("insert into answer (text) values (:text)");
-																if(strpos($data[$i], "*", strlen($data[$i]) - 2) !== false)
-																{
-																	$isCorrect = true;
-																	$answerInsertText = substr($data[$i], 0, strpos($data[$i], "*", strlen($data[$i]) - 2));
-																}
-																$stmt->bindParam(":text", $answerInsertText);
-																if(!$stmt->execute())
-																{
-																	header("Location: ?p=quiz&code=-32");
-																	exit;
-																}
-																	
-																$insertedAnswerId = $dbh->lastInsertId();
-																	
-																$stmt = $dbh->prepare("insert into answer_question values (:answer_id, :question_id, :is_correct, :order)");
-																$stmt->bindParam(":answer_id", $insertedAnswerId);
-																$stmt->bindParam(":question_id", $insertedQuestionId);
-																if($type_id == 2 && $isCorrect == false)
-																	$isCorrect = -1;
-																	$stmt->bindParam(":is_correct", $isCorrect);
-																	$stmt->bindValue(":order", ($i-1));
-																	if(!$stmt->execute())
-																	{
-																		header("Location: ?p=quiz&code=-33");
-																		exit;
-																	}
-														}
-												} else {
-													$insertedQuestionId = $fetchCheckQuestion[0]["qId"];
+													array_push($invalidQuestions, htmlspecialchars($question->getText()));
 												}
-													
-												$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id, `order`) values (:questionnaire_id, :question_id, :order)");
-												$stmt->bindParam(":questionnaire_id", $insertedQuizId);
-												$stmt->bindParam(":question_id", $insertedQuestionId);
-												$stmt->bindParam(":order", $orderCounter);
+											
+												$type_id = $question->getTypeCode();
+												$language = "Deutsch";
+												if($_SESSION["language"] == "en")
+												{
+													$language = "English";
+												}
+												
+												//insert Question
+												$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link) values (:text, :owner_id, :type_id, :subject_id, :language, ".time().", :public, ".time().", :picLink)");
+												$stmt->bindParam(":text", $question->getText());
+												$stmt->bindParam(":owner_id", $_SESSION["id"]);
+												$stmt->bindParam(":type_id", $type_id);
+												$stmt->bindValue(":subject_id", NULL);
+												$stmt->bindValue(":language", $language);
+												$stmt->bindValue(":public", 0);
+												$stmt->bindValue(":picLink", NULL); //TODO: Change for Picture-Questions
 												if(!$stmt->execute())
 												{
-													header("Location: ?p=quiz&code=-34");
+													header("Location: ?p=quiz&code=-31");
 													exit;
 												}
-												$orderCounter++;
+												
+												$insertedQuestionId = $dbh->lastInsertId();
+										
+												//insert all Answers
+												foreach($question->getAnswers() as $answer)
+												{
+													$stmt = $dbh->prepare("insert into answer (text) values (:text)");
+													$stmt->bindParam(":text", $answer->getText());
+													if(!$stmt->execute())
+													{
+														header("Location: ?p=quiz&code=-32");
+														exit;
+													}
+													
+													$insertedAnswerId = $dbh->lastInsertId();
+													$answerNumber = 0;
+													
+													$stmt = $dbh->prepare("insert into answer_question values (:answer_id, :question_id, :is_correct, :order)");
+													$stmt->bindParam(":answer_id", $insertedAnswerId);
+													$stmt->bindParam(":question_id", $insertedQuestionId);
+													$stmt->bindParam(":is_correct", $answer->isCorrect());
+													$stmt->bindValue(":order", $answerNumber);
+																										
+													if(!$stmt->execute())
+													{
+														header("Location: ?p=quiz&code=-33");
+														exit;
+													}
+													$answerNumber++;
+												}
+											} else
+											{
+												$insertedQuestionId = $fetchCheckQuestion[0]["qId"];
 											}
-											fclose($handle);
-											unlink($questionUploadFileName);
-
-										} else {
-											header("Location: ?p=quiz&code=-30&info=".$questionUploadFileName);
-											exit;
+											
+											$orderCounter = 0;
+											$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id, `order`) values (:questionnaire_id, :question_id, :order)");
+											$stmt->bindParam(":questionnaire_id", $insertedQuizId);
+											$stmt->bindParam(":question_id", $insertedQuestionId);
+											$stmt->bindParam(":order", $orderCounter);
+											
+											if(!$stmt->execute())
+											{
+												header("Location: ?p=quiz&code=-34");
+												exit;
+											}
+											$orderCounter++;
+											
 										}
-
+										unlink($questionFileLocation);
 									}
-
+									
+									
 									//requested language
 									if($_POST["language"] == "newLanguage")
 									{
@@ -586,11 +530,14 @@ function insertQuiz()
 									} else if(isset($_POST["btnSave"]))
 									{
 										$qwnav = "";
-										if($amountQuestionsWithNoRightAnswer > 0)
+										if(count($invalidQuestions) > 0)
 										{
-											$qwnav = "&qwnav=" . implode(",", $amountQuestionsWithNoRightAnswerWhichOne);
+											$qwnav = "&qwnav=" . implode(",", $invalidQuestions);
+											header("Location: ?p=quiz&code=-40&qwna=".count($invalidQuestions) . $qwnav."&info=");
+										} else
+										{
+											header("Location: ?p=quiz&code=1");
 										}
-										header("Location: ?p=quiz&code=1&qwna=".$amountQuestionsWithNoRightAnswer . $qwnav."&info=");
 									} else if(isset($_POST["btnSaveAsDraft"]))
 									{
 										header("Location: ?p=quiz&code=2");
