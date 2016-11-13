@@ -124,23 +124,63 @@ if($action == "startQuiz")
 	$stmt->bindParam(":idSession", $_SESSION["idSession"]);
 	$stmt->bindParam(":endtime", time());
 	$code = 0;
+	
+	$interruptedExecution = false;
 	switch ($_GET["state"])
 	{
 		case 'correct':
 			$code = 1;
 			break;
 		case 'timeExceeded':
+			$interruptedExecution = true;
 			$code = 2;
 			break;
 		case 'abort':
+			$interruptedExecution = true;
 			$code = 3;
 			break;
 		default:
+			$interruptedExecution = true;
 			$code = 3;
 			break;
 	}
 	$stmt->bindParam(":end_state", $code);
+	
+	if(!$stmt->execute()){
+		header("Location: index.php?p=quiz&code=-37");
+		exit;
+	}
+	
+	if($interruptedExecution)
+	{
+		$stmt = $dbh->prepare("select question_id from an_qu_user where session_id = :idSession group by question_id");
+		$stmt->bindParam(":idSession", $_SESSION["idSession"]);
+		$stmt->execute();
+		$answeredQuestionsId = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		
+		$stmt = $dbh->prepare("select question_id from qunaire_qu where questionnaire_id = :quizSession");
+		$stmt->bindParam(":quizSession", $_SESSION["quizSession"]);
+		$stmt->execute();
+		$allQuestionsId = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		$toBeStoredQuestionIds = array();
+		
+		for($j=0; $j < count($allQuestionsId); $j++){
+			if(!in_array($allQuestionsId[$j], $answeredQuestionsId)){
+				array_push($toBeStoredQuestionIds, $allQuestionsId[$j]);
+			}
+		}
+		
+		$answerIds = array();
+		foreach($toBeStoredQuestionIds as $value) {
+			$testId = $value["question_id"];
+			$dummyVar = true;
+			$questionNumber = ++$_SESSION["questionNumber"];
+			saveQuestion($testId, $questionNumber, "noAnswer");
+		}
+		
+	}
+	
 	if($stmt->execute())
 	{
 		$quizId = $_SESSION["quizSession"];
@@ -161,64 +201,7 @@ if($action == "startQuiz")
 	if(isset($_POST["questionId"]) && (isset($_POST["prevQuestion"]) || isset($_POST["nextQuestion"]))) 
 	{
 		
-		$stmt = $dbh->prepare("select answer.id, question.type_id from answer inner join answer_question on answer_question.answer_id = answer.id inner join question on question.id = answer_question.question_id where answer_question.question_id = :question_id");
-		$stmt->bindParam(":question_id", $_POST["questionId"]);
-		$stmt->execute();
-		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		
-		for($i = 0; $i < count($fetchAnswers); $i++)
-		{
-			$stmt = $dbh->prepare("select time_needed from an_qu_user where session_id = :session_id and answer_id = :answer_id and question_id = :question_id");
-			$stmt->bindParam(":session_id", $_SESSION["idSession"]);
-			$stmt->bindParam(":answer_id", $fetchAnswers[$i]["id"]);
-			$stmt->bindParam(":question_id", $_POST["questionId"]);
-			$stmt->execute();
-			$fetchTimeNeededRowCount = $stmt->rowCount();
-			$fetchTimeNeeded = $stmt->fetch(PDO::FETCH_ASSOC);
-			
-			$stmt = $dbh->prepare("replace into an_qu_user (session_id, answer_id, question_id, selected, time_needed, question_order) 
-					values (:session_id, :answer_id, :question_id, :selected, :time_needed, :question_order)");
-			$stmt->bindParam(":session_id", $_SESSION["idSession"]);
-			$stmt->bindParam(":answer_id", $fetchAnswers[$i]["id"]);
-			$stmt->bindParam(":question_id", $_POST["questionId"]);
-			$stmt->bindParam(":question_order", $_SESSION["questionNumber"]);
-			
-			if($fetchAnswers[$i]["type_id"] == 1) //question_type == 1 Singlechoise
-			{
-				if($_POST["answer"] != "noAnswer")
-				{
-					if($_POST["answer"] == $fetchAnswers[$i]["id"])
-					{ $isSelected = 1; } else { $isSelected = 0; }
-					//$isSelected = $_POST["answer"] == $fetchAnswers[$i]["id"];
-				} else {
-					$isSelected = NULL;
-				}
-			} else if($fetchAnswers[$i]["type_id"] == 2) //question_type == 2 Multiplechoise
-			{
-				if(isset($_POST["answer_" . $fetchAnswers[$i]["id"]]))
-					$isSelected = $_POST["answer_" . $fetchAnswers[$i]["id"]];
-				else 
-					$isSelected = 0;
-			}
-			
-			$stmt->bindParam(":selected", $isSelected);
-			//$stmt->bindValue(":selected", NULL);
-			if($fetchTimeNeededRowCount == 0)
-			{
-				$timeNeeded = time() - $_POST["generationTime"];
-			}
-			else
-			{
-				$timeNeeded = $fetchTimeNeeded["time_needed"];
-			}
-			$stmt->bindParam(":time_needed", $timeNeeded);
-			//$stmt->bindValue(":time_needed", 0);
-			if(!$stmt->execute())
-			{
-				header("Location: index.php?p=quiz&code=-23&info=participationTime" . "selected:" . $isSelected . "timeNeeded: " . $timeNeeded . "Error: " . $stmt->errorInfo()[0] . " POSTANSWER: " . $_POST["answer"] . " FETCHANSWER: " . $fetchAnswers[$i]["id"] . " equal: " . ($_POST["answer"] == $fetchAnswers[$i]["id"]));
-				exit;
-			}
-		} 
+		saveQuestion($_POST["questionId"], $_SESSION["questionNumber"], $_POST["answer"]);
 		
 		if(isset($_POST["prevQuestion"]))
 		{
@@ -290,4 +273,73 @@ if($action == "startQuiz")
 	header("Location: index.php?p=home&code=-20");
 	exit;
 }
+
+function saveQuestion($questionId, $questionOrder, $answer) {
+	global $dbh;
+	
+	$stmt = $dbh->prepare("select answer.id, question.type_id from answer inner join answer_question on answer_question.answer_id = answer.id inner join question on question.id = answer_question.question_id where answer_question.question_id = :question_id");
+	$stmt->bindParam(":question_id", $questionId);
+	$stmt->execute();
+	$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	for($i = 0; $i < count($fetchAnswers); $i++)
+	{
+		$stmt = $dbh->prepare("select time_needed from an_qu_user where session_id = :session_id and answer_id = :answer_id and question_id = :question_id");
+		$stmt->bindParam(":session_id", $_SESSION["idSession"]);
+		$stmt->bindParam(":answer_id", $fetchAnswers[$i]["id"]);
+		$stmt->bindParam(":question_id", $questionId);
+		$stmt->execute();
+		$fetchTimeNeededRowCount = $stmt->rowCount();
+		$fetchTimeNeeded = $stmt->fetch(PDO::FETCH_ASSOC);
+			
+		$stmt = $dbh->prepare("replace into an_qu_user (session_id, answer_id, question_id, selected, time_needed, question_order)
+					values (:session_id, :answer_id, :question_id, :selected, :time_needed, :question_order)");
+		$stmt->bindParam(":session_id", $_SESSION["idSession"]);
+		$stmt->bindParam(":answer_id", $fetchAnswers[$i]["id"]);
+		$stmt->bindParam(":question_id", $questionId);
+		$stmt->bindParam(":question_order", $questionOrder);
+		
+		if($fetchAnswers[$i]["type_id"] == 1) //question_type == 1 Singlechoise
+		{
+			if($answer != "noAnswer")
+			{
+				if($answer == $fetchAnswers[$i]["id"])
+				{ $isSelected = 1; } else { $isSelected = 0; }
+				//$isSelected = $_POST["answer"] == $fetchAnswers[$i]["id"];
+			} else {
+				$isSelected = NULL;
+			}
+		} else if($fetchAnswers[$i]["type_id"] == 2) //question_type == 2 Multiplechoise
+		{
+			if(isset($_POST["answer_" . $fetchAnswers[$i]["id"]]))
+				$isSelected = $_POST["answer_" . $fetchAnswers[$i]["id"]];
+				else
+					$isSelected = 0;
+		}
+			
+		$stmt->bindParam(":selected", $isSelected);
+		//$stmt->bindValue(":selected", NULL);
+		if($fetchTimeNeededRowCount == 0)
+		{
+			if(isset($_POST["generationTime"])) {
+				$timeNeeded = time() - $_POST["generationTime"];
+			} else {
+				$timeNeeded = 0;
+			}
+			
+		}
+		else
+		{
+			$timeNeeded = $fetchTimeNeeded["time_needed"];
+		}
+		$stmt->bindParam(":time_needed", $timeNeeded);
+		//$stmt->bindValue(":time_needed", 0);
+		if(!$stmt->execute())
+		{
+			header("Location: index.php?p=quiz&code=-23&info=participationTime" . "selected:" . $isSelected . "timeNeeded: " . $timeNeeded . "Error: " . $stmt->errorInfo()[0] . " POSTANSWER: " . $answer . " FETCHANSWER: " . $fetchAnswers[$i]["id"] . " equal: " . ($answer == $fetchAnswers[$i]["id"]));
+			exit;
+		}
+	}
+}
+
 ?>

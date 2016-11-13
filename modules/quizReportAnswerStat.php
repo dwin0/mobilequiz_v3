@@ -149,7 +149,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 							}
 							?>
 							<p id="<?php echo "accuracy_" . $fetchQuestions[$i]["id"];?>">
-								<?php echo "(" . $lang["accuracy"] . " " . number_format(($amountCorrect*100)/$amountTotal, 0) ." %)";?>
+								<?php echo "(" . $lang["accuracy"] . " " . number_format(($amountCorrect*100)/($amountTotal-$nullCounter), 0) ." %)";?>
 							</p>
 						</div>
 					</div>
@@ -172,6 +172,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 						<tbody>
 							<?php 
 							$totalAmountOk = 0;
+							$totalAmountNok = 0;
 							$totalPossibleAnswers = 0;
 							for($j = 0; $j < count($fetchAnswers); $j++)
 							{
@@ -193,14 +194,17 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 										$amountOk = $answerCountArray[$fetchAnswers[$j]["id"]][1];
 										$amountNotOk = $answerCountArray[$fetchAnswers[$j]["id"]][3];
 										$totalAmountOk += $amountOk;
+										$totalAmountNok += $amountNotOk;
 									}
 									else if($answerCountArray[$fetchAnswers[$j]["id"]][0] == -1)
 									{
 										$amountOk = $answerCountArray[$fetchAnswers[$j]["id"]][3];
 										$amountNotOk = $answerCountArray[$fetchAnswers[$j]["id"]][1];
 										$totalAmountOk += $amountOk;
+										$totalAmountNok += $amountNotOk;
 									}
-									$totalPossibleAnswers += ($answerCountArray[$fetchAnswers[$j]["id"]][1] + $answerCountArray[$fetchAnswers[$j]["id"]][2] + $answerCountArray[$fetchAnswers[$j]["id"]][3]);
+									
+									$totalAmountWithoutNull = $totalAmountNok + $totalAmountOk;
 									?>
 									<td style="text-align: center;"><?php echo ($fetchAnswers[$j]["is_correct"] == 1) ? '&#10003;' : '&#10007;';?></td>
 									<td><?php echo $fetchAnswers[$j]["text"];?></td>
@@ -229,7 +233,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
 					{?>
 					<script type="text/javascript">
-						document.getElementById('<?php echo "accuracy_" . $fetchQuestions[$i]["id"];?>').innerHTML = '<?php echo "(" . $lang["accuracy"] . " " . number_format(($totalAmountOk*100)/$totalPossibleAnswers, 0) ." %)";?>';
+						document.getElementById('<?php echo "accuracy_" . $fetchQuestions[$i]["id"];?>').innerHTML = '<?php echo "(" . $lang["accuracy"] . " " . number_format(($totalAmountOk*100)/($totalAmountWithoutNull), 0) ." %)";?>';
 					</script>
 					<?php }?>
 				</div>
