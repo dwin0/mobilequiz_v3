@@ -58,7 +58,7 @@
 			case -7:
 				return "Bild&uumlberpr&uumlfung fehlgeschlagen.";
 			case -8:
-				return "Keine Datei gefunden.";
+				return "Datei ist kein Bild.";
 			case -9:
 				return "Datei schon vorhanden.";
 			case -10:
@@ -71,6 +71,8 @@
 				return "Neue Frage erstellt";
 			case 2:
 				return "Frage wurde bearbeitet";
+			case -16:
+				return "Komprimierung fehlgeschlagen. Bitte versuchen Sie ein kleineres oder anderes Bild";
 			default:
 				return "Fehler (Code: " . $code .")";
 		}

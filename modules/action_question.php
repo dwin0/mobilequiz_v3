@@ -92,55 +92,11 @@ function insertQuestion()
 				
 			if(!$allIn)
 			{
-				//fileupload
+				//Upload question image
 				if(isset($_FILES["questionLogo"]) && $_FILES["questionLogo"]["name"] != "")
 				{
-					$subCode = 0;
-					//upload picture
-					$imageFileType = pathinfo($_FILES["questionLogo"]["name"], PATHINFO_EXTENSION);
-					$targetDir = "uploadedImages/";
-					$targetFile = $targetDir . "question_" . date("d_m_y_H_i_s", time()) . "__" . $_SESSION["id"] . "." . $imageFileType;
-					$uploadOk = true;
-						
-					//check File is an image
-					if(!getimagesize($_FILES["questionLogo"]["tmp_name"]))
-					{
-						$uploadOk = false;
-						$subCode = -8;
-					}
-					//check if file already exists
-					if(file_exists($targetFile))
-					{
-						$uploadOk = false;
-						$subCode = -9;
-					}
-					//check size
-					if($_FILES["questionLogo"]["size"] > 20000000)
-					{
-						$uploadOk = false;
-						$subCode = -10;
-					}
-					//check file format | .jpeg,.jpg,.bmp,.png,.gif
-					$imageFileType = strtolower($imageFileType);
-					if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" && $imageFileType != "bmp")
-					{
-						$uploadOk = false;
-						$subCode = -11;
-					}
-					//check if all ok?
-					if($uploadOk)
-					{
-						if(!move_uploaded_file($_FILES["questionLogo"]["tmp_name"], $targetFile))
-						{
-							header("Location: ?p=questions&code=-6");
-							exit;
-						}
-					} else {
-						header("Location: ?p=questions&code=" . $subCode);
-						exit;
-					}
+					$targetFile = uploadImage ();
 				}
-				//end
 	
 				//fetch questiontype id from name
 				$stmt = $dbh->prepare("select id from question_type where type = :type");
@@ -366,6 +322,82 @@ function insertQuestion()
 			exit;
 		}
 	}
+}
+
+
+
+/**
+ * Uploads the question image
+ */
+function uploadImage() {
+	
+	$imageFileType = pathinfo($_FILES["questionLogo"]["name"], PATHINFO_EXTENSION);
+	$targetDir = "uploadedImages/";
+	$targetFile = $targetDir . "question_" . date("d_m_y_H_i_s", time()) . "__" . $_SESSION["id"] . "." . $imageFileType;
+	$uploadOk = true;
+	$subCode = 0;
+		
+	//check File is an image
+	if(!getimagesize($_FILES["questionLogo"]["tmp_name"]))
+	{
+		$uploadOk = false;
+		$subCode = -8;
+	}
+	
+	//check if file already exists
+	if(file_exists($targetFile))
+	{
+		$uploadOk = false;
+		$subCode = -9;
+	}
+	
+	//check file format | .jpeg,.jpg,.bmp,.png,.gif
+	$imageFileType = strtolower($imageFileType);
+	if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" && $imageFileType != "bmp")
+	{
+		$uploadOk = false;
+		$subCode = -11;
+	}
+	
+	//check size
+	$eightKB = 800000;
+	if($_FILES["questionLogo"]["size"] > $eightKB)
+	{
+		shrinkQuestionLogo();
+	}
+	
+	//check if all ok?
+	if($uploadOk)
+	{
+		if(!move_uploaded_file($_FILES["questionLogo"]["tmp_name"], $targetFile))
+		{
+			header("Location: ?p=questions&code=-6");
+			exit;
+		}
+	} else {
+		header("Location: ?p=questions&code=" . $subCode);
+		exit;
+	}
+	
+	return $targetFile;
+}
+
+/**
+ * Reduces the size of the uploaded question logo
+ */
+function shrinkQuestionLogo()
+{
+	$image = $_FILES["questionLogo"]["tmp_name"];
+	$ressource = imagecreatefromstring(file_get_contents($image));
+	
+	//Automatically compresses image	
+	if(!imagejpeg($ressource, $image))
+	{
+		header("Location: ?p=questions&code=-16");
+		exit;
+	}
+	
+	return;
 }
 
 

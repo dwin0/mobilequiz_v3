@@ -1,16 +1,26 @@
 <?php
+/**
+ * Contains all methods to extract questions out of an Excel-question-template.
+ */
 
 include 'PHPExcel/Classes/PHPExcel.php';
 include 'PHPExcel/Classes/PHPExcel/IOFactory.php';
 
-function importExcel($inputFileName)
+/**
+ * Reads an Excel-question-template and returns all questions as a two-dimensional array.
+ * 
+ * @param string $inputFilePath
+ * @return array
+ * 
+ */
+function importExcel($inputFilePath)
 {
 	try {
 		$objReader = new PHPExcel_Reader_Excel2007();
 		$objReader->setReadDataOnly(true);
-		$objPHPExcel = $objReader->load($inputFileName);
+		$objPHPExcel = $objReader->load($inputFilePath);
 	} catch(Exception $e) {
-		$fileName = str_replace("excelTemplate/", "", $inputFileName);
+		$fileName = str_replace("excelTemplate/", "", $inputFilePath);
 		header("Location: ?p=quiz&code=-30&info=".$fileName);
 		exit;
 	}
@@ -38,6 +48,12 @@ function importExcel($inputFileName)
 	return $excelContent;
 }
 
+/**
+ * Takes a two-dimensional array of questions and returns an array of question-objects.
+ * 
+ * @param array $excelContent
+ * @return array
+ */
 function createQuestionArray($excelContent)
 {
 	$questions = array();
