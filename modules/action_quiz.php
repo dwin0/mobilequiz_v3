@@ -1,32 +1,5 @@
 <?php
 
-function deletePicture()
-{
-	global $dbh;
-	
-	$stmt = $dbh->prepare("select owner_id from question where id = :question_id");
-	$stmt->bindParam(":question_id", $_GET["questionId"]);
-	$stmt->execute();
-	$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
-
-	if(($_SESSION['role']['creator'] && $fetchQuestionOwner["owner_id"] == $_SESSION["id"]) || $_SESSION['role']['admin'])
-	{
-		$stmt = $dbh->prepare("update question set picture_link = NULL where id = :question_id");
-		$stmt->bindParam(":question_id", $_GET["questionId"]);
-		$stmt->execute();
-		if($stmt->execute())
-		{
-			echo "deletePictureOk";
-		} else
-		{
-			echo "deletePictureFail";
-		}
-	} else
-	{
-		echo "deletePictureFail2";
-	}
-}
-
 function insertQuiz()
 {
 	global $dbh;

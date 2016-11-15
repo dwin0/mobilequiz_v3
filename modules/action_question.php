@@ -497,4 +497,37 @@ function queryAnswers()
 	} else {echo json_encode(["failed"]);}
 }
 
+/**
+ * Deletes the database-entry for question logo and the image-file from the server
+ */
+function deletePicture()
+{
+	global $dbh;
+
+	$stmt = $dbh->prepare("select owner_id, picture_link from question where id = :question_id");
+	$stmt->bindParam(":question_id", $_GET["questionId"]);
+	$stmt->execute();
+	$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	if(($_SESSION['role']['creator'] && $fetchQuestionOwner["owner_id"] == $_SESSION["id"]) || $_SESSION['role']['admin'])
+	{
+		$filename = $fetchQuestionOwner["picture_link"];
+		
+		$stmt = $dbh->prepare("update question set picture_link = NULL where id = :question_id");
+		$stmt->bindParam(":question_id", $_GET["questionId"]);
+		$stmt->execute();
+		if($stmt->execute())
+		{
+			unlink("../" . $filename);
+			echo "deletePictureOk";
+		} else
+		{
+			echo "deletePictureFail";
+		}
+	} else
+	{
+		echo "deletePictureFail2";
+	}
+}
+
 ?>
