@@ -324,14 +324,7 @@ function insertQuiz()
 										
 										include_once 'importExcel.php';
 										
-										$excelContent;
-										$questions;
-										
-										$questionUploadFileName = $_FILES["btnImportQuestionsFromExcel"]["name"];
-										move_uploaded_file($_FILES["btnImportQuestionsFromExcel"]["tmp_name"], "excelTemplate/" . $questionUploadFileName);
-										$questionFileLocation = "excelTemplate/".$questionUploadFileName;
-										
-										$excelContent = importExcel($questionFileLocation);
+										$excelContent = importExcel($_FILES["btnImportQuestionsFromExcel"]["tmp_name"]);
 										$questions = createQuestionArray($excelContent);
 										
 										//Excel contains no questions
@@ -465,13 +458,12 @@ function insertQuiz()
 											
 											if(!$stmt->execute())
 											{
-												header("Location: ?p=quiz&code=-34");
+												header("Location: ?p=quiz&code=-34"); //TODO: Bestehende Question-ID aus Quiz holen und diese nicht mehr in DB einfügen
 												exit;
 											}
 											$orderCounter++;
 											
 										}
-										unlink($questionFileLocation);
 									}
 									
 									
