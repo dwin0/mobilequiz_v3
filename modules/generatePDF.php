@@ -124,10 +124,14 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 	
 	// set font
 	$pdf->SetFont('helvetica', 'B', $fontSize);
-	$pdf->Cell($w,$l,'Aufgabenblatt der Lernkontrolle: ' . $fetchQuiz["name"], 0, 1);
+	if($action == "getQuizTaskPaper") {
+		$pdf->Cell($w,$l,'Aufgabenblatt der Lernkontrolle: ' . $fetchQuiz["name"], 0, 1);
+	} else {
+		$pdf->Cell($w,$l,'Ihr Ergebnis der Lernkontrolle: ' . $fetchQuiz["name"], 0, 1);
+	}
 	
 	$fontSize = 10;
-	$w = 50;
+	$w = 55;
 	$l = 6;
 	
 	$pdf->SetFont('helvetica','B',$fontSize);
@@ -148,7 +152,11 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 	$pdf->SetFont('helvetica','B',$fontSize);
 	$pdf->Cell($w,$l,'Endzeitpunkt:');
 	$pdf->SetFont('');
-	$pdf->Cell($w,$l,date("d. F Y H:i:s", $fetchQuiz["endtime"]), 0, 1);
+	if($fetchQuiz["noParticipationPeriod"] == 1) {
+		$pdf->Cell($w,$l,'keine zeitliche Begrenzung', 0, 1);
+	} else {
+		$pdf->Cell($w,$l,date("d. F Y H:i:s", $fetchQuiz["endtime"]), 0, 1);
+	}
 	
 	$stmt = $dbh->prepare("select question.id, type_id, questionnaire.singlechoise_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
 	$stmt->bindParam(":quizId", $_GET["quizId"]);
@@ -182,24 +190,7 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 
 if($action == "getQuizTaskPaper")
 {
-	$stmt = $dbh->prepare("select questionnaire.id, user_qunaire_session.user_id from questionnaire inner join user_qunaire_session on user_qunaire_session.questionnaire_id = questionnaire.id where questionnaire.id = :quizId group by user_id");
-	$stmt->bindParam(":quizId", $_GET["quizId"]);
-	$stmt->execute();
-	
-	$pdf->SetFont('helvetica','B',$fontSize);
-	$pdf->Cell($w,$l,'Anzahl Teilnehmer:');
-	$pdf->SetFont('');
-	$pdf->Cell($w,$l,$stmt->rowCount(), 0, 1);
-	
-	$stmt = $dbh->prepare("select questionnaire.id, user_qunaire_session.user_id from questionnaire inner join user_qunaire_session on user_qunaire_session.questionnaire_id = questionnaire.id where questionnaire.id = :quizId");
-	$stmt->bindParam(":quizId", $_GET["quizId"]);
-	$stmt->execute();
-	
-	$pdf->SetFont('helvetica','B',$fontSize);
-	$pdf->Cell($w,$l,'Anzahl Teilnahmen:');
-	$pdf->SetFont('');
-	$pdf->Cell($w,$l,$stmt->rowCount(), 0, 1);
-	$pdf->Line(5, 80, 200, 80);
+	$pdf->Line(10, 66, 200, 66);
 	
 	$pdf->Ln(8);
 	
@@ -218,10 +209,17 @@ if($action == "getQuizTaskPaper")
 		$pdf->SetFillColor(200,220,255);
 		$pdf->MultiCell($w,$l,'Frage ' . ($i+1) . ': ' . $fetchQuestions[$i]["text"], 1, 'L', 1, 1, '', '', true);
 		
+		if($fetchQuestions[$i]["type_id"] == 2) {
+			$pdf->SetFont($fontname,'B',$fontSize-1);
+			$pdf->Cell($w,$l, "  ". getMultiplechoiseChar(-1) . "       " . getMultiplechoiseChar(0) . "      " . getMultiplechoiseChar(1). "      Antwortmöglichkeiten", 'LR', 'L');
+		}
+		$pdf->SetFont('helvetica','B',$fontSize);
+		
 		$stmt = $dbh->prepare("select id, text from answer inner join answer_question on answer_question.answer_id = answer.id where answer_question.question_id = :qId order by `order`");
 		$stmt->bindParam(":qId", $fetchQuestions[$i]["id"]);
 		$stmt->execute();
 		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
 		
 		for ($j = 0; $j < count($fetchAnswers); $j++)
 		{
@@ -243,7 +241,7 @@ if($action == "getQuizTaskPaper")
 				$pdf->MultiCell($w,$l,"  O    " . $fetchAnswers[$j]["text"], $border . 'LR', 'L', 0, 1, '', '', true);
 			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
 			{
-				$pdf->MultiCell($w,$l,"  ☐" . "    " . $fetchAnswers[$j]["text"], $border . 'LR', 'L', 0, 1, '', '', true);
+				$pdf->MultiCell($w,$l,"  ☐    ☐    ☐" . "      " . $fetchAnswers[$j]["text"], $border . 'LR', 'L', 0, 1, '', '', true);
 			}
 			
 			//$pdf->Cell($w,$l,"  O    " . $fetchAnswers[$j]["text"], $border . 'LR', 1, 'L');
@@ -313,11 +311,11 @@ if($action == "getQuizTaskPaper")
 	$pdf->Cell($w,$l,gmdate("H:i:s", ($choosedSession["endtime"]-$choosedSession["starttime"])), 0, 1);
 	
 	$pdf->SetFont('helvetica','B',$fontSize);
-	$pdf->Cell($w,$l,'Punkte:');
+	$pdf->Cell($w,$l,'Resultat beste Durchführung:');
 	$pdf->SetFont('');
 	$pdf->Cell($w,$l,$fetchPoints[0] . "/" . $fetchPoints[1] . " (" . $fetchPoints[2] . "%)", 0, 1);
 	
-	$pdf->Line(5, 100, 200, 100);
+	$pdf->Line(10, 102, 200, 102);
 	
 	$pdf->Ln(8);
 	
@@ -368,7 +366,7 @@ if($action == "getQuizTaskPaper")
 			$selectedChar = "";
 			if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
 			{
-				$correctChar = $fetchAnswers[$j]["is_correct"] == 1 ? '◉' : 'Ο';
+				$correctChar = $fetchAnswers[$j]["is_correct"] == 1 ? '◉ ' : 'Ο';
 			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
 			{
 				$correctChar = getMultiplechoiseChar($fetchAnswers[$j]["is_correct"]);
