@@ -28,7 +28,7 @@ $_SESSION["questionNumber"] = $fetchQuestionOrder["question_order"];
 
 	function insertNextButtonWaitTime(time)
 	{
-		console.log("insertNextButton function " + time);
+		//console.log("insertNextButton function " + time);
 		$.ajax({
 			url: 'Pindex.php?p=participation',
 			type: 'get',
@@ -37,7 +37,7 @@ $_SESSION["questionNumber"] = $fetchQuestionOrder["question_order"];
 			success: function(output) {
 				if(output[0] == 'ok')
 				{
-					console.log("inserted time: " + JSON.stringify(output));
+					//console.log("inserted time: " + JSON.stringify(output));
 				} else {
 					console.log("error 1");
 				}
@@ -55,7 +55,7 @@ $_SESSION["questionNumber"] = $fetchQuestionOrder["question_order"];
 </script>
 
 <div class="question" style="margin: 20px 0px 70px;"><?php echo $lang["participateFinishHeading"];?></div>
-<div data-role="controlgroup" data-type="vertical" style="width: 100%; margin: auto;">
+<div id="confirmationOptions" data-role="controlgroup" data-type="vertical" style="width: 100%; margin: auto;">
 	<?php if($_SESSION["questionNumber"] > 0) {?>
 	<input type="button" id="prevQuestion" name="prevQuestion" value="<?php echo $lang["btnBack"]; ?>" data-ajax="false" data-icon="arrow-l" data-iconpos="left" onclick="window.location='?p=participate';" />
 	<?php 

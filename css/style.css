@@ -84,6 +84,33 @@
 PARTICIPATION PAGE
 */
 
+#buttons {
+	padding-left: 40%;
+}
+
+.answers {
+	width: 60%;
+	margin-left: 20%;
+	margin-right: 20%;
+}
+
+.answers .ui-controlgroup-controls {
+	width: 100%;
+}
+
+.answers .ui-controlgroup-controls > div > label > div {
+	font-size: 1rem;
+}
+
+.answers > div > div > label {
+	padding-left: 50px;
+}
+
+.answers fieldset .ui-controlgroup-controls {
+	width: 150px;
+	margin-right: 20%;
+}
+
 .tr {
     display: table-row;
     height: 40px;
@@ -154,6 +181,33 @@ PARTICIPATION PAGE
 END PARTICIPATION PAGE
 */
 
+/*START PARTICIPATION INTRO PAGE*/
+
+.description > div > div {
+		display: inline-block;
+}
+
+.description > div > div:first-child {
+		font-weight: bold;
+}
+
+.description > div > div:nth-child(2) {
+		min-width: 275px;
+}
+/*END PARTICIPATION INTRO PAGE*/
+
+
+/*START PARTICIPATION_CONFIRM_END_QUIZ PAGE*/
+
+#confirmationOptions > div > div {
+	white-space: pre-line;
+}
+
+
+
+/*START PARTICIPATION_CONFIRM_END_QUIZ PAGE*/
+
+
 /*LOading CSS*/
 
 #overlay {
@@ -205,46 +259,12 @@ END PARTICIPATION PAGE
 	border: 1px solid #de9501;
 }
 
-#buttons {
-	padding-left: 40%;
-}
 
-.answers {
-	width: 60%;
-	margin-left: 20%;
-	margin-right: 20%;
-}
-
-.answers .ui-controlgroup-controls {
-	width: 100%;
-}
-
-.answers .ui-controlgroup-controls > div > label > div {
-	font-size: 1rem;
-}
-
-.answers > div > div > label {
-	padding-left: 50px;
-}
-
-.answers fieldset .ui-controlgroup-controls {
-	width: 150px;
-	margin-right: 20%;
-}
-
-.description > div > div {
-		display: inline-block;
-}
-
-.description > div > div:first-child {
-		font-weight: bold;
-}
-
-.description > div > div:nth-child(2) {
-		min-width: 275px;
-}
 
 @media (max-width: 800px) {
+
+/*PARTICIPATION PAGE*/
+	
 	.answers {
 		width: 100%;
 		margin-left: 0;
@@ -265,10 +285,18 @@ END PARTICIPATION PAGE
 		display:inline-block !important;
 		text-align:center;
 	}
+
+/*END PARTICIPATION PAGE*/
+	
+/*START PHEADER PAGE*/
 	
 	.left{
 	    padding-left: .1em;
 	}
+	
+/*END PHEADER PAGE*/
+
+/*START PFOOTER PAGE*/
 	
 	#leftFooter, #rightFooter {
 		margin: .3em;
@@ -277,6 +305,7 @@ END PARTICIPATION PAGE
 	#rightFooter {
 		display: none;
 	}
-	
+
+/*END PFOOTER PAGE*/
 }
 
