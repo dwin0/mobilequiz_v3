@@ -71,10 +71,10 @@
     	$('#questions').dataTable().fnFilter('');
     }
 </script>
-<?php 
+<?php //TODO: Duplicated Code, same code in questions.php
 	$selectedLanguage = "all";
 	$selectedTopic = "all";
-	$selectedCreator = "all";
+	$selectedCreator = $_SESSION['id'];
 	if(isset($_POST["language"]))
 	{
 		$selectedLanguage = $_POST["language"];

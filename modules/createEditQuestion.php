@@ -209,7 +209,7 @@
 						<div id="picturePreview">
 						<?php if($mode == "edit" && $questionFetch["picture_link"] != "")
 						{
-							echo "<br /><img style=\"float:left;\" src=\"" . $questionFetch["picture_link"] . "\" width=\"200px\" height=\"75px\" ></img>";
+							echo "<br /><img style=\"float:left; max-width:300px\" src=\"" . $questionFetch["picture_link"] . "\" width=\"50%\" ></img>";
 							?>
 							<img style="margin-left: 10px;" src="assets/icon_delete.png" alt="" title="" height="18px" width="18px" onclick="delPicture(<?php echo $questionFetch["id"];?>)">
 							<?php 

@@ -33,7 +33,7 @@ if($stmt->rowCount() > 0)
 
 if($isNew)
 {
-	$stmt = $dbh->prepare("select question.id, question.text, question.type_id, qunaire_qu.order, questionnaire.random_questions, questionnaire.random_answers
+	$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link, qunaire_qu.order, questionnaire.random_questions, questionnaire.random_answers
 			from question 
 				inner join qunaire_qu on qunaire_qu.question_id = question.id 
 				inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id 
@@ -72,7 +72,7 @@ if($isNew)
 } else {
 	if(isset($_GET["info"]) && $_GET["info"] == "unanswered")
 	{
-		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, selected, question_order from (select question.id, question.text, question.type_id, selected, question_order from user_qunaire_session left outer join an_qu_user on user_qunaire_session.id = an_qu_user.session_id inner join question on an_qu_user.question_id = question.id where user_qunaire_session.id = :sessionId)question where selected is null or (type_id = 2 and selected = 0) group by id");
+		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link, selected, question_order from (select question.id, question.text, question.type_id, selected, question_order from user_qunaire_session left outer join an_qu_user on user_qunaire_session.id = an_qu_user.session_id inner join question on an_qu_user.question_id = question.id where user_qunaire_session.id = :sessionId)question where selected is null or (type_id = 2 and selected = 0) group by id");
 		$stmt->bindParam(":sessionId", $_SESSION["idSession"]);
 		$stmt->execute();
 		if($stmt->rowCount() == 0)
@@ -115,7 +115,7 @@ if($isNew)
 		$_SESSION["questionNumber"] = $choosedQuestion["question_order"];
 		//questionnumber?
 	} else {
-		$stmt = $dbh->prepare("select question.id, question.text, question.type_id from question where id = :qId");
+		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link from question where id = :qId");
 		$stmt->bindParam(":qId", $fetchSessionForQuestionTest["question_id"]);
 		$stmt->execute();
 		$fetchQuestions = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -164,7 +164,47 @@ if($isNew)
 	<div class="question"><?php echo $choosedQuestion["text"];?></div>
 	<input type="hidden" name="questionId" value="<?php echo $choosedQuestion["id"];?>">
 	<input type="hidden" name="action" value="saveAndNextQuestion">
-	<div class="questionImage"></div>
+	
+	<img id="questionImage" style="width:40vw; max-width:400px; display:block; margin: 0 auto; padding-top:5%" src="<?php echo $choosedQuestion["picture_link"]?>" />
+		<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+		    <div class="pswp__bg"></div>
+		    <div class="pswp__scroll-wrap">
+		
+		        <div class="pswp__container">
+		            <!-- don't modify these 3 pswp__item elements, data is added later on -->
+		            <div class="pswp__item"></div>
+		            <div class="pswp__item"></div>
+		            <div class="pswp__item"></div>
+		        </div>
+		
+		        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+		        <div class="pswp__ui pswp__ui--hidden">
+		
+		            <div class="pswp__top-bar">
+		            
+		            <div class="pswp__counter"></div>
+		
+		                <button id="closePhoto">Schliessen</button>
+		                
+		                <div class="pswp__preloader">
+		                    <div class="pswp__preloader__icn">
+		                      <div class="pswp__preloader__cut">
+		                        <div class="pswp__preloader__donut"></div>
+		                      </div>
+		                    </div>
+		                </div>
+		            </div>
+		
+		            <div class="pswp__caption">
+		                <div class="pswp__caption__center"></div>
+		            </div>
+		
+		          </div>
+			</div>
+		</div>
+	
+	
+	
 	<div class="answers">
 		<?php 
 		$dbSelected="";
@@ -211,14 +251,14 @@ if($isNew)
 				?>
 					<input type="radio" id="<?php echo "radio_" . $i;?>" name="answer" value="<?php echo $fetchAnswers[$i]["id"];?>" <?php  if(!$isNew) {if($fetchAnswers[$i]["selected"] == 1){echo " checked";}}?>/> 
 					<label for="<?php echo "radio_" . $i;?>">
-						<div style="font-weight: normal; white-space : normal;"><?php echo $fetchAnswers[$i]["text"];?></div>
+						<div style="font-weight:normal; white-space:normal;"><?php echo $fetchAnswers[$i]["text"];?></div>
 					</label> 
 				<?php 
 				}
 				?>
 				<input type="radio" id="<?php echo "radio_" . $i;?>" name="answer" value="noAnswer" <?php  if($isNew) {echo " checked";} else {if($fetchAnswers[$i-1]["selected"] == NULL){echo " checked";}}?>/> 
 				<label for="<?php echo "radio_" . $i;?>">
-					<div style="font-weight: normal"><?php echo $lang["noAnswer"];?></div>
+					<div style="font-weight:normal"><?php echo $lang["noAnswer"];?></div>
 				</label>
 			</div>
 		</div>
@@ -249,7 +289,7 @@ if($isNew)
 	</div>
 	<br />
 	<br />
-	<div id="buttons" style="display: none;" data-role="controlgroup" data-type="horizontal">
+	<div id="buttons" data-role="controlgroup" data-type="horizontal">
 		<input type="hidden" name="unanswered" value="<?php echo (isset($_GET["info"]) && $_GET["info"] == "unanswered") ? '1' : '0';?>">
 		<input type="hidden" name="generationTime" value="<?php echo time();?>">
 		<input id="startTimeNextButton" type="hidden" name="startTimeNextButton" value="-1">
@@ -262,3 +302,46 @@ if($isNew)
 <?php 
 //echo "Debug<br />vars: <br />quizSession: " . $_SESSION["quizSession"] . "<br />idSession: " . $_SESSION["idSession"] . "<br />coosedQuestion: " . $choosedQuestion["id"] . "<br />questionAmount: " . count($fetchQuestions) ."<br />questionNumber: " . $_SESSION["questionNumber"] . "<br />UnansweredNumber: " . $_SESSION["unansweredNumber"];
 ?>
+
+
+<script type="text/javascript">
+var gallery;
+
+var openPhotoSwipe = function() {
+    var pswpElement = document.querySelectorAll('.pswp')[0];
+    var image = document.getElementById('questionImage');
+    
+    var items = [
+        {
+            src: image.src,
+            w: image.width * 3,
+            h: image.height * 3
+        }
+    ];
+
+    console.log(image.src);
+    
+    var options = {
+        history: false,
+        focus: true,
+
+        showAnimationDuration: 0,
+        hideAnimationDuration: 0
+    };
+    
+    gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
+    gallery.init();
+};
+
+var closePhotoSwipe = function(event) {
+	gallery.close();
+	event.preventDefault();
+}
+
+document.getElementById('questionImage').onclick = openPhotoSwipe;
+document.getElementById('questionImage').ontouchstart = openPhotoSwipe;
+
+document.getElementById('closePhoto').onclick = closePhotoSwipe;
+document.getElementById('closePhoto').ontouchstart = closePhotoSwipe;
+
+</script>

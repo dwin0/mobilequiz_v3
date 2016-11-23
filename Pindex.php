@@ -51,6 +51,14 @@ ob_end_clean();
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
 <script src="js/jquery.tipsy.js"></script>
 
+
+
+<link rel="stylesheet" href="PhotoSwipe/photoswipe.css"> 
+<link rel="stylesheet" href="PhotoSwipe/default-skin/default-skin.css"> 
+<script src="PhotoSwipe/photoswipe.min.js"></script> 
+<script src="PhotoSwipe/photoswipe-ui-default.min.js"></script> 
+
+
 </head>
 <body>
 	<div data-role="page">

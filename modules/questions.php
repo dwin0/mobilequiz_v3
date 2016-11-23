@@ -127,7 +127,7 @@
 <?php 
 	$selectedLanguage = "all";
 	$selectedTopic = "all";
-	$selectedCreator = "all";
+	$selectedCreator = $_SESSION['id'];
 	if(isset($_POST["language"]))
 	{
 		$selectedLanguage = $_POST["language"];
@@ -222,7 +222,7 @@
 			            </label>
 			            <div class="controls">
 			                <select id="owner" class="form-control" name="owner" onchange="sendData()">
-			                    <option value="all" <?php echo ($selectedTopic == "all") ? 'selected="selected"' : '';?>><?php echo $lang["all"] . " (". $allQuestionsCount ." " . $lang["questions"] . ")";?></option>
+			                    <option value="all" <?php echo ($selectedTopic == "all") ? 'selected' : '';?>><?php echo $lang["all"] . " (". $allQuestionsCount ." " . $lang["questions"] . ")";?></option>
 			                    <?php 
 
 				                    $stmt = $dbh->prepare("select owner_id from question group by owner_id");
@@ -240,7 +240,7 @@
 				                    	$stmt-> execute();
 				                    	$ownerRowCount = $stmt->rowCount();
 				                    	
-				                    	$selected = $selectedCreator == $result[$i]["owner_id"] ? 'selected="selected"' : '';
+				                    	$selected = $selectedCreator == $result[$i]["owner_id"] ? 'selected' : '';
 										
 										echo "<option value=\"" . $result[$i]["owner_id"] . "\" " . $selected . ">" . $fetchUser["firstname"] . " " . $fetchUser["lastname"] . " (" . $ownerRowCount . " " . $lang["questions"] . ")</option>";
 			                    } ?>

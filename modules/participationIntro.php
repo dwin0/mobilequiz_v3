@@ -95,12 +95,8 @@
 <div id="scriptWrapper">
 	<div class="description">
 		<div class="tr">
-			<div class="td"><?php echo $lang["quizCreateName"];?></div>
-			<div class="td"><?php echo $fetchQunaire["name"];?></div>
-		</div>
-		<div class="tr">
 			<div class="td"><?php echo $lang["description"];?></div>
-			<div class="td"><?php echo $fetchQunaire["description"];?></div>
+			<div class="td"><?php echo (($fetchQunaire["description"] != "") ? $fetchQunaire["description"] : '-');?></div>
 		</div>
 		<div class="tr">
 			<div class="td"><?php echo $lang["quizStartDate"];?></div>

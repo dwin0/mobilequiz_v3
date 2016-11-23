@@ -111,10 +111,11 @@
 				$showLimitedTime = $limited_time;
 				if($fetchQunaire["limited_time"] != 0)
 					$showLimitedTime = gmdate("i:s", $limited_time);
-				echo '<h3><span id="time">' . $showLimitedTime . '</span></h3>';
+				echo '<h3 id="time">' . $showLimitedTime . '</h3>';
 				echo '</div>';
 			} else {
-				echo '<div class="left">';
+				
+				echo '<div class="center">';
 				echo "<h3>" . $lang["quiz"] . " &laquo" . $fetchQunaire["name"] . "&raquo</h3>";
 				echo '</div>';
 			}
