@@ -214,12 +214,14 @@ function changeAssignedGroups()
 	}else {echo "fail";}
 }
 
+include_once 'authorizationCheck_participation.php';
 
 function revealUserName()
 {
+
 	global $dbh;
 	
-	if(amIQuizCreator() || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
+	if(amIQuizCreator($_GET["questionnaireId"]) || $_SESSION['role']['admin'] || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
 	{
 		$stmt = $dbh->prepare("select firstname, lastname from user_data where user_id = :uId");
 		$stmt->bindParam(":uId", $_GET["userId"]);
@@ -228,24 +230,6 @@ function revealUserName()
 
 		echo json_encode(["ok", $fetchUserName["lastname"] . " " . $fetchUserName["firstname"]]);
 	} else {echo json_encode(["failed"]);}
-}
-
-//TODO Duplizierter Code: neues File erstellen und noch schauen, was in die gleiche Kategorie gehört
-function amIQuizCreator() 
-{
-	global $dbh;
-	
-	if($_SESSION['role']['creator'])
-	{
-		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["questionnaireId"]);
-		$stmt->execute();
-		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
-			
-		return $_SESSION["id"] == $fetchOwner['owner_id'];
-	} else {
-		return false;
-	}
 }
 
 ?>

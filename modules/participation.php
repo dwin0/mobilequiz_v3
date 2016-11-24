@@ -41,52 +41,9 @@ if($action == "startQuiz")
 		header("Location: index.php?p=quiz&code=-15");
 		exit;
 	}
-
-	include_once 'modules/extraFunctions.php';
 	
-	//TODO Duplizierter Code: neues File erstellen und noch schauen, was in die gleiche Kategorie gehört
-	function amIQuizCreator()
-	{
-		global $dbh;
-	
-		if($_SESSION['role']['creator'])
-		{
-			$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-			//TODO: quizId und questionnaireId vereinheitlichen
-			$stmt->bindParam(":id", $_GET["quizId"]);
-			$stmt->execute();
-			$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
-	
-			return $_SESSION["id"] == $fetchOwner['owner_id'];
-		} else {
-			return false;
-		}
-	}
-	
-	//TODO duplizierten Code von participation, participationOutro und participationIntro auslagern
-	//Quiz enabled? (time, special access)
-	//maybe assigned Quiz?
-	if(! $_SESSION['role']['admin'])
-	{
-		if(! $fetchQuiz["public"])
-		{
-			if(!amIQuizCreator()) {
-				header("Location: index.php?p=quiz&code=-25");
-				exit;
-			}
-		}
-		if(($fetchQuiz["starttime"] > time() || $fetchQuiz["endtime"] < time()) && $fetchQuiz["noParticipationPeriod"] == 0)
-		{
-			header("Location: index.php?p=quiz&code=-26");
-			exit;
-		}
-		if(!doThisQuizHaveAGroupRestrictionAndAmIInThisGroup($dbh, $id))
-		{
-			header("Location: index.php?p=quiz&code=-38");
-			exit;
-		}
-	}
-	
+	include_once 'modules/authorizationCheck_participation.php';
+	checkAuthorization($_GET["quizId"], $fetchQuiz, false);
 	
 	//max participations
 	$stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :questionnaire_id and user_id = :user_id");
@@ -174,7 +131,6 @@ if($action == "startQuiz")
 		$answerIds = array();
 		foreach($toBeStoredQuestionIds as $value) {
 			$testId = $value["question_id"];
-			$dummyVar = true;
 			$questionNumber = ++$_SESSION["questionNumber"];
 			saveQuestion($testId, $questionNumber, "noAnswer");
 		}

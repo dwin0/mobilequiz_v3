@@ -62,46 +62,8 @@
 		exit;
 	}
 	
-	include_once 'modules/extraFunctions.php';
-	
-	//TODO Duplizierter Code: neues File erstellen und noch schauen, was in die gleiche Kategorie gehört
-	function amIQuizCreator()
-	{
-		global $dbh;
-	
-		if($_SESSION['role']['creator'])
-		{
-			$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-			//TODO: quizId und questionnaireId vereinheitlichen
-			$stmt->bindParam(":id", $_GET["quizId"]);
-			$stmt->execute();
-			$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
-	
-			return $_SESSION["id"] == $fetchOwner['owner_id'];
-		} else {
-			return false;
-		}
-	}
-	
-	//TODO duplizierten Code von participation, participationOutro und participationIntro auslagern
-	//Quiz enabled? (time, special access)
-	//maybe assigned Quiz?
-	if(! $_SESSION['role']['admin'])
-	{
-		if(! $fetchQuestionnaire["public"])
-		{
-			if(!amIQuizCreator()) {
-				header("Location: index.php?p=quiz&code=-25");
-				exit;
-			}
-		}
-		if(!doThisQuizHaveAGroupRestrictionAndAmIInThisGroup($dbh, $quizId))
-		{
-			header("Location: index.php?p=quiz&code=-38");
-			exit;
-		}
-	}
-	
+	include_once 'modules/authorizationCheck_participation.php';
+	checkAuthorization($_GET["quizId"], $fetchQuestionnaire, true);
 	
 	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
