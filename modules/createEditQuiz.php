@@ -1004,7 +1004,7 @@
 		        <div style="margin-top: 54px;">
 					<input id="btnAddQuestion" name="btnAddQuestion" class="btn" onclick="setConfirm(false, 'btn3')" type="submit" value="<?php echo $lang["addNewQuestion"];?>" /><br />
 					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openExcelDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
-					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcelWithImages"];?>" onclick="openDirectoryDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileNames"><?php echo " <b>" . $lang["noFolderSelected"] . "</b>";?></span><br />
+					<input id="btnImportImageQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcelWithImages"];?>" onclick="openDirectoryDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileNames"><?php echo " <b>" . $lang["noFolderSelected"] . "</b>";?></span><br />
 					<label class="radio-inline">
 						<input type="radio" name="addOrReplaceQuestions" value="0" style="margin-left: 30px;">
 						<?php echo $lang["replaceQuestions"];?>

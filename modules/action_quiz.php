@@ -304,12 +304,12 @@ function insertQuiz()
 									}
 									
 									
-									$excelTemplate = array();
-									$uploadedImages = array();
-									
 									$multipleFiles = $_FILES['btnImportQuestionsFromDirectory'];
 									if($multipleFiles["name"][0] != "")
 									{
+										$excelTemplate = array();
+										$uploadedImages = array();
+										
 										for($i = 0; $i < count($multipleFiles["name"]); $i++)
 										{
 											if(strtolower(pathinfo($multipleFiles["name"][$i], PATHINFO_EXTENSION)) == "xlsx")
