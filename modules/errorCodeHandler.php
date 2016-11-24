@@ -270,6 +270,11 @@
 					}
 				}
 				return $text;
+			case -41:
+				return "Fragebild konnte nicht zugewiesen werden. Bitte verwenden Sie 'Fragen mit Bildern aus Excel importieren' 
+						und w&auml;hlen Sie den Ordner aus, welcher das Template und die Bilder enth&auml;lt.";
+			case -42:
+				return "Bild konnte nicht abgespeichert werden.";
 		}
 	}
 	

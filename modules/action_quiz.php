@@ -304,27 +304,86 @@ function insertQuiz()
 									}
 									
 									
-									//questions with Excel upload
-									if(isset($_FILES["btnImportQuestionsFromExcel"]) && $_FILES["btnImportQuestionsFromExcel"]["name"] != "")
+									$excelTemplate = array();
+									$uploadedImages = array();
+									
+									$multipleFiles = $_FILES['btnImportQuestionsFromDirectory'];
+									if($multipleFiles["name"][0] != "")
 									{
-										//error while uploading
-										if ($_FILES["file"]["error"] > 0) {
-											header("Location: ?p=quiz&code=-28");
-											exit;
+										for($i = 0; $i < count($multipleFiles["name"]); $i++)
+										{
+											if(strtolower(pathinfo($multipleFiles["name"][$i], PATHINFO_EXTENSION)) == "xlsx")
+											{
+												$excelTemplate["name"] = $multipleFiles["name"][$i];
+												$excelTemplate["type"] = $multipleFiles["type"][$i];
+												$excelTemplate["tmp_name"] = $multipleFiles["tmp_name"][$i];
+												$excelTemplate["error"] = $multipleFiles["error"][$i];
+												$excelTemplate["size"] = $multipleFiles["size"][$i];
+											} else 
+											{
+												$image = array();
+												$image["name"] = $multipleFiles["name"][$i];
+												$image["type"] = $multipleFiles["type"][$i];
+												$image["tmp_name"] = $multipleFiles["tmp_name"][$i];
+												$image["error"] = $multipleFiles["error"][$i];
+												$image["size"] = $multipleFiles["size"][$i];
+												array_push($uploadedImages, $image);
+											}
 										}
-										$fileType = pathinfo($_FILES["btnImportQuestionsFromExcel"]["name"], PATHINFO_EXTENSION);
-										$fileType = strtolower($fileType);
 										
+										foreach($uploadedImages as $image)
+										{
+											if ($image["error"] > 0) {
+												header("Location: ?p=quiz&code=-28");
+												exit;
+											}
+										}
 										
-										if($fileType != "xlsx")
+										if(!isset($excelTemplate))
 										{
 											header("Location: ?p=quiz&code=-29");
 											exit;
 										}
+											
+									} elseif (isset($_FILES["btnImportQuestionsFromExcel"]) && $_FILES["btnImportQuestionsFromExcel"]["name"] != "")
+									{
+										if(strtolower(pathinfo($_FILES["btnImportQuestionsFromExcel"]["name"], PATHINFO_EXTENSION)) == "xlsx")
+										{
+											$excelTemplate["name"] = $_FILES["btnImportQuestionsFromExcel"]["name"];
+											$excelTemplate["type"] = $_FILES["btnImportQuestionsFromExcel"]["type"];
+											$excelTemplate["tmp_name"] = $_FILES["btnImportQuestionsFromExcel"]["tmp_name"];
+											$excelTemplate["error"] = $_FILES["btnImportQuestionsFromExcel"]["error"];
+											$excelTemplate["size"] = $_FILES["btnImportQuestionsFromExcel"]["size"];
+										}
+										
+										if(!isset($excelTemplate))
+										{
+											header("Location: ?p=quiz&code=-29");
+											exit;
+										}
+									}
+								
+									
+									//questions with Excel upload
+									if(isset($excelTemplate))
+									{
+										//error while uploading
+										if ($excelTemplate["error"] > 0) {
+											header("Location: ?p=quiz&code=-28");
+											exit;
+										}
+										
+										foreach($uploadedImages as $uploadedImage)
+										{
+											if ($uploadedImage["error"] > 0) {
+												header("Location: ?p=quiz&code=-28");
+												exit;
+											}
+										}
 										
 										include_once 'importExcel.php';
 										
-										$excelContent = importExcel($_FILES["btnImportQuestionsFromExcel"]["tmp_name"]);
+										$excelContent = importExcel($excelTemplate);
 										$questions = createQuestionArray($excelContent);
 										
 										//Excel contains no questions
@@ -394,22 +453,50 @@ function insertQuiz()
 													array_push($invalidQuestions, htmlspecialchars($question->getText()));
 												}
 											
-												$type_id = $question->getTypeCode();
 												$language = "Deutsch";
 												if($_SESSION["language"] == "en")
 												{
 													$language = "English";
 												}
 												
+												$imageName = $question->getImage();
+												$uploadedImagePath = null;
+												if(isset($imageName))
+												{
+													foreach($uploadedImages as $uploadedImage)
+													{
+														if($uploadedImage["name"] == $imageName)
+														{
+															$uploadedQuestionImage = $uploadedImage;
+														}
+													}
+													
+													if(!isset($uploadedQuestionImage))
+													{
+														header("Location: ?p=quiz&code=-41");
+														exit;
+													}
+													
+													$uploadedImageFileType = strtolower(pathinfo($uploadedImage["name"], PATHINFO_EXTENSION));
+													$uploadedImagePath = "uploadedImages/" . "question_" . date("d_m_y_H_i_s", time()) . "__" . $_SESSION["id"] . "." . $uploadedImageFileType;
+													if(!move_uploaded_file($uploadedImage["tmp_name"], $uploadedImagePath))
+													{
+														header("Location: ?p=quiz&code=-42");
+														exit;
+													}
+													
+												}
+												
+												
 												//insert Question
 												$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link) values (:text, :owner_id, :type_id, :subject_id, :language, ".time().", :public, ".time().", :picLink)");
 												$stmt->bindParam(":text", $question->getText());
 												$stmt->bindParam(":owner_id", $_SESSION["id"]);
-												$stmt->bindParam(":type_id", $type_id);
+												$stmt->bindParam(":type_id", $question->getTypeCode());
 												$stmt->bindValue(":subject_id", NULL);
 												$stmt->bindValue(":language", $language);
 												$stmt->bindValue(":public", 0);
-												$stmt->bindValue(":picLink", NULL); //TODO: Change for Picture-Questions
+												$stmt->bindValue(":picLink", $uploadedImagePath);
 												if(!$stmt->execute())
 												{
 													header("Location: ?p=quiz&code=-31");

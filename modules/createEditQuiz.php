@@ -94,9 +94,14 @@
     	//console.log("e:" + elem);
     }
 
-	function openFileDialog()
+	function openExcelDialog()
     {
         $('#btnImportQuestionsFromExcel').click();
+    }
+    
+	function openDirectoryDialog()
+    {
+        $('#btnImportQuestionsFromDirectory').click();
     }
 
 	function setChecked(id)
@@ -270,10 +275,24 @@
 		
 	    $( "#sortable" ).sortable({
 		    stop: updateData}).disableSelection();
+
 		
 		document.getElementById("btnImportQuestionsFromExcel").addEventListener("change",function(){
-		    document.getElementById("fileName").innerHTML=
-		        document.getElementById("btnImportQuestionsFromExcel").files[0].name;
+		    document.getElementById("fileName").innerHTML = document.getElementById("btnImportQuestionsFromExcel").files[0].name;
+		    shouldConfirm = true;
+		});
+
+		document.getElementById("btnImportQuestionsFromDirectory").addEventListener("change",function(){			
+			var files = document.getElementById("btnImportQuestionsFromDirectory").files;
+
+			var fileNames = "";
+			for(var i = 0; i < files.length; i++) {
+				fileNames += files[i].name;
+				if(i+1 < files.length) {
+					fileNames += ", ";
+				}
+			}
+			document.getElementById("fileNames").innerHTML = fileNames;
 		    shouldConfirm = true;
 		});
 
@@ -984,7 +1003,8 @@
 		        <br />
 		        <div style="margin-top: 54px;">
 					<input id="btnAddQuestion" name="btnAddQuestion" class="btn" onclick="setConfirm(false, 'btn3')" type="submit" value="<?php echo $lang["addNewQuestion"];?>" /><br />
-					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openFileDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
+					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openExcelDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
+					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcelWithImages"];?>" onclick="openDirectoryDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileNames"><?php echo " <b>" . $lang["noFolderSelected"] . "</b>";?></span><br />
 					<label class="radio-inline">
 						<input type="radio" name="addOrReplaceQuestions" value="0" style="margin-left: 30px;">
 						<?php echo $lang["replaceQuestions"];?>
@@ -994,7 +1014,8 @@
 						<?php echo $lang["addQuestions"];?>
 					</label>
 				</div>
-				<input type="file" style="opacity:0;position:absolute;top:-999px;left:-999px;display:none;" name="btnImportQuestionsFromExcel" id="btnImportQuestionsFromExcel" accept=".xlsx" />
+				<input type="file" style="display:none;" name="btnImportQuestionsFromExcel" id="btnImportQuestionsFromExcel" accept=".xlsx"/>
+				<input type="file" style="display:none;" name="btnImportQuestionsFromDirectory[]" id="btnImportQuestionsFromDirectory" multiple directory="" webkitdirectory="" mozdirectory=""/>
 			</div>
 		</div>
 		<div class="panel panel-default">

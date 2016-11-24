@@ -155,7 +155,7 @@
 			    		
 			    	<div class="control-group">
 			    		<span class="glyphicon glyphicon-download-alt"></span>
-			    		<a href="excelTemplate/Frage_Template.xlsx" download> Download Frage-Template</a>
+			    		<a href="excelTemplate/<?php echo ($_SESSION["language"] == "ger") ? "Frage_Template_de.xlsx" : "Question_Template_en.xlsx"; ?>" download> Download Frage-Template</a>
 					</div>
 			        <div class="control-group">
 			            <label class="control-label" for="language">

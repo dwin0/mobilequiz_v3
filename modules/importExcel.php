@@ -13,15 +13,14 @@ include 'PHPExcel/Classes/PHPExcel/IOFactory.php';
  * @return array
  * 
  */
-function importExcel($inputFilePath)
+function importExcel($excelTemplate)
 {
 	try {
 		$objReader = new PHPExcel_Reader_Excel2007();
 		$objReader->setReadDataOnly(true);
-		$objPHPExcel = $objReader->load($inputFilePath);
+		$objPHPExcel = $objReader->load($excelTemplate["tmp_name"]);
 	} catch(Exception $e) {
-		$fileName = str_replace("excelTemplate/", "", $inputFilePath);
-		header("Location: ?p=quiz&code=-30&info=".$fileName);
+		header("Location: ?p=quiz&code=-30&info=".$excelTemplate["name"]);
 		exit;
 	}
 	
@@ -58,15 +57,18 @@ function createQuestionArray($excelContent)
 {
 	$questions = array();
 	
+	//get all questions
 	for($i = 0; $i < count($excelContent); $i++)
 	{
-		$type = $excelContent[$i][0];
-		$questionText = $excelContent[$i][1];
+		$type = $excelContent[$i][0]; //first column
+		$questionText = $excelContent[$i][1]; //second column
+		$questionImage = $excelContent[$i][2]; //third column
 		$answers = array();
 		
-		$lastAnswerCell = 11;
+		$lastAnswerRow = 13;
 		
-		for($j = 2; $j <= $lastAnswerCell; $j = $j+2)
+		//get all answers
+		for($j = 3; $j <= $lastAnswerRow - 1; $j = $j+2)
 		{
 			$answerText = $excelContent[$i][$j];
 			if(!isset($answerText))
@@ -86,11 +88,11 @@ function createQuestionArray($excelContent)
 			
 			$isCorrect = isset($excelContent[$i][$j+1]);
 			
-			$answer = new answer($answerText, $isCorrect);
+			$answer = new Answer($answerText, $isCorrect);
 			array_push($answers, $answer);
 		}
 		
-		$question = new question($type, $questionText, $answers);
+		$question = new Question($type, $questionText, $questionImage, $answers);
 		array_push($questions, $question);
 	}
 	
@@ -98,16 +100,18 @@ function createQuestionArray($excelContent)
 }
 
 
-class question
+class Question
 {
 	private $type;
 	private $questionText;
+	private $questionImage;
 	private $answers = array();
 
-	public function __construct($type, $questionText, $answers)
+	public function __construct($type, $questionText, $questionImage, $answers)
 	{
 		$this->type = $type;
 		$this->questionText = $questionText;
+		$this->questionImage = $questionImage;
 		$this->answers = $answers;
 	}
 	
@@ -130,6 +134,11 @@ class question
 	public function getText()
 	{
 		return $this->questionText;
+	}
+	
+	public function getImage()
+	{
+		return $this->questionImage;
 	}
 
 	public function getAnswers()
@@ -165,7 +174,7 @@ class question
 	}
 }
 
-class answer
+class Answer
 {
 	private $answerText;
 	private $isCorrect;

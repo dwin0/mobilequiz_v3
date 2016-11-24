@@ -458,7 +458,13 @@ function deleteQuestion()
 				$stmt->bindParam(":keywordId", $fetchQuKeyword[$i]["keyword_id"]);
 				$stmt->execute();
 			}
-
+			
+			$stmt = $dbh->prepare("select picture_link from question where id = :questionId");
+			$stmt->bindParam(":questionId", $_GET["questionId"]);
+			$stmt->execute();
+			$pictureLink = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			$test = unlink("../" . $pictureLink[0]["picture_link"]);
+			
 			$stmt = $dbh->prepare("delete from question where id = :questionId");
 			$stmt->bindParam(":questionId", $_GET["questionId"]);
 			if($stmt->execute())
