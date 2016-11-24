@@ -64,6 +64,8 @@ engines:
         enabled: false
       Controversial/Superglobals:
         enabled: false
+      Design/ExitExpression:
+        enabled: false
 
   phan:
     enabled: true
