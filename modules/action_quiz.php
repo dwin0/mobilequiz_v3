@@ -404,6 +404,7 @@ function insertQuiz()
 										
 										
 										$invalidQuestions = array();
+										$imageCounter = 1;
 										
 										foreach($questions as $question)
 										{											
@@ -476,14 +477,16 @@ function insertQuiz()
 														header("Location: ?p=quiz&code=-41");
 														exit;
 													}
-													
-													$uploadedImageFileType = strtolower(pathinfo($uploadedImage["name"], PATHINFO_EXTENSION));
-													$uploadedImagePath = "uploadedImages/" . "question_" . date("d_m_y_H_i_s", time()) . "__" . $_SESSION["id"] . "." . $uploadedImageFileType;
-													if(!move_uploaded_file($uploadedImage["tmp_name"], $uploadedImagePath))
+																										
+													$uploadedImageFileType = strtolower(pathinfo($uploadedQuestionImage["name"], PATHINFO_EXTENSION));
+													$uploadedImagePath = "uploadedImages/" . "question_" . date("d_m_y_H_i_s", time()) . "__" . $imageCounter . "__" . $_SESSION["id"] . "." . $uploadedImageFileType;
+													if(!move_uploaded_file($uploadedQuestionImage["tmp_name"], $uploadedImagePath))
 													{
 														header("Location: ?p=quiz&code=-42");
 														exit;
 													}
+													
+													$imageCounter++;
 													
 												}
 												
