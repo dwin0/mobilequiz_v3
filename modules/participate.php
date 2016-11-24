@@ -72,7 +72,11 @@ if($isNew)
 } else {
 	if(isset($_GET["info"]) && $_GET["info"] == "unanswered")
 	{
-		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link, selected, question_order from (select question.id, question.text, question.type_id, question.picture_link, selected, question_order from user_qunaire_session left outer join an_qu_user on user_qunaire_session.id = an_qu_user.session_id inner join question on an_qu_user.question_id = question.id where user_qunaire_session.id = :sessionId)question where selected is null or (type_id = 2 and selected = 0) group by id");
+		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link, selected, question_order 
+				from (select question.id, question.text, question.type_id, question.picture_link, selected, question_order 
+				from user_qunaire_session left outer join an_qu_user on user_qunaire_session.id = an_qu_user.session_id inner join question on an_qu_user.question_id = question.id 
+				where user_qunaire_session.id = :sessionId)question 
+				where selected is null or (type_id = 2 and selected = 0) group by id order by question_order");
 		$stmt->bindParam(":sessionId", $_SESSION["idSession"]);
 		$stmt->execute();
 		if($stmt->rowCount() == 0)
