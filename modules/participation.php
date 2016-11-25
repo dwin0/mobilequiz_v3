@@ -251,7 +251,7 @@ if($action == "startQuiz")
 		
 		$creatorEmailText = "Von: " . $participantMail . "<br />Name: " . $participantName . "<br />Betrifft Frage: " . 
 								$currentQuestionText . "<br /><br />Nachricht des Teilnehmers: " . $TextFromParticipant;
-		$particpantEmailText = "Ihre Frage wurde an den Quiz-Ersteller gesendet.<br />An: " . $creatorMail . "<br />Name: " . $creatorName . "<br />Betrifft Frage: " . 
+		$particpantEmailText = "Ihre Frage wurde wie folgt an den Quiz-Ersteller gesendet.<br />An: " . $creatorMail . "<br />Name: " . $creatorName . "<br />Betrifft Frage: " . 
 								$currentQuestionText . "<br /><br />Ihre Nachricht: " . $TextFromParticipant;;
 		
 		$mailBlockSeconds = 15; //Seconds how long mail will be blocked
