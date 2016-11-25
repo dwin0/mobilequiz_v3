@@ -6,7 +6,7 @@
 		$stmt->execute();
 		$fetch = $stmt->fetch(PDO::FETCH_ASSOC);
 		$quizName = $fetch["name"];
-		echo "<div id=\"leftFooter\">Lernkontrolle: " . $quizName . "</div>";
+		echo "<div id=\"leftFooter\">Lernkontrolle: " . htmlspecialchars($quizName) . "</div>";
 		
 		
 		$stmt = $dbh->prepare("select firstname, lastname from user inner join user_data on user.id = user_data.user_id where user.id = :userId");
@@ -15,7 +15,7 @@
 		$fetchUser = $stmt->fetch(PDO::FETCH_ASSOC);
 		$participiant = $fetchUser["firstname"] . " " .$fetchUser["lastname"];
 		
-		echo "<div id=\"rightFooter\">Teilnehmer: " . $participiant . "</div>";
+		echo "<div id=\"rightFooter\">Teilnehmer: " . htmlspecialchars($participiant) . "</div>";
 		
 	}?>
 </div>

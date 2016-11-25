@@ -116,7 +116,7 @@
 			} else {
 				
 				echo '<div class="center">';
-				echo "<h3>" . $lang["quiz"] . " &laquo" . $fetchQunaire["name"] . "&raquo</h3>";
+				echo "<h3>" . $lang["quiz"] . " &laquo" . htmlspecialchars($fetchQunaire["name"]) . "&raquo</h3>";
 				echo '</div>';
 			}
 		?>
