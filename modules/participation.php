@@ -228,34 +228,54 @@ if($action == "startQuiz")
 	}
 } else if(isset($_POST["action"]) && $_POST["action"] == 'participantQuestion') {
 	
-	$stmt = $dbh->prepare("select email, firstname, lastname from user inner join questionnaire on user.id = questionnaire.owner_id inner join user_data on user.id = user_data.user_id where questionnaire.id = :qunaireId");
-	$stmt->bindParam(":qunaireId", $_SESSION["quizSession"]);
-	$stmt->execute();
-	$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	if(!isset($_COOKIE["sendParticipantQuestion"]))
+	{
+		$stmt = $dbh->prepare("select email, firstname, lastname from user inner join questionnaire on user.id = questionnaire.owner_id inner join user_data on user.id = user_data.user_id where questionnaire.id = :qunaireId");
+		$stmt->bindParam(":qunaireId", $_SESSION["quizSession"]);
+		$stmt->execute();
+		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		$creatorName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
+		$creatorMail = $fetchAnswers[0]["email"];
+		
+		$stmt = $dbh->prepare("select email, firstname, lastname from user inner join user_data on user.id = user_data.user_id where user.id = :userId");
+		$stmt->bindParam(":userId", $_SESSION["id"]);
+		$stmt->execute();
+		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		$participantName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
+		$participantMail = $fetchAnswers[0]["email"];
+		
+		$TextFromParticipant = $_POST["questionText"];
+		$currentQuestionText = $_SESSION["choosedQuestion"]["text"];
+		
+		$creatorEmailText = "Von: " . $participantMail . "<br />Name: " . $participantName . "<br />Betrifft Frage: " . 
+								$currentQuestionText . "<br /><br />Nachricht des Teilnehmers: " . $TextFromParticipant;
+		$particpantEmailText = "Ihre Frage wurde an den Quiz-Ersteller gesendet.<br />An: " . $creatorMail . "<br />Name: " . $creatorName . "<br />Betrifft Frage: " . 
+								$currentQuestionText . "<br /><br />Ihre Nachricht: " . $TextFromParticipant;;
+		
+		$mailBlockSeconds = 15; //Seconds how long mail will be blocked
+		
+		if(sendMail($creatorMail, "MobileQuiz Teilnehmer-Frage", $creatorEmailText) &&
+		sendMail($participantMail, "Bestätigung: MobileQuiz Teilnehmer-Frage", $particpantEmailText))
+		{
+			setcookie("sendParticipantQuestion", time() . "_" . $mailBlockSeconds, time()+$mailBlockSeconds);
+			$response_array["status"] = "success";
+			$response_array["text"] = "Successfully sent";
+		} else {
+			$response_array["status"] = "error";
+			$response_array["text"] = "Could not send email";
+		}
+		
+	} else 
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Please wait 15sec to send your next question";
+	}
 	
-	$creatorName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
-	$creatorMail = $fetchAnswers[0]["email"];
+	header('Content-type: application/json');
+	echo json_encode($response_array);
 	
-	$stmt = $dbh->prepare("select email, firstname, lastname from user inner join user_data on user.id = user_data.user_id where user.id = :userId");
-	$stmt->bindParam(":userId", $_SESSION["id"]);
-	$stmt->execute();
-	$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	
-	$participantName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
-	$participantMail = $fetchAnswers[0]["email"];
-	
-	$TextFromParticipant = $_POST["questionText"];
-	$currentQuestionText = $_SESSION["choosedQuestion"]["text"];
-	
-	$creatorEmailText = "Von: " . $participantMail . "<br />Name: " . $participantName . "<br />Betrifft Frage: " . 
-							$currentQuestionText . "<br /><br />Nachricht des Teilnehmers: " . $TextFromParticipant;
-	$particpantEmailText = "Ihre Frage wurde an den Quiz-Ersteller gesendet.<br />An: " . $creatorMail . "<br />Name: " . $creatorName . "<br />Betrifft Frage: " . 
-							$currentQuestionText . "<br /><br />Ihre Nachricht: " . $TextFromParticipant;;
-	
-	//sendMail($creatorMail, "MobileQuiz Teilnehmer-Frage", $creatorEmailText);
-	//sendMail($participantMail, "Bestätigung: MobileQuiz Teilnehmer-Frage", $particpantEmailText);
-	
-	echo json_encode("Email sent to " . $creatorName . ". Message: " . $TextFromParticipant);
 	exit;
 	
 	

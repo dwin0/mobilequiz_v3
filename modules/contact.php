@@ -8,9 +8,7 @@
 		if(!isset($_COOKIE["sendContactMail"]))
 		{
 			if(isset($_POST["email"]) && $_POST["email"] != "" && isset($_POST["subject"]) && $_POST["subject"] != "" && isset($_POST["message"]) && $_POST["message"] != "") 
-			{
-				include_once 'helper/PHPMailer/class.phpmailer.php';
-				
+			{				
 				$message = "Von: " . $_POST["email"] . "<br />Vorname: " . $_POST["firstname"] . "<br />Nachname: " . $_POST["lastname"] . "<br /><br />Nachricht: ";
 				$message .= $_POST["message"];
 				

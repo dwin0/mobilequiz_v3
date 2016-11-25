@@ -170,20 +170,20 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 				type: 'post',
 				data: $(this).serialize(),
 				dataType: 'json',
-				success: function(output) {
+				success: function(data) {
 
-					console.log(output);
-					$("#questionText").attr("readonly", true).css("background", "LightGray");
-					$("#participantSubmit").attr("disabled", true);
+					if(data.status == "success") {
+						$("#questionText").attr("readonly", true).css("background", "LightGray");
+						$("#participantSubmit").attr("disabled", true);
 
+						showStatus("LawnGreen", data.text);
+					} else {
+						showStatus("Red", data.text);
+					}
 
-					$("#participantForm").append("<div id='success' style='display: none; background: LawnGreen;' class='ui-btn ui-input-btn ui-corner-all ui-shadow ui-focus'>" +
-													"<p>Successfully sent</p></div>");
-					$("#success").fadeIn();
-					
 				}, error: function()
 				{
-					alert('Your question could not have been sent. Please try again.');
+					showStatus("Red", "Your question could not have been sent. Please try again.");
 				}
 			});
 
@@ -191,6 +191,15 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 		});
 
 	});
+
+	function showStatus(background, statusText) {
+		$("#participantForm").children("#status").remove();
+		$("#participantForm").append("<div id='status' style='display: none; background: " + 
+				background + ";' class='ui-btn ui-input-btn ui-corner-all ui-shadow ui-focus'>" +
+				"<p>" + statusText + "</p></div>");
+		
+		$("#status").fadeIn();	
+	}
 
 
 	
