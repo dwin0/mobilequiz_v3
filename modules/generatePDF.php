@@ -1,4 +1,4 @@
- <?php
+<?php
 session_start();
 
 ob_end_clean();
@@ -41,6 +41,8 @@ if(isset($_GET["uId"]))
 }
 
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+$pdf->setImageScale(5);
 
 $fontname = TCPDF_FONTS::addTTFfont('helper/tcpdf_min/fonts/Arial_Unicode_MS.ttf', 'TrueTypeUnicode', 'UTF-8');
 
@@ -194,7 +196,7 @@ if($action == "getQuizTaskPaper")
 	
 	$pdf->Ln(8);
 	
-	$stmt = $dbh->prepare("select id, text, type_id from question inner join qunaire_qu on qunaire_qu.question_id = question.id where qunaire_qu.questionnaire_id = :quizId");
+	$stmt = $dbh->prepare("select id, text, type_id, picture_link from question inner join qunaire_qu on qunaire_qu.question_id = question.id where qunaire_qu.questionnaire_id = :quizId");
 	$stmt->bindParam(":quizId", $_GET["quizId"]);
 	$stmt->execute();
 	$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -209,9 +211,15 @@ if($action == "getQuizTaskPaper")
 		$pdf->SetFillColor(200,220,255);
 		$pdf->MultiCell($w,$l,'Frage ' . ($i+1) . ': ' . $fetchQuestions[$i]["text"], 1, 'L', 1, 1, '', '', true);
 		
+		if($fetchQuestions[$i]["picture_link"] != null) {
+			$pdf->Ln(1);
+			$pdf->Image($fetchQuestions[$i]["picture_link"], '', '', '', '', 'JPG', '', '', true, 300, 'C', false, false, '', false, false, false);
+			$pdf->Ln(getimagesize($fetchQuestions[$i]["picture_link"])[1]/14);
+		}
+		
 		if($fetchQuestions[$i]["type_id"] == 2) {
 			$pdf->SetFont($fontname,'B',$fontSize-1);
-			$pdf->Cell($w,$l, "  ". getMultiplechoiseChar(-1) . "       " . getMultiplechoiseChar(0) . "      " . getMultiplechoiseChar(1). "      Antwortmöglichkeiten", 'LR', 'L');
+			$pdf->MultiCell($w,$l, "  ". getMultiplechoiseChar(-1) . "       " . getMultiplechoiseChar(0) . "      " . getMultiplechoiseChar(1). "      Antwortmöglichkeiten",  'LRT', 'L', 0, 0, '', '', true);
 		}
 		$pdf->SetFont('helvetica','B',$fontSize);
 		
@@ -320,7 +328,7 @@ if($action == "getQuizTaskPaper")
 	$pdf->Ln(8);
 	
 	//Questions
-	$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, an_qu_user.question_order
+	$stmt = $dbh->prepare("select picture_link, question.id as questionId, question.text as questionText, question.type_id, an_qu_user.question_order
 			from question
 			inner join qunaire_qu on qunaire_qu.question_id = question.id
 			left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id
@@ -344,8 +352,14 @@ if($action == "getQuizTaskPaper")
 		$pdf->SetFillColor(200,220,255);
 		$pdf->MultiCell($w,$l,'Frage ' . ($i+1) . ': ' . $fetchQuestions[$i]["questionText"], 1, 'L', 1, 1, '', '', true);
 		
+		if($fetchQuestions[$i]["picture_link"] != null) {
+			$pdf->Ln(1);
+			$pdf->Image($fetchQuestions[$i]["picture_link"], '', '', '', '', 'JPG', '', '', true, 300, 'C', false, false, 1, false, false, false);
+			$pdf->Ln(getimagesize($fetchQuestions[$i]["picture_link"])[1]/14);
+		}
+		
 		$pdf->SetFont('helvetica','B',$fontSize-3);
-		$pdf->MultiCell($w,$l,"Richtige  Deine        Fragetext\nAntwort   Antwort" . $fetchAnswers[$j]["text"], 'LR', 'L');
+		$pdf->MultiCell($w,$l,"Richtige  Deine        Fragetext\nAntwort   Antwort" . $fetchAnswers[$j]["text"], 'LRT', 'L', 0, 1, '', '', true);
 		
 		$stmt = $dbh->prepare("select answer_question.answer_id, answer.text, answer_question.is_correct, (select selected from an_qu_user where answer_question.answer_id = an_qu_user.answer_id and session_id = :session_id) as selected
 								from answer_question
