@@ -2,6 +2,7 @@
 session_start();
 
 include_once '../config/config.php';
+include_once 'mail.php';
 
 $action = -1;
 $fromSite = -1;
@@ -152,7 +153,7 @@ if($action == "startQuiz")
 		header("Location: index.php?p=quiz&code=-37");
 		exit;
 	}
-} else if(isset($_POST["action"]) && isset($_POST["action"]) == 'saveAndNextQuestion')
+} else if(isset($_POST["action"]) && $_POST["action"] == 'saveAndNextQuestion')
 {
 	if(isset($_POST["questionId"]) && (isset($_POST["prevQuestion"]) || isset($_POST["nextQuestion"]))) 
 	{
@@ -225,6 +226,39 @@ if($action == "startQuiz")
 			exit;
 		}
 	}
+} else if(isset($_POST["action"]) && $_POST["action"] == 'participantQuestion') {
+	
+	$stmt = $dbh->prepare("select email, firstname, lastname from user inner join questionnaire on user.id = questionnaire.owner_id inner join user_data on user.id = user_data.user_id where questionnaire.id = :qunaireId");
+	$stmt->bindParam(":qunaireId", $_SESSION["quizSession"]);
+	$stmt->execute();
+	$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	$creatorName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
+	$creatorMail = $fetchAnswers[0]["email"];
+	
+	$stmt = $dbh->prepare("select email, firstname, lastname from user inner join user_data on user.id = user_data.user_id where user.id = :userId");
+	$stmt->bindParam(":userId", $_SESSION["id"]);
+	$stmt->execute();
+	$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	$participantName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
+	$participantMail = $fetchAnswers[0]["email"];
+	
+	$TextFromParticipant = $_POST["questionText"];
+	$currentQuestionText = $_SESSION["choosedQuestion"]["text"];
+	
+	$creatorEmailText = "Von: " . $participantMail . "<br />Name: " . $participantName . "<br />Betrifft Frage: " . 
+							$currentQuestionText . "<br /><br />Nachricht des Teilnehmers: " . $TextFromParticipant;
+	$particpantEmailText = "Ihre Frage wurde an den Quiz-Ersteller gesendet.<br />An: " . $creatorMail . "<br />Name: " . $creatorName . "<br />Betrifft Frage: " . 
+							$currentQuestionText . "<br /><br />Ihre Nachricht: " . $TextFromParticipant;;
+	
+	//sendMail($creatorMail, "MobileQuiz Teilnehmer-Frage", $creatorEmailText);
+	//sendMail($participantMail, "Bestätigung: MobileQuiz Teilnehmer-Frage", $particpantEmailText);
+	
+	echo json_encode("Email sent to " . $creatorName . ". Message: " . $TextFromParticipant);
+	exit;
+	
+	
 } else {
 	header("Location: index.php?p=home&code=-20");
 	exit;

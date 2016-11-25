@@ -127,6 +127,8 @@ if($isNew)
 	}
 }
 
+$_SESSION["choosedQuestion"] = $choosedQuestion;
+
 ?>
 <script type="text/javascript">
 
@@ -157,10 +159,41 @@ if($isNew)
 
 		insertNextButtonWaitTime(Date.now());
 		
-		$('#answerForm').submit(function() {
+		$("#answerForm").submit(function() {
 			$('#startTimeNextButton').val(Date.now()); //millisecs
 		});
+
+		$("#participantForm").submit(function(event) {
+			
+			$.ajax({
+				url: 'Pindex.php?p=participation',
+				type: 'post',
+				data: $(this).serialize(),
+				dataType: 'json',
+				success: function(output) {
+
+					console.log(output);
+					$("#questionText").attr("readonly", true).css("background", "LightGray");
+					$("#participantSubmit").attr("disabled", true);
+
+
+					$("#participantForm").append("<div id='success' style='display: none; background: LawnGreen;' class='ui-btn ui-input-btn ui-corner-all ui-shadow ui-focus'>" +
+													"<p>Successfully sent</p></div>");
+					$("#success").fadeIn();
+					
+				}, error: function()
+				{
+					alert('Your question could not have been sent. Please try again.');
+				}
+			});
+
+			event.preventDefault();
+		});
+
 	});
+
+
+	
 </script>
 
 <noscript><p style="color: red;"><b>Du hast Javascript deaktiviert.</b> Um die Lernkontrolle durchf&uuml;hren zu k&ouml;nnen muss Javascript aktiviert sein.</p></noscript>
@@ -302,6 +335,11 @@ if($isNew)
 		<?php }?>
 		<input type="submit" id="nextQuestion" name="nextQuestion" value="<?php echo $lang["nextQuestion"]; ?>" data-icon="arrow-r" data-iconpos="right" />
 	</div>
+</form>
+<form id="participantForm">
+	<input type="text" name="questionText" id="questionText" />
+	<input type="hidden" name="action" value="participantQuestion">
+	<input type="submit" value="Send" id="participantSubmit" />
 </form>
 <?php 
 //echo "Debug<br />vars: <br />quizSession: " . $_SESSION["quizSession"] . "<br />idSession: " . $_SESSION["idSession"] . "<br />coosedQuestion: " . $choosedQuestion["id"] . "<br />questionAmount: " . count($fetchQuestions) ."<br />questionNumber: " . $_SESSION["questionNumber"] . "<br />UnansweredNumber: " . $_SESSION["unansweredNumber"];
