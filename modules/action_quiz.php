@@ -218,7 +218,7 @@ function insertQuiz()
 										$subCode = -9;
 									}
 									//check size
-									if($_FILES["quizLogo"]["size"] > 20000000)
+									if($_FILES["quizLogo"]["size"] > 20000000) //TODO: Compress
 									{
 										$uploadOk = false;
 										$subCode = -10;

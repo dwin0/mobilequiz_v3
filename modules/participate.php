@@ -217,7 +217,9 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 	<input type="hidden" name="action" value="saveAndNextQuestion">
 	
 	<?php if(isset($choosedQuestion["picture_link"])) { ?>
-	<img id="questionImage" style="width:40vw; max-width:400px; display:block; margin: -1em auto 0 auto;" src="<?php echo $choosedQuestion["picture_link"]?>" />
+	<img id="questionImage" style="width:40vw; max-width:400px; display:block; margin-top: -1em; margin-right: auto;
+	margin-bottom: <?php if($choosedQuestion["type_id"] == 2) {echo "2em";} else echo "0";?>; margin-left: auto;"
+	src="<?php echo $choosedQuestion["picture_link"]?>" />
 		<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 		    <div class="pswp__bg"></div>
 		    <div class="pswp__scroll-wrap">

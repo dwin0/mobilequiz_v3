@@ -361,9 +361,12 @@ function uploadImage() {
 	
 	//check size
 	$eightKB = 800000;
-	if($_FILES["questionLogo"]["size"] > $eightKB)
+	$size = filesize($_FILES["questionLogo"]["tmp_name"]);
+	while($size > $eightKB)
 	{
 		shrinkQuestionLogo();
+		clearstatcache();
+		$size = filesize($_FILES["questionLogo"]["tmp_name"]);
 	}
 	
 	//check if all ok?
@@ -387,16 +390,26 @@ function uploadImage() {
  */
 function shrinkQuestionLogo()
 {
-	$image = $_FILES["questionLogo"]["tmp_name"];
-	$ressource = imagecreatefromstring(file_get_contents($image));
+	$filename = $_FILES["questionLogo"]["tmp_name"];
+	$percent = 0.5;
 	
-	//Automatically compresses image	
-	if(!imagejpeg($ressource, $image))
+	// Get new dimensions
+	list($width, $height) = getimagesize($filename);
+	$new_width = $width * $percent;
+	$new_height = $height * $percent;
+	
+	// Resample
+	$image_p = imagecreatetruecolor($new_width, $new_height);
+	$image = imagecreatefromstring(file_get_contents($filename));
+	imagecopyresampled($image_p, $image, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+	
+	if(!imagejpeg($image_p, $filename))
 	{
 		header("Location: ?p=questions&code=-16");
 		exit;
 	}
-	
+	imagedestroy($image_p);
+
 	return;
 }
 
