@@ -194,11 +194,16 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 
 	function showStatus(background, statusText) {
 		$("#participantForm").children("#status").remove();
-		$("#participantForm").append("<div id='status' style='display: none; background: " + 
+		$("#questionText").after("<div id='status' style='display: none; background: " + 
 				background + ";' class='ui-btn ui-input-btn ui-corner-all ui-shadow ui-focus'>" +
-				"<p>" + statusText + "</p></div>");
+				"<p style='color: white;'>" + statusText + "</p></div>");
 		
 		$("#status").fadeIn();	
+	}
+
+	function showParticipantQuestionForm() {
+		$("#showParticipantQuestionForm").fadeOut();
+		$("#participantForm").fadeIn();
 	}
 
 
@@ -207,11 +212,12 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 
 <noscript><p style="color: red;"><b>Du hast Javascript deaktiviert.</b> Um die Lernkontrolle durchf&uuml;hren zu k&ouml;nnen muss Javascript aktiviert sein.</p></noscript>
 <form id="answerForm" name="answerForm" data-ajax="false" action="?p=participation" method="POST">
-	<div class="question"><?php echo $choosedQuestion["text"];?></div>
+	<p class="question"><?php echo $choosedQuestion["text"];?></p>
 	<input type="hidden" name="questionId" value="<?php echo $choosedQuestion["id"];?>">
 	<input type="hidden" name="action" value="saveAndNextQuestion">
 	
-	<img id="questionImage" style="width:40vw; max-width:400px; display:block; margin: 0 auto; padding-top:5%" src="<?php echo $choosedQuestion["picture_link"]?>" />
+	<?php if(isset($choosedQuestion["picture_link"])) { ?>
+	<img id="questionImage" style="width:40vw; max-width:400px; display:block; margin: -1em auto 0 auto;" src="<?php echo $choosedQuestion["picture_link"]?>" />
 		<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 		    <div class="pswp__bg"></div>
 		    <div class="pswp__scroll-wrap">
@@ -248,7 +254,7 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 		          </div>
 			</div>
 		</div>
-	
+	<?php }?>
 	
 	
 	<div class="answers">
@@ -311,7 +317,7 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 		<?php 
 		} else if($choosedQuestion["type_id"] == 2) { 
 			$i = 0;
-			echo "<ul data-role=\"listview\">";
+			echo "<ul data-role=\"listview\" style=\"margin-bottom: 1em;\">";
 			for(; $i < count($fetchAnswers); $i++) {
 			?>
 				<li>
@@ -333,23 +339,28 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 		}
 		?>
 	</div>
-	<br />
-	<br />
 	<div id="buttons" data-role="controlgroup" data-type="horizontal">
 		<input type="hidden" name="unanswered" value="<?php echo (isset($_GET["info"]) && $_GET["info"] == "unanswered") ? '1' : '0';?>">
 		<input type="hidden" name="generationTime" value="<?php echo time();?>">
 		<input id="startTimeNextButton" type="hidden" name="startTimeNextButton" value="-1">
 		<?php if($_SESSION["questionNumber"] > 0) {?>
 		<input type="submit" id="prevQuestion" name="prevQuestion" value="<?php echo $lang["btnBack"]; ?>" data-icon="arrow-l" data-iconpos="left" />
-		<?php }?>
+		<?php } else {?>
+		<div style="visibility: hidden;'" class="ui-btn ui-input-btn ui-corner-all ui-shadow ui-icon-arrow-l ui-btn-icon-left ui-first-child">Zur&uuml;ck</div>
+		<?php } ?>
 		<input type="submit" id="nextQuestion" name="nextQuestion" value="<?php echo $lang["nextQuestion"]; ?>" data-icon="arrow-r" data-iconpos="right" />
 	</div>
 </form>
-<form id="participantForm">
-	<input type="text" name="questionText" id="questionText" />
-	<input type="hidden" name="action" value="participantQuestion">
-	<input type="submit" value="Send" id="participantSubmit" />
-</form>
+
+<div id="participantQuestion">
+	<form id="participantForm" style="display: none;">
+		<textarea name="questionText" id="questionText"></textarea>
+		<input type="hidden" name="action" value="participantQuestion">
+		<input type="submit" value="Send" id="participantSubmit" />
+	</form>
+	<button type="button" id="showParticipantQuestionForm" onclick="showParticipantQuestionForm()">Frage unklar? Schreibe dem Quiz-Ersteller</button>
+</div>
+
 <?php 
 //echo "Debug<br />vars: <br />quizSession: " . $_SESSION["quizSession"] . "<br />idSession: " . $_SESSION["idSession"] . "<br />coosedQuestion: " . $choosedQuestion["id"] . "<br />questionAmount: " . count($fetchQuestions) ."<br />questionNumber: " . $_SESSION["questionNumber"] . "<br />UnansweredNumber: " . $_SESSION["unansweredNumber"];
 ?>
@@ -389,10 +400,16 @@ var closePhotoSwipe = function(event) {
 	event.preventDefault();
 }
 
-document.getElementById('questionImage').onclick = openPhotoSwipe;
-document.getElementById('questionImage').ontouchstart = openPhotoSwipe;
+var imageElement = document.getElementById('questionImage');
+var closeElement = document.getElementById('closePhoto');
 
-document.getElementById('closePhoto').onclick = closePhotoSwipe;
-document.getElementById('closePhoto').ontouchstart = closePhotoSwipe;
+if(imageElement != null) {
+	imageElement.onclick = openPhotoSwipe;
+	imageElement.tab = openPhotoSwipe;
+
+	closeElement.onclick = closePhotoSwipe;
+	closeElement.tab = closePhotoSwipe;
+}
+
 
 </script>
