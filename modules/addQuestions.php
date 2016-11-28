@@ -60,8 +60,38 @@
         $('.dataTables_filter input').attr("placeholder", 'Suchbegriff in Spalte "Name (Keywords)" suchen');
         $('.dataTables_filter input').addClass("form-control");
         $('.dataTables_filter input').attr('id', 'addQuestionFilter');
-        //$('div.toolbar').html(document.getElementById('hiddenFilter').innerHTML);
+        //$('div.toolbar').html(document.getElementById('hiddenFilter').innerHTML);  
     });
+    
+    $(function() {
+
+		$('input[name=selectedQuestion]').on('change', function (event) {
+
+			var quizId = $('input[name=quizId]').val();
+			var questionId = event.target.value;
+			var enabled = event.target.checked;
+
+			$.ajax({
+	 			url: '?p=actionHandler&action=addQuestion',
+	 			type: 'post',
+	 			data: {quizId: quizId, questionId: questionId, checked: enabled},
+	 			dataType: 'json',
+	 			success: function(data) {
+	 				console.log(data['text']);
+	 			}, error: function()
+	 			{
+	 				console.log('Error: Selected Questions not saved');
+	 			}
+	 		});
+		});
+
+		$('#addQuestions').on('submit', function (event) {
+			window.location.replace(event.target.action);
+			event.preventDefault();
+		});
+    });
+    
+    
     function sendData() {
         $('#quizFilter').submit();
     }
@@ -71,7 +101,7 @@
     	$('#questions').dataTable().fnFilter('');
     }
 </script>
-<?php //TODO: Duplicated Code, same code in questions.php
+<?php
 	$selectedLanguage = "all";
 	$selectedTopic = "all";
 	$selectedCreator = $_SESSION['id'];
@@ -105,7 +135,7 @@
 			            </label>
 			            <div class="controls">
 			                <select id="language" class="form-control" name="language" onchange="sendData()">
-			                	<?php 
+			                	<?php
 			                	$stmt = $dbh->prepare("select id from question");
 			                	$stmt->execute();
 			                	$allQuestionsCount = $stmt->rowCount();
@@ -193,7 +223,8 @@
 			    </div>
 			    <input type="hidden" name="quizId" value="<?php echo $quizId; ?>">
 		    </form>
-		    <form id="addQuestions" class="form-horizontal" action="?p=actionHandler&action=addQuestions" method="POST">
+		    <div id="lastSelectedOwner" style="display: none"><?php echo $selectedCreator?></div>
+		    <form id="addQuestions" class="form-horizontal" action="?p=createEditQuiz&mode=edit&id=<?php echo $quizId;?>" method="GET">
 			    <div class="listOfQuizzes">
 			        <table class="tblListOfQuizzes" id="questions" style="width: 100%">
 			            <thead>
@@ -271,7 +302,7 @@
 				                        	$qType = "multiplechoice";
 			                        ?>
 			                        <td>
-			                        	<input type="checkbox" name="questions[]" value="<?php echo $resultArray[$i]["q_id"];?>" <?php 
+			                        	<input onchange="saveQuestion()" type="checkbox" name="selectedQuestion" value="<?php echo $resultArray[$i]["q_id"];?>" <?php 
 			                        	if(in_array($resultArray[$i]["q_id"], $fetchAddedQuestionsForQuiz))
 			                        		echo " checked=\"checked\"";
 			                        	?>>
@@ -333,7 +364,7 @@
 			        </table>
 			        <br />
 			        <input type="hidden" name="quizId" value="<?php echo $quizId;?>">
-			        <input type="submit" class="btn" name="submit" value="<?php echo $lang["addQuestions"];?>" onclick="clearFilter()">
+			        <input type="submit" class="btn" name="submit" value="<?php echo $lang["buttonSave"];?>" onclick="clearFilter()">
 			    </div>
 			</form>
 		</div>

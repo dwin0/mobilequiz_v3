@@ -614,20 +614,18 @@ function insertQuiz()
 }
 
 
-function addQuestions()
+function addQuestion()
 {
 	global $dbh;
 	
-	//addQuestions to Quiz
-	//questions[]
-	if(!isset($_POST["quizId"]))
+	if(!isset($_POST["quizId"]) || !isset($_POST["questionId"]) || !isset($_POST["checked"]))
 	{
 		header("Location: ?p=quiz&code=-2");
 		exit;
 	}
 	
 	//OWNER?
-	$stmt = $dbh->prepare("select name, owner_id from questionnaire where id = :qId");
+	$stmt = $dbh->prepare("select owner_id from questionnaire where id = :qId");
 	$stmt->bindParam(":qId", $_POST["quizId"]);
 	$stmt->execute();
 	$fetchQnaireNameOwner = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -638,31 +636,30 @@ function addQuestions()
 		exit;
 	}
 	
-	if (!isset($_POST["questions"]))
+	if($_POST["checked"] == "true") //Add question
 	{
-		header("Location: ?p=quiz&code=-12");
-		exit;
-	}
-	
-	$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :qunaire_id");
-	$stmt->bindParam(":qunaire_id", $_POST["quizId"]);
-	$stmt->execute();
-		
-	foreach($_POST["questions"] as $value){
-			
-		$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id) values (:qunaire_id, :q_id)");
+		$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id) values (:qunaire_id, :question_id)");
 		$stmt->bindParam(":qunaire_id", $_POST["quizId"]);
-		$stmt->bindParam(":q_id", $value);
-			
+		$stmt->bindParam(":question_id", $_POST["questionId"]);
+		
 		if(!$stmt->execute())
 		{
 			header("Location: ?p=quiz&code=-13");
 			exit;
 		}
-			
+	} else { //Remove question
+		$stmt = $dbh->prepare("delete from qunaire_qu where question_id = :question_id");
+		$stmt->bindParam(":question_id", $_POST["questionId"]);
+		
+		if(!$stmt->execute())
+		{
+			header("Location: ?p=quiz&code=-13");
+			exit;
+		}
 	}
 	
-	header("Location: ?p=createEditQuiz&mode=edit&id=" . $_POST["quizId"]);
+	echo json_encode("OK");
+	exit;
 }
 
 
