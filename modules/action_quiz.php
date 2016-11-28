@@ -373,14 +373,6 @@ function insertQuiz()
 											exit;
 										}
 										
-										foreach($uploadedImages as $uploadedImage)
-										{
-											if ($uploadedImage["error"] > 0) {
-												header("Location: ?p=quiz&code=-28");
-												exit;
-											}
-										}
-										
 										include_once 'importExcel.php';
 										
 										$excelContent = importExcel($excelTemplate);
@@ -468,7 +460,14 @@ function insertQuiz()
 													{
 														if($uploadedImage["name"] == $imageName)
 														{
+															//Check if file is image
+															if(!getimagesize($uploadedImage["tmp_name"]))
+															{
+																header("Location: ?p=quiz&code=-43");
+																exit;
+															}
 															$uploadedQuestionImage = $uploadedImage;
+															
 														}
 													}
 													
