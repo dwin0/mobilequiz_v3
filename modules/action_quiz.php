@@ -617,11 +617,12 @@ function insertQuiz()
 function addQuestion()
 {
 	global $dbh;
+	$response_array["status"] = "success";
 	
 	if(!isset($_POST["quizId"]) || !isset($_POST["questionId"]) || !isset($_POST["checked"]))
 	{
-		header("Location: ?p=quiz&code=-2");
-		exit;
+		$response_array["status"] = "error";
+		$response_array["text"] = "Not all parameters received";
 	}
 	
 	//OWNER?
@@ -632,8 +633,8 @@ function addQuestion()
 	
 	if($fetchQnaireNameOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1)
 	{
-		header("Location: ?p=quiz&code=-1&info=ert");
-		exit;
+		$response_array["status"] = "error";
+		$response_array["text"] = "Not owner or administrator";
 	}
 	
 	if($_POST["checked"] == "true") //Add question
@@ -644,21 +645,24 @@ function addQuestion()
 		
 		if(!$stmt->execute())
 		{
-			header("Location: ?p=quiz&code=-13");
-			exit;
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't add question to DB";
 		}
+		
+		$response_array["text"] = "Added Question";
 	} else { //Remove question
 		$stmt = $dbh->prepare("delete from qunaire_qu where question_id = :question_id");
 		$stmt->bindParam(":question_id", $_POST["questionId"]);
 		
 		if(!$stmt->execute())
 		{
-			header("Location: ?p=quiz&code=-13");
-			exit;
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't remove question from DB";
 		}
+		$response_array["text"] = "Removed Question";
 	}
 	
-	echo json_encode("OK");
+	echo json_encode($response_array);
 	exit;
 }
 

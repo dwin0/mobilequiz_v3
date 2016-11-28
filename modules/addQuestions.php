@@ -77,10 +77,14 @@
 	 			data: {quizId: quizId, questionId: questionId, checked: enabled},
 	 			dataType: 'json',
 	 			success: function(data) {
-	 				console.log(data['text']);
+	 				if(data.status == 'success') {
+						//console.log('Sucess: ' + data.text);
+					} else {
+						console.log('Error: ' + data.text);
+					}
 	 			}, error: function()
 	 			{
-	 				console.log('Error: Selected Questions not saved');
+	 				console.log('Error: Ajax-Request failed');
 	 			}
 	 		});
 		});
@@ -302,7 +306,7 @@
 				                        	$qType = "multiplechoice";
 			                        ?>
 			                        <td>
-			                        	<input onchange="saveQuestion()" type="checkbox" name="selectedQuestion" value="<?php echo $resultArray[$i]["q_id"];?>" <?php 
+			                        	<input type="checkbox" name="selectedQuestion" value="<?php echo $resultArray[$i]["q_id"];?>" <?php 
 			                        	if(in_array($resultArray[$i]["q_id"], $fetchAddedQuestionsForQuiz))
 			                        		echo " checked=\"checked\"";
 			                        	?>>
