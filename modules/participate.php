@@ -134,7 +134,7 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 
 	function insertNextButtonWaitTime(time)
 	{
-		console.log("insertNextButton function " + time);
+		//console.log("insertNextButton function " + time);
 		$.ajax({
 			url: 'Pindex.php?p=participation',
 			type: 'get',
@@ -145,11 +145,11 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 				{
 					console.log("inserted time: " + JSON.stringify(output));
 				} else {
-					console.log("error 1");
+					console.log("error 1: Output not OK");
 				}
 			}, error: function()
 			{
-				console.log("error 2");
+				//console.log("error 2: Ajax-Request failed");
 			}
 		});
 	}
@@ -176,14 +176,14 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 						$("#questionText").attr("readonly", true).css("background", "LightGray");
 						$("#participantSubmit").attr("disabled", true);
 
-						showStatus("LawnGreen", data.text);
+						showStatus("#009900", data.text); //Green
 					} else {
-						showStatus("Red", data.text);
+						showStatus("#cc0000", data.text); //Red
 					}
 
 				}, error: function()
 				{
-					showStatus("Red", "Your question could not have been sent. Please try again.");
+					showStatus("#cc0000", "Your question could not have been sent. Please try again.");
 				}
 			});
 
@@ -382,8 +382,6 @@ var openPhotoSwipe = function() {
             h: image.height * 3
         }
     ];
-
-    console.log(image.src);
     
     var options = {
         history: false,
@@ -402,16 +400,19 @@ var closePhotoSwipe = function(event) {
 	event.preventDefault();
 }
 
-var imageElement = document.getElementById('questionImage');
-var closeElement = document.getElementById('closePhoto');
-
-if(imageElement != null) {
-	imageElement.onclick = openPhotoSwipe;
-	imageElement.tab = openPhotoSwipe;
-
-	closeElement.onclick = closePhotoSwipe;
-	closeElement.tab = closePhotoSwipe;
-}
+$(document).on('touchstart click', function(event){
+	  
+	  var element = event.originalEvent.target;
+	  
+	  switch(element.id) {
+	  	case 'questionImage':
+		  	openPhotoSwipe();
+		  	break;
+	  	case 'closePhoto':
+	  		closePhotoSwipe(event);
+		  	break;
+	  }
+	});
 
 
 </script>
