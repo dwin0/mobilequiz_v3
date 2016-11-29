@@ -244,11 +244,11 @@ if($action == "startQuiz")
 		$stmt->execute();
 		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		
-		$participantName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
+		$participantName = htmlspecialchars($fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"]);
 		$participantMail = $fetchAnswers[0]["email"];
 		
-		$participantText = $_POST["questionText"];
-		$currentQuestionText = $_SESSION["choosedQuestion"]["text"];
+		$participantText = htmlspecialchars($_POST["questionText"]);
+		$currentQuestionText = htmlspecialchars($_SESSION["choosedQuestion"]["text"]);
 		
 		
 		$stmt = $dbh->prepare("select answer.text, question.type_id from answer inner join answer_question on answer.id = answer_question.answer_id inner join question on answer_question.question_id = question.id where question.id = :questionId");
@@ -258,7 +258,7 @@ if($action == "startQuiz")
 		$answerText = "";
 		for($i = 0; $i < count($fetchQuizAnswer); $i++)
 		{
-			$answerText .= "<li>" . $fetchQuizAnswer["text"] . "</li>";
+			$answerText .= "<li>" . htmlspecialchars($fetchQuizAnswer[$i]["text"]) . "</li>";
 		}
 		
 		$questionType = "Singlechoice";
@@ -268,20 +268,20 @@ if($action == "startQuiz")
 		}
 		
 		$creatorEmailText = $lang["creatorEmailText"];
-		str_replace("[participantMail]", $participantMail, $creatorEmailText);
-		str_replace("[participantName]", $participantName, $creatorEmailText);
-		str_replace("[currentQuestionText]", $currentQuestionText, $creatorEmailText);
-		str_replace("[questionType]", $questionType, $creatorEmailText);
-		str_replace("[answers]", $answerText, $creatorEmailText);
-		str_replace("[participantText]", $participantText, $creatorEmailText);
+		$creatorEmailText = str_replace("[participantMail]", $participantMail, $creatorEmailText);
+		$creatorEmailText = str_replace("[participantName]", $participantName, $creatorEmailText);
+		$creatorEmailText = str_replace("[currentQuestionText]", $currentQuestionText, $creatorEmailText);
+		$creatorEmailText = str_replace("[questionType]", $questionType, $creatorEmailText);
+		$creatorEmailText = str_replace("[answers]", $answerText, $creatorEmailText);
+		$creatorEmailText = str_replace("[participantText]", $participantText, $creatorEmailText);
 				
 		$participantEmailText = $lang["participantEmailText"];
-		str_replace("[creatorMail]", $creatorMail, $participantEmailText);
-		str_replace("[creatorName]", $creatorName, $participantEmailText);
-		str_replace("[currentQuestionText]", $currentQuestionText, $participantEmailText);
-		str_replace("[questionType]", $questionType, $participantEmailText);
-		str_replace("[answers]", $answerText, $participantEmailText);
-		str_replace("[participantText]", $participantText, $participantEmailText);
+		$participantEmailText = str_replace("[creatorMail]", $creatorMail, $participantEmailText);
+		$participantEmailText = str_replace("[creatorName]", $creatorName, $participantEmailText);
+		$participantEmailText = str_replace("[currentQuestionText]", $currentQuestionText, $participantEmailText);
+		$participantEmailText = str_replace("[questionType]", $questionType, $participantEmailText);
+		$participantEmailText = str_replace("[answers]", $answerText, $participantEmailText);
+		$participantEmailText = str_replace("[participantText]", $participantText, $participantEmailText);
 		
 		$mailBlockSeconds = 15; //Seconds how long mail will be blocked
 		

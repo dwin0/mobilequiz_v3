@@ -345,7 +345,7 @@ $lang = array(
 		"creatorEmailText" => "From: [participantMail]<br />Name: [participantName]<br />Concerns the question: [currentQuestionText]<br />Questiontype: [questionType]" .
 								"<br />Answers: [answers]<br /><br />Message from Participant: [participantText]",
 		"participantEmailSubject" => "Confirmation: MobileQuiz participant-question",
-		"participantEmailText" => "Your Question was sent to the quiz-creator as follows:<br />To: [creatorMail]<br />Name: [creatorName]<br />Concerns the question: " .
+		"participantEmailText" => "Your Question was sent to the quiz-creator as follows:<br /><br />To: [creatorMail]<br />Name: [creatorName]<br />Concerns the question: " .
 								"[currentQuestionText]<br />Questiontype: [questionType]<br />Answers: <ul>[answers]<ul><br /><br />Your Message: [participantText]"
 );
 ?>
