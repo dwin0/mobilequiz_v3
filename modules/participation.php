@@ -238,6 +238,7 @@ if($action == "startQuiz")
 		$creatorName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
 		$creatorMail = $fetchAnswers[0]["email"];
 		
+		
 		$stmt = $dbh->prepare("select email, firstname, lastname from user inner join user_data on user.id = user_data.user_id where user.id = :userId");
 		$stmt->bindParam(":userId", $_SESSION["id"]);
 		$stmt->execute();
@@ -246,31 +247,59 @@ if($action == "startQuiz")
 		$participantName = $fetchAnswers[0]["firstname"] . " " . $fetchAnswers[0]["lastname"];
 		$participantMail = $fetchAnswers[0]["email"];
 		
-		$TextFromParticipant = $_POST["questionText"];
+		$participantText = $_POST["questionText"];
 		$currentQuestionText = $_SESSION["choosedQuestion"]["text"];
 		
-		$creatorEmailText = "Von: " . $participantMail . "<br />Name: " . $participantName . "<br />Betrifft Frage: " . 
-								$currentQuestionText . "<br /><br />Nachricht des Teilnehmers: " . $TextFromParticipant;
-		$particpantEmailText = "Ihre Frage wurde wie folgt an den Quiz-Ersteller gesendet.<br />An: " . $creatorMail . "<br />Name: " . $creatorName . "<br />Betrifft Frage: " . 
-								$currentQuestionText . "<br /><br />Ihre Nachricht: " . $TextFromParticipant;;
+		
+		$stmt = $dbh->prepare("select answer.text, question.type_id from answer inner join answer_question on answer.id = answer_question.answer_id inner join question on answer_question.question_id = question.id where question.id = :questionId");
+		$stmt->bindParam(":questionId", intval($_SESSION["choosedQuestion"]["id"]));
+		$stmt->execute();
+		$fetchQuizAnswer = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$answerText = "";
+		for($i = 0; $i < count($fetchQuizAnswer); $i++)
+		{
+			$answerText .= "<li>" . $fetchQuizAnswer["text"] . "</li>";
+		}
+		
+		$questionType = "Singlechoice";
+		if($fetchQuizAnswer["type_id"] == "2")
+		{
+			$questionType = "Multiplechoice";
+		}
+		
+		$creatorEmailText = $lang["creatorEmailText"];
+		str_replace("[participantMail]", $participantMail, $creatorEmailText);
+		str_replace("[participantName]", $participantName, $creatorEmailText);
+		str_replace("[currentQuestionText]", $currentQuestionText, $creatorEmailText);
+		str_replace("[questionType]", $questionType, $creatorEmailText);
+		str_replace("[answers]", $answerText, $creatorEmailText);
+		str_replace("[participantText]", $participantText, $creatorEmailText);
+				
+		$participantEmailText = $lang["participantEmailText"];
+		str_replace("[creatorMail]", $creatorMail, $participantEmailText);
+		str_replace("[creatorName]", $creatorName, $participantEmailText);
+		str_replace("[currentQuestionText]", $currentQuestionText, $participantEmailText);
+		str_replace("[questionType]", $questionType, $participantEmailText);
+		str_replace("[answers]", $answerText, $participantEmailText);
+		str_replace("[participantText]", $participantText, $participantEmailText);
 		
 		$mailBlockSeconds = 15; //Seconds how long mail will be blocked
 		
-		if(sendMail($creatorMail, "MobileQuiz Teilnehmer-Frage", $creatorEmailText) &&
-		sendMail($participantMail, "Bestätigung: MobileQuiz Teilnehmer-Frage", $particpantEmailText))
+		if(sendMail($creatorMail, $lang["creatorEmailSubject"], $creatorEmailText) &&
+		sendMail($participantMail, $lang["participantEmailSubject"], $participantEmailText))
 		{
 			setcookie("sendParticipantQuestion", time() . "_" . $mailBlockSeconds, time()+$mailBlockSeconds);
 			$response_array["status"] = "success";
-			$response_array["text"] = "Successfully sent";
+			$response_array["text"] = $lang["SucessSentQuestion"];
 		} else {
 			$response_array["status"] = "error";
-			$response_array["text"] = "Could not send email";
+			$response_array["text"] = $lang["FailedToSendQuestion"];
 		}
 		
 	} else 
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Please wait 15sec to send your next question";
+		$response_array["text"] = $lang["WaitToSendMail"];
 	}
 	
 	header('Content-type: application/json');

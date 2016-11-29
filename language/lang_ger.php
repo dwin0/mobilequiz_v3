@@ -336,6 +336,16 @@ $lang = array(
 		"revealUserRanking" => "Name offenbaren",
 		"showQuizTaskPaperSelection" => "Aufgabenstellung immer Verf&uuml;gbar",
 		"addChangeQuestions" => "Fragen hinzuf&uuml;gen / ver&auml;ndern",
-		"switchRoleNav" => "Rolle &auml;ndern"
+		"switchRoleNav" => "Rolle &auml;ndern",
+		"CommentQuizToCreator" => "Kommentar an Quiz-Ersteller (Fragen, Hinweise, etc.)",
+		"FailedToSendQuestion" => "Ihre Frage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+		"SucessSentQuestion" => "Erfolgreich gesendet",
+		"WaitToSendMail" => "Bitte warten Sie 15 Sekunden bis Sie die n&auml;chste Frage senden.",
+		"creatorEmailSubject" => "MobileQuiz Teilnehmer-Frage",
+		"creatorEmailText" => "Von: [participantMail]<br />Name: [participantName]<br />Betrifft Frage: [currentQuestionText]<br />Fragetyp: [questionType]" . 
+								"<br />Antwortm&ouml;glichkeiten: <ul>[answers]<ul><br /><br />Nachricht des Teilnehmers: [participantText]",
+		"participantEmailSubject" => "Best&auml;tigung: MobileQuiz Teilnehmer-Frage",
+		"participantEmailText" => "Ihre Frage wurde wie folgt an den Quiz-Ersteller gesendet:<br />An: [creatorMail]<br />Name: [creatorName]<br />Betrifft Frage: " .
+								"[currentQuestionText]<br />Fragetyp: [questionType]<br />Antwortm&ouml;glichkeiten: <ul>[answers]<ul><br /><br />Ihre Nachricht: [participantText]"
 );
 ?>

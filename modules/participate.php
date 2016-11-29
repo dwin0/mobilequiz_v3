@@ -183,7 +183,7 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 
 				}, error: function()
 				{
-					showStatus("#cc0000", "Your question could not have been sent. Please try again.");
+					showStatus("#cc0000", $lang["FailedToSendQuestion"]); //Red
 				}
 			});
 
@@ -358,9 +358,9 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 	<form id="participantForm" style="display: none;">
 		<textarea name="questionText" id="questionText"></textarea>
 		<input type="hidden" name="action" value="participantQuestion">
-		<input type="submit" value="Send" id="participantSubmit" />
+		<input type="submit" value="<?php echo $lang["btnSend"]?>" id="participantSubmit" />
 	</form>
-	<button type="button" id="showParticipantQuestionForm" onclick="showParticipantQuestionForm()">Frage unklar? Schreibe dem Quiz-Ersteller</button>
+	<button type="button" id="showParticipantQuestionForm" onclick="showParticipantQuestionForm()"><?php echo $lang["CommentQuizToCreator"]?></button>
 </div>
 
 <?php 

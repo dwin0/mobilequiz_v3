@@ -336,6 +336,16 @@ $lang = array(
 		"revealUserRanking" => "Reveal name",
 		"showQuizTaskPaperSelection" => "Task paper everytime available",
 		"addChangeQuestions" => "Add / change questions",
-		"switchRoleNav" => "switch role"
+		"switchRoleNav" => "switch role",
+		"CommentQuizToCreator" => "Comment to quiz-creator (questions, tips, etc.)",
+		"FailedToSendQuestion" => "Your question could not be sent. Please try again.",
+		"SucessSentQuestion" => "Successfully sent",
+		"WaitToSendMail" => "Please wait 15 seconds to send your next question.",
+		"creatorEmailSubject" => "MobileQuiz participant-question",
+		"creatorEmailText" => "From: [participantMail]<br />Name: [participantName]<br />Concerns the question: [currentQuestionText]<br />Questiontype: [questionType]" .
+								"<br />Answers: [answers]<br /><br />Message from Participant: [participantText]",
+		"participantEmailSubject" => "Confirmation: MobileQuiz participant-question",
+		"participantEmailText" => "Your Question was sent to the quiz-creator as follows:<br />To: [creatorMail]<br />Name: [creatorName]<br />Concerns the question: " .
+								"[currentQuestionText]<br />Questiontype: [questionType]<br />Answers: <ul>[answers]<ul><br /><br />Your Message: [participantText]"
 );
 ?>

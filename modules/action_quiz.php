@@ -521,10 +521,27 @@ function insertQuiz()
 													$insertedAnswerId = $dbh->lastInsertId();
 													$answerNumber = 0;
 													
+													if($question->getTypeCode() == 1) //Singlechoice
+													{
+														if($answer->isCorrect())
+														{
+															$isCorrect = 1;
+														} else {
+															$isCorrect = 0;
+														}
+													} else { //Multiplechoice
+														if($answer->isCorrect())
+														{
+															$isCorrect = 1;
+														} else {
+															$isCorrect = -1;
+														}
+													}
+													
 													$stmt = $dbh->prepare("insert into answer_question values (:answer_id, :question_id, :is_correct, :order)");
 													$stmt->bindParam(":answer_id", $insertedAnswerId);
 													$stmt->bindParam(":question_id", $insertedQuestionId);
-													$stmt->bindParam(":is_correct", $answer->isCorrect());
+													$stmt->bindParam(":is_correct", $isCorrect);
 													$stmt->bindValue(":order", $answerNumber);
 																										
 													if(!$stmt->execute())
