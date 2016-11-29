@@ -368,7 +368,7 @@
 			        </table>
 			        <br />
 			        <input type="hidden" name="quizId" value="<?php echo $quizId;?>">
-			        <input type="submit" class="btn" name="submit" value="<?php echo $lang["buttonSave"];?>" onclick="clearFilter()">
+			        <input type="submit" class="btn" name="submit" value="<?php echo $lang["btnBack"];?>" onclick="clearFilter()">
 			    </div>
 			</form>
 		</div>

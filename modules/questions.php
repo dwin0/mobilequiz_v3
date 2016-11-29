@@ -127,7 +127,24 @@
 <?php 
 	$selectedLanguage = "all";
 	$selectedTopic = "all";
-	$selectedCreator = $_SESSION['id'];
+	
+	$selectedCreator = "all";
+	
+	if(isset($_POST["owner"]))
+	{
+		$selectedCreator = $_POST["owner"];
+	} else {
+		
+		$stmt = $dbh->prepare("select id from question where owner_id = :ownerId");
+		$stmt->bindParam(":ownerId", $_SESSION['id']);
+		$stmt->execute();
+		$rowCount = $stmt->rowCount();
+		if($stmt->rowCount() > 0)
+		{
+			$selectedCreator = $_SESSION['id'];
+		}
+	}
+	
 	if(isset($_POST["language"]))
 	{
 		$selectedLanguage = $_POST["language"];
@@ -138,10 +155,7 @@
 		if($selectedTopic == "null")
 			$selectedTopic = null;
 	}
-	if(isset($_POST["owner"]))
-	{
-		$selectedCreator = $_POST["owner"];
-	}
+	
 ?>
 <div class="container theme-showcase">
 	<div class="page-header">
