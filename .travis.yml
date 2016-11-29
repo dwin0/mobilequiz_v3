@@ -3,14 +3,3 @@ language: "php"
 php:
   - 5.6
   - 7.0
-
-before_script: 
-- "composer require codeclimate/php-test-reporter --dev"
-- "composer install"
-
-script: 
-- "phpunit --testsuite=unit --coverage-text --coverage-clover build/logs/clover.xml"
-
-after_script:
-- CODECLIMATE_REPO_TOKEN=2cc3e8e81610c2068e946abf814402022889844630c9955425a15b26cd565573 ./vendor/bin/test-reporter --stdout > codeclimate.json
-- "sh -c 'if [ \"$TRAVIS_PHP_VERSION\" != \"hhvm\" ]; then curl -X POST -d @codeclimate.json -H \"Content-Type: application/json\" -H \"User-Agent: Code Climate (PHP Test Reporter v0.1.1)\" https://codeclimate.com/test_reports  ; fi'"
