@@ -130,85 +130,6 @@ if($isNew)
 $_SESSION["choosedQuestion"] = $choosedQuestion;
 
 ?>
-<script type="text/javascript">
-
-	function insertNextButtonWaitTime(time)
-	{
-		//console.log("insertNextButton function " + time);
-		$.ajax({
-			url: 'Pindex.php?p=participation',
-			type: 'get',
-			data: 'action=insertNextButtonWaitTime&time=' + time,
-			dataType: 'json',
-			success: function(output) {
-				if(output[0] == 'ok')
-				{
-					console.log("inserted time: " + JSON.stringify(output));
-				} else {
-					console.log("error 1: Output not OK");
-				}
-			}, error: function()
-			{
-				//console.log("error 2: Ajax-Request failed");
-			}
-		});
-	}
-
-	$(function () {
-		$('#buttons').css('display', 'inline');
-
-		insertNextButtonWaitTime(Date.now());
-		
-		$("#answerForm").submit(function() {
-			$('#startTimeNextButton').val(Date.now()); //millisecs
-		});
-
-		$("#participantForm").submit(function(event) {
-			
-			$.ajax({
-				url: 'Pindex.php?p=participation',
-				type: 'post',
-				data: $(this).serialize(),
-				dataType: 'json',
-				success: function(data) {
-
-					if(data.status == "success") {
-						$("#questionText").attr("readonly", true).css("background", "LightGray");
-						$("#participantSubmit").attr("disabled", true);
-
-						showStatus("#009900", data.text); //Green
-					} else {
-						showStatus("#cc0000", data.text); //Red
-					}
-
-				}, error: function()
-				{
-					showStatus("#cc0000", $lang["FailedToSendQuestion"]); //Red
-				}
-			});
-
-			event.preventDefault();
-		});
-
-	});
-
-	function showStatus(background, statusText) {
-		$("#participantForm").children("#status").remove();
-		$("#questionText").after("<div id='status' style='display: none; background: " + 
-				background + ";' class='ui-btn ui-input-btn ui-corner-all ui-shadow ui-focus'>" +
-				"<p style='color: white;'>" + statusText + "</p></div>");
-		
-		$("#status").fadeIn();	
-	}
-
-	function showParticipantQuestionForm() {
-		$("#showParticipantQuestionForm").fadeOut();
-		$("#participantForm").fadeIn();
-	}
-
-
-	
-</script>
 
 <noscript><p style="color: red;"><b>Du hast Javascript deaktiviert.</b> Um die Lernkontrolle durchf&uuml;hren zu k&ouml;nnen muss Javascript aktiviert sein.</p></noscript>
 <form id="answerForm" name="answerForm" data-ajax="false" action="?p=participation" method="POST">
@@ -217,9 +138,8 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 	<input type="hidden" name="action" value="saveAndNextQuestion">
 	
 	<?php if(isset($choosedQuestion["picture_link"])) { ?>
-	<img id="questionImage" style="width:40vw; max-width:400px; display:block; margin-top: -1em; margin-right: auto;
-	margin-bottom: <?php if($choosedQuestion["type_id"] == 2) {echo "2em";} else echo "0";?>; margin-left: auto;"
-	src="<?php echo $choosedQuestion["picture_link"]?>" />
+	<img id="questionImage" style="display:block; margin-top:-1em; margin-right:auto; margin-bottom:<?php if($choosedQuestion["type_id"] == 2) {echo "2em";} else echo "0";?>;
+	margin-left:auto;" src="<?php echo $choosedQuestion["picture_link"]?>" />
 		<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 		    <div class="pswp__bg"></div>
 		    <div class="pswp__scroll-wrap">
@@ -363,56 +283,81 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 	<button type="button" id="showParticipantQuestionForm" onclick="showParticipantQuestionForm()"><?php echo $lang["CommentQuizToCreator"]?></button>
 </div>
 
-<?php 
-//echo "Debug<br />vars: <br />quizSession: " . $_SESSION["quizSession"] . "<br />idSession: " . $_SESSION["idSession"] . "<br />coosedQuestion: " . $choosedQuestion["id"] . "<br />questionAmount: " . count($fetchQuestions) ."<br />questionNumber: " . $_SESSION["questionNumber"] . "<br />UnansweredNumber: " . $_SESSION["unansweredNumber"];
-?>
-
-
 <script type="text/javascript">
-var gallery;
 
-var openPhotoSwipe = function() {
-    var pswpElement = document.querySelectorAll('.pswp')[0];
-    var image = document.getElementById('questionImage');
-    
-    var items = [
-        {
-            src: image.src,
-            w: image.width * 3,
-            h: image.height * 3
-        }
-    ];
-    
-    var options = {
-        history: false,
-        focus: true,
+	function insertNextButtonWaitTime(time)
+	{
+		//console.log("insertNextButton function " + time);
+		$.ajax({
+			url: 'Pindex.php?p=participation',
+			type: 'get',
+			data: 'action=insertNextButtonWaitTime&time=' + time,
+			dataType: 'json',
+			success: function(output) {
+				if(output[0] == 'ok')
+				{
+					console.log("inserted time: " + JSON.stringify(output));
+				} else {
+					console.log("error 1: Output not OK");
+				}
+			}, error: function()
+			{
+				//console.log("error 2: Ajax-Request failed");
+			}
+		});
+	}
 
-        showAnimationDuration: 0,
-        hideAnimationDuration: 0
-    };
-    
-    gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
-    gallery.init();
-};
+	$(function () {
+		$('#buttons').css('display', 'inline');
 
-var closePhotoSwipe = function(event) {
-	gallery.close();
-	event.preventDefault();
-}
+		insertNextButtonWaitTime(Date.now());
+		
+		$("#answerForm").submit(function() {
+			$('#startTimeNextButton').val(Date.now()); //millisecs
+		});
 
-$(document).on('touchstart click', function(event){
-	  
-	  var element = event.originalEvent.target;
-	  
-	  switch(element.id) {
-	  	case 'questionImage':
-		  	openPhotoSwipe();
-		  	break;
-	  	case 'closePhoto':
-	  		closePhotoSwipe(event);
-		  	break;
-	  }
+		$("#participantForm").submit(function(event) {
+			
+			$.ajax({
+				url: 'Pindex.php?p=participation',
+				type: 'post',
+				data: $(this).serialize(),
+				dataType: 'json',
+				success: function(data) {
+
+					if(data.status == "success") {
+						$("#questionText").attr("readonly", true).css("background", "LightGray");
+						$("#participantSubmit").attr("disabled", true);
+
+						showStatus("#009900", data.text); //Green
+					} else {
+						showStatus("#cc0000", data.text); //Red
+					}
+
+				}, error: function()
+				{
+					showStatus("#cc0000", $lang["FailedToSendQuestion"]); //Red
+				}
+			});
+
+			event.preventDefault();
+		});
+
 	});
 
+	function showStatus(background, statusText) {
+		$("#participantForm").children("#status").remove();
+		$("#questionText").after("<div id='status' style='display: none; background: " + 
+				background + ";' class='ui-btn ui-input-btn ui-corner-all ui-shadow ui-focus'>" +
+				"<p style='color: white;'>" + statusText + "</p></div>");
+		
+		$("#status").fadeIn();	
+	}
 
+	function showParticipantQuestionForm() {
+		$("#showParticipantQuestionForm").fadeOut();
+		$("#participantForm").fadeIn();
+	}
+	
 </script>
+<script type="text/javascript" src="scripts/photoSwipeController.js"></script>

@@ -71,18 +71,7 @@
 		$errorCode = handleParticipationOutroError($_GET["code"]);
 	}
 ?>
-<script type="text/javascript">
 
-	$(function() {
-		
-	});
-
-	function refreshOnSelect(value)
-	{
-		window.location = "Pindex.php?p=participationOutro&quizId="+<?php echo $quizId;?>+"&session=" + value;
-	}
-
-</script>
 <div data-role="tabs" id="tabs">
 	<div data-role="navbar">
 		<ul>
@@ -195,7 +184,7 @@
 		if($fetchQuestionnaire["result_visible"] != 3) 
 		{
 		
-			$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, an_qu_user.question_order from question inner join qunaire_qu on qunaire_qu.question_id = question.id left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order");
+			$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, question.picture_link, an_qu_user.question_order from question inner join qunaire_qu on qunaire_qu.question_id = question.id left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order");
 			$stmt->bindParam(":questionnaire_id", $quizId);
 			$stmt->bindParam(":session_id", $fetchSession["id"]);
 			if(!$stmt->execute())
@@ -210,8 +199,47 @@
 			?>
 				<div id="<?php echo "q-" . $fetchQuestions[$i]["questionId"];?>" class="panel panel-default">
 					<div class="panel-heading">
-						<h3 class="panel-title"><?php echo $lang["question"] . " " . ($i+1) . ": " . $fetchQuestions[$i]["questionText"];?></h3>
+						<h3 class="panel-title" style="wihte-space: pre-wrap; word-wrap: break-word;"><?php echo $lang["question"] . " " . ($i+1) . ": " . $fetchQuestions[$i]["questionText"];?></h3>
 					</div>
+					<?php if(isset($fetchQuestions[$i]["picture_link"])) { ?>
+					<img id="questionImage" style="margin: 1em;" src="<?php echo $fetchQuestions[$i]["picture_link"]?>" />
+					<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+		    			<div class="pswp__bg"></div>
+		    			<div class="pswp__scroll-wrap">
+		
+				        <div class="pswp__container">
+				            <!-- don't modify these 3 pswp__item elements, data is added later on -->
+				            <div class="pswp__item"></div>
+				            <div class="pswp__item"></div>
+				            <div class="pswp__item"></div>
+				        </div>
+		
+				        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+				        <div class="pswp__ui pswp__ui--hidden">
+				
+				            <div class="pswp__top-bar">
+				            
+				            <div class="pswp__counter"></div>
+				
+				                <button id="closePhoto">Schliessen</button>
+				                
+				                <div class="pswp__preloader">
+				                    <div class="pswp__preloader__icn">
+				                      <div class="pswp__preloader__cut">
+				                        <div class="pswp__preloader__donut"></div>
+				                      </div>
+				                    </div>
+				                </div>
+				            </div>
+				
+				            <div class="pswp__caption">
+				                <div class="pswp__caption__center"></div>
+				            </div>
+				
+				          </div>
+						</div>
+					</div>
+					<?php }?>
 					<div class="panel-body">
 						<table style="width: 100%">
 							<thead>
@@ -341,3 +369,18 @@
 	<a href="?p=participationIntro&quizId=<?php echo $quizId;?>" data-theme="a" data-ajax="false" data-iconshadow="true" data-role="button" data-icon="arrow-l" data-iconpos="left"><?php echo $lang["rejoinQuiz"]; ?></a>
 	<a href="index.php?p=quiz" data-theme="a" data-iconshadow="true" data-ajax="false" data-role="button" data-icon="arrow-r" data-iconpos="right"><?php echo $lang["nextQuestion"]; ?></a>
 </div>
+
+
+<script type="text/javascript">
+
+	$(function() {
+		
+	});
+
+	function refreshOnSelect(value)
+	{
+		window.location = "Pindex.php?p=participationOutro&quizId="+<?php echo $quizId;?>+"&session=" + value;
+	}
+
+</script>
+<script type="text/javascript" src="scripts/photoSwipeController.js"></script>

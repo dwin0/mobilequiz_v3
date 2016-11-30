@@ -160,10 +160,17 @@ PARTICIPATION PAGE
 
 .question {
 	padding-bottom: 1em;
+	margin-left: auto;
+	margin-right: auto;
+	width: 80%;
+	white-space: pre-wrap;
+	word-wrap: break-word;
 }
 
-.questionImage {
-    padding-bottom: 5%;
+#questionImage {
+    width: 40vw;
+    max-width: 400px;
+    max-height: 400px;
 }
 
 .answer {
@@ -274,8 +281,7 @@ END PARTICIPATION PAGE
 }
 
 
-
-@media (max-width: 800px) {
+@media (max-width: 900px) {
 
 /*PARTICIPATION PAGE*/
 	
@@ -328,3 +334,11 @@ END PARTICIPATION PAGE
 /*END PFOOTER PAGE*/
 }
 
+@media (max-width: 680px) {
+	
+	/*START PARTICIPATION PAGE*/
+	.answers > ul > li > div > div {
+		display: table-header-group !important;
+	}
+	/*END PARTICIPATION PAGE*/
+}
