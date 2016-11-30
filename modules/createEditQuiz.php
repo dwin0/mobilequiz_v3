@@ -461,26 +461,6 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<label for="quizLogo" class="col-md-2 col-sm-3 control-label">
-						<?php echo $lang["picture"];?>
-					</label>
-					<div class="col-md-10 col-sm-9" id="quizLogoWrapper">
-						<input type="file" id="quizLogo" name="quizLogo" class="btn" onchange="setConfirm(true, 'pic')"
-							accept=".jpeg,.jpg,.bmp,.png,.gif" />
-						<div id="picturePreview">
-						<?php if($mode == "edit" && $quizFetch["picture_link"] != "")
-						{
-							echo "<br /><img style=\"float:left;\" src=\"" . $quizFetch["picture_link"] . "\" width=\"200px\" height=\"75px\" ></img>";
-							?>
-							<img style="margin-left: 10px;" src="assets/icon_delete.png"
-								alt="" title="" height="18px" width="18px"
-								onclick="delPicture(<?php echo $quizFetch["id"];?>)">
-							<?php 
-						}?>	
-						</div>
-					</div>
-				</div>
-				<div class="form-group">
 					<label for="language" class="col-md-2 col-sm-3 control-label"> 
 						<?php echo $lang["quizLanguage"];?> *
 					</label>

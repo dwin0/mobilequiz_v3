@@ -22,7 +22,7 @@ function insertQuiz()
 		if($_POST["mode"] == 'edit')
 		{
 			//fetch owner of this quiz
-			$stmt = $dbh->prepare("select owner_id, picture_link from questionnaire where id = :q_id");
+			$stmt = $dbh->prepare("select owner_id from questionnaire where id = :q_id");
 			$stmt->bindParam(":q_id", $_POST["quiz_id"]);
 			$stmt->execute();
 			$fetchQuizOwnerPic = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -68,15 +68,15 @@ function insertQuiz()
 				$stmt->execute();
 			} while($stmt->rowCount()>0);
 
-			$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, picture_link, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoise_multiplier, noParticipationPeriod, showTaskPaper)
-					values (" . $_SESSION["id"] . ", :subject_id, :name, :starttime, :endtime, :qnaire_token, :random_questions, :random_answers, :limited_time, :result_visible, :result_visible_points, :language, :amount_of_questions, :public, :description, :picLink, ".time().", ".time().", :priority, :amount_participations, :quiz_passed, :singlechoise_multiplier, :noParticipationPeriod, :showTaskPaper)");
+			$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoise_multiplier, noParticipationPeriod, showTaskPaper)
+					values (" . $_SESSION["id"] . ", :subject_id, :name, :starttime, :endtime, :qnaire_token, :random_questions, :random_answers, :limited_time, :result_visible, :result_visible_points, :language, :amount_of_questions, :public, :description, ".time().", ".time().", :priority, :amount_participations, :quiz_passed, :singlechoise_multiplier, :noParticipationPeriod, :showTaskPaper)");
 
 			$stmt->bindParam(":qnaire_token", $qnaire_token);
 
 		} else if($_POST["mode"] == "edit")
 		{
 			$stmt = $dbh->prepare("update questionnaire set subject_id = :subject_id, name = :name, starttime = :starttime, endtime = :endtime, random_questions = :random_questions, random_answers = :random_answers, limited_time = :limited_time, result_visible = :result_visible, result_visible_points = :result_visible_points,
-					language = :language, amount_of_questions = :amount_of_questions, public = :public, description = :description, picture_link = :picLink, last_modified = :last_modified, priority = :priority, amount_participations = :amount_participations, quiz_passed = :quiz_passed, singlechoise_multiplier = :singlechoise_multiplier, noParticipationPeriod = :noParticipationPeriod, showTaskPaper = :showTaskPaper where id = :quiz_id");
+					language = :language, amount_of_questions = :amount_of_questions, public = :public, description = :description, last_modified = :last_modified, priority = :priority, amount_participations = :amount_participations, quiz_passed = :quiz_passed, singlechoise_multiplier = :singlechoise_multiplier, noParticipationPeriod = :noParticipationPeriod, showTaskPaper = :showTaskPaper where id = :quiz_id");
 			$stmt->bindParam(":quiz_id", $_POST["quiz_id"]);
 			$stmt->bindParam(":last_modified", time());
 
@@ -192,74 +192,7 @@ function insertQuiz()
 							$noParticipationPeriod = 0;
 							if($_POST["noParticipationPeriod"] == 1)
 								$noParticipationPeriod = 1;
-									
-									
-								//pictureLink
-								//fileupload
-								if(isset($_FILES["quizLogo"]) && $_FILES["quizLogo"]["name"] != "")
-								{
-									$subCode = 0;
-									//upload picture
-									$imageFileType = pathinfo($_FILES["quizLogo"]["name"], PATHINFO_EXTENSION);
-									$targetDir = "uploadedImages/";
-									$targetFile = $targetDir . "quiz_" . date("d_m_y_H_i_s", time()) . "__" . $_SESSION["id"] . "." . $imageFileType;
-									$uploadOk = true;
-										
-									//check File is an image
-									if(!getimagesize($_FILES["quizLogo"]["tmp_name"]))
-									{
-										$uploadOk = false;
-										$subCode = -8;
-									}
-									//check if file already exists
-									if(file_exists($targetFile))
-									{
-										$uploadOk = false;
-										$subCode = -9;
-									}
-									//check size
-									if($_FILES["quizLogo"]["size"] > 20000000) //TODO: Compress
-									{
-										$uploadOk = false;
-										$subCode = -10;
-									}
-									//check file format | .jpeg,.jpg,.bmp,.png,.gif
-									$imageFileType = strtolower($imageFileType);
-									if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" && $imageFileType != "bmp")
-									{
-										$uploadOk = false;
-										$subCode = -11;
-									}
-									//check if all ok?
-									if($uploadOk)
-									{
-										if(!move_uploaded_file($_FILES["quizLogo"]["tmp_name"], $targetFile))
-										{
-											header("Location: ?p=quiz&code=-6");
-											exit;
-										}
-									} else {
-										header("Location: ?p=quiz&code=" . $subCode);
-										exit;
-									}
-								}
-									
-								$dbNull = NULL;
-									
-								if($_POST["mode"] == "create")
-								{
-									if(isset($_FILES["quizLogo"]) && $_FILES["quizLogo"]["name"] != "")
-										$stmt->bindParam(":picLink", $targetFile);
-										else
-											$stmt->bindParam(":picLink", $dbNull);
-								} else if($_POST["mode"] == "edit")
-								{
-									if(isset($_FILES["quizLogo"]) && $_FILES["quizLogo"]["name"] != "")
-										$stmt->bindParam(":picLink", $targetFile);
-										else
-											$stmt->bindParam(":picLink", $fetchQuizOwnerPic["picture_link"]);
-								}
-								//end
+								
 								$dbSubject = $_POST["topic"];
 								if($dbSubject == 'null' || $dbSubject == 'newTopic')
 								{
