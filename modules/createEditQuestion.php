@@ -61,7 +61,6 @@
 	{
 		var correctAnswersOk1 = false;
 		var correctAnswersOk2 = false;
-		var minimumTwoAnswers = false;
 		var answerCount = 0;
 		for(var i = 0; i < 6; i++)
 		{
@@ -77,28 +76,17 @@
 		
 		if(document.getElementById("questionTypeMultipleChoice").checked)
 		{
-			if(answerCount >= 2)
+			if(answerCount >= 1)
 				correctAnswersOk2 = true;
 		}
-
-		if(document.getElementById("answerText_0").innerHTML != '' && document.getElementById("answerText_1").innerHTML != '')
-			minimumTwoAnswers = true;
-
 		
 		if(!correctAnswersOk1)
 		{
 			$('#correctAnswerHeading').css('color','#ff0000');
 		}
 
-		if(!minimumTwoAnswers)
-		{
-			$('#answerText_0').css('color','#ff0000');
-			$('#answerText_1').css('color','#ff0000');
-		}
-
 		if(((document.getElementById("questionTypeSingleChoice").checked && correctAnswersOk1) || 
-				(document.getElementById("questionTypeMultipleChoice").checked && correctAnswersOk2)) && 
-				minimumTwoAnswers)
+				(document.getElementById("questionTypeMultipleChoice").checked && correctAnswersOk2)))
 		{
 			return true;
 		} else {
@@ -348,7 +336,7 @@
 					$stmt->execute();
 					$answerFetch = $stmt->fetchAll(PDO::FETCH_ASSOC);
 				}
-				for($i = 0; $i < 6; $i++) {
+				for($i = 0; $i < 5; $i++) {
 				?>
 				<div class="row">
 					<div class="col-md-2 col-sm-3 col-xs-3 control-label">
@@ -411,14 +399,6 @@
 									echo " checked";
 							}?>/>
 							<?php echo $lang["multipleChoise"];?>
-						</label>
-						<label class="radio-inline"> <input type="radio"
-							name="questionType" id="questionTypeMultipleChoice"
-							value="filltext" <?php if($mode == "edit") {
-								if($questionFetch["type_id"] == 3)
-									echo " checked";
-							}?>/>
-							<?php echo $lang["cloze"];?>
 						</label>
 					</div>
 				</div>

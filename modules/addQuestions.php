@@ -72,7 +72,7 @@
 			var enabled = event.target.checked;
 
 			$.ajax({
-	 			url: '?p=actionHandler&action=addQuestion',
+	 			url: '?p=actionHandler&action=addQuestionToQuiz',
 	 			type: 'post',
 	 			data: {quizId: quizId, questionId: questionId, checked: enabled},
 	 			dataType: 'json',

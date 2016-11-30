@@ -46,13 +46,14 @@
 			case -1:
 			case -2:
 			case -3:
-			case -5:
 			case -13:
 			case -14:
 			case -15:
 				return "Fehler in der Bearbeitung des Vorgangs (Code: " . $code .")";
 			case -4:
 				return "DB insert Fehler.";
+			case -5:
+				return "Weniger als 2 Antwortm&ouml;glichkeiten oder keine korrekte Antwort ausgew&auml;hlt.";
 			case -6:
 				return "Datentransfer fehlgeschlagen.";
 			case -7:
@@ -277,6 +278,10 @@
 				return "Bild konnte nicht abgespeichert werden.";
 			case -43:
 				return "Nicht unterst&uuml;tzes Bildformat verwendet.";
+			case -44:
+				return "Frage mit nur 1 Antwortm&ouml;glichkeit vorhanden. Bei jeder Frage m&uuml;ssen mindestens 2 vorhanden sein.";
+			case -45:
+				return "Frage ohne 1 korrekte Antwort vorhanden. Mindestens 1 Antwortm&ouml;glichkeit pro Frage muss richtig sein.";
 		}
 	}
 	

@@ -31,7 +31,7 @@ function insertQuestion()
 			$correctAnswers = false;
 			$minimumTwoAnsers = false;
 			$answerCounter = 0;
-			for($i = 0; $i < 6; $i++)
+			for($i = 0; $i < 5; $i++)
 			{
 				if(isset($_POST["correctAnswer_" . $i]) && $_POST["correctAnswer_" . $i] == 1)
 				{
@@ -44,7 +44,7 @@ function insertQuestion()
 					$correctAnswers = true;
 			} else if($_POST["questionType"] == "multiplechoise")
 			{
-				if($answerCounter >= 2)
+				if($answerCounter >= 1)
 					$correctAnswers = true;
 			}
 			if($_POST["answerText_0"] != "" && $_POST["answerText_1"] != "")
@@ -74,7 +74,7 @@ function insertQuestion()
 					$fetchCheckQuestion = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					for($i = 0; $i < count($fetchCheckQuestion); $i++) //all answers- from quesy inc. questionstring
 					{
-						for($j = 0; $j < 6; $j++) //all answers in Excel
+						for($j = 0; $j < 5; $j++)
 						{
 							if(isset($_POST["answerText_" . $j]) && $_POST["answerText_" . $j] != "")
 							{
@@ -165,7 +165,7 @@ function insertQuestion()
 					}
 						
 					//insert / update answers + answer links
-					for($i = 0; $i < 6; $i++) {
+					for($i = 0; $i < 5; $i++) {
 	
 						if(isset($_POST["answerText_" . $i]) && $_POST["answerText_" . $i] != "")
 						{

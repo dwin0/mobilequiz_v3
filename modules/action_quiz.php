@@ -318,6 +318,19 @@ function insertQuiz()
 											exit;
 										}
 										
+										foreach($questions as $question)
+										{
+											if($question->getNumberOfAnswers() < 2)
+											{
+												header("Location: ?p=quiz&code=-44");
+												exit;
+											} else if($question->getNumberOfCorrectAnswers() == 0)
+											{
+												header("Location: ?p=quiz&code=-45");
+												exit;
+											}
+										}
+										
 										
 										if($_POST["addOrReplaceQuestions"] == 0 && $_POST["mode"] == "edit") //replace questions
 										{
@@ -563,7 +576,7 @@ function insertQuiz()
 }
 
 
-function addQuestion()
+function addQuestionToQuiz()
 {
 	global $dbh;
 	$response_array["status"] = "success";
