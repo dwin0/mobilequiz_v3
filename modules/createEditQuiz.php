@@ -314,7 +314,8 @@
 
 		$('#tblListOfQuestions').DataTable({
             'bSort': true,
-            'bPaginate': true,
+            'bPaginate': false,
+            'bInfo': false,
             'bLengthChange': true,
             'aaSorting': [[1, 'asc']],
             'aoColumns': [
@@ -349,7 +350,10 @@
             'aoColumns': [
 				{'bSearchable': false, 'bSortable': false},
 				{'bSearchable': false, 'bSortable': false}
-            ]
+            ],
+            "oLanguage": {
+                "sZeroRecords": "Es sind keine Berechtigungen vergeben worden",
+            }
         });
 
         $('#startDate').datepicker({
@@ -605,7 +609,6 @@
 					$stmt->bindParam(":qId", $quizId);
 					$stmt->execute();
 					$fetchAssigns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-					$dummy = bla;
 					?>
 					<table class="assignTbl" id="assignTbl" style="width: 350px; margin: 0px 0px 0px 10px">
 			            <thead>
@@ -633,6 +636,105 @@
         </div>
         
         <div class="tab-pane fade" id="questions">
+       		<div class="panel-body">
+       		
+       		<input id="btnAddNewQuestion" name="btnAddNewQuestion" class="btn" onclick="" type="button" value="<?php echo $lang["addNewQuestion"];?>" /><br />
+			<input id="btnAddExistingQuestion" name="btnAddExistingQuestion" class="btn" onclick="setConfirm(false, 'btn3');" type="button" value="<?php echo $lang["addExistingQuestion"];?>" style="margin-top: 10px;"/><br />
+			<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openExcelDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
+			<input id="btnImportImageQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcelWithImages"];?>" onclick="openDirectoryDialog()" style="margin-top: 10px; margin-bottom: 10px;"/>&nbsp;<span id="fileNames"><?php echo " <b>" . $lang["noFolderSelected"] . "</b>";?></span><br />
+			
+			<input type="file" style="display:none;" name="btnImportQuestionsFromExcel" id="btnImportQuestionsFromExcel" accept=".xlsx"/>
+			<input type="file" style="display:none;" name="btnImportQuestionsFromDirectory[]" id="btnImportQuestionsFromDirectory" multiple directory="" webkitdirectory="" mozdirectory=""/>
+           
+           	
+           	<table class="tblListOfQuestions" id="tblListOfQuestions" style="width: 100%">
+		            <thead>
+		                <tr>
+		                	<th style="display: none;"></th>
+		                    <th><?php echo $lang["positionShort"];?></th>
+		                    <th></th>
+		                    <th><?php echo $lang["questionQuestionText"];?></th>
+		                    <th><?php echo $lang["questionAmountAnswers"];?></th>
+		                    <th><?php echo $lang["results"];?></th>
+		                    <th><?php echo $lang["quizTableActions"];?></th>
+		                </tr>
+		            </thead>
+		            
+				<?php 
+				if($mode == "edit")
+				{
+					$stmt = $dbh->prepare("select questionnaire.owner_id, question_id, question.text, type_id from qunaire_qu inner join question on question.id = qunaire_qu.question_id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where questionnaire_id = " . $quizFetch["id"] . " order by qunaire_qu.order");
+					$stmt->execute();
+					$fetchQnaireQu = $stmt->fetchAll(PDO::FETCH_ASSOC);
+				
+				?>
+						
+		            <tbody id="sortable">
+		            	<?php for ($i=0; $i < count($fetchQnaireQu); $i++) {
+                        	$qType = "singlechoice";
+	                        if($fetchQnaireQu[$i]["type_id"] == 2)
+	                        	$qType = "multiplechoice";
+                        ?>
+		            	<tr id="<?php echo "question_" . $fetchQnaireQu[$i]["question_id"];?>">
+		            		<td class="qId" style="display: none;"><?php echo $fetchQnaireQu[$i]["question_id"];?></td>
+		            		<td><?php echo ($i+1);?></td>
+		            		<td>
+		            		<img alt="up" src="assets/icon_downUp.png" width="18" height="18" style="cursor: move;">
+		            		</td>
+		            		<td><img width="15" height="15" class="questionTypeInfo" original-title="<?php echo $qType;?>" style="margin-right: 5px; margin-bottom: 3px;" src="assets/icon_<?php echo $qType;?>.png"><?php echo $fetchQnaireQu[$i]["text"];?></td>
+		            		<td>
+		            		<?php 
+			            		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :qId");
+			            		$stmt->bindParam(":qId", $fetchQnaireQu[$i]["question_id"]);
+			            		$stmt->execute();
+		            		
+		            			echo $stmt->rowCount();
+							?>
+		            		</td>
+		            		<td>
+			            		<?php 
+	                        	$stmt = $dbh->prepare("select * from an_qu_user inner join answer_question on answer_question.answer_id = an_qu_user.answer_id where an_qu_user.question_id = :qId");
+	                        	$stmt->bindParam(":qId", $fetchQnaireQu[$i]["question_id"]);
+	                        	$stmt->execute();
+	                        	$fetchAnQuUser = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	                        	$correctCounter = 0;
+	                        	$totalCounter = 0;
+	                        	for($j = 0; $j < count($fetchAnQuUser); $j++)
+	                        	{
+	                        		if($fetchAnQuUser[$j]["is_correct"] == 1 && $fetchAnQuUser[$j]["selected"] == 1)
+	                        		{
+	                        			$correctCounter++;
+	                        		} else if($fetchAnQuUser[$j]["is_correct"] == -1 && $fetchAnQuUser[$j]["selected"] == -1)
+	                        		{
+	                        			$correctCounter++;
+	                        		}
+	                        		if($fetchAnQuUser[$j]["is_correct"] != 0)
+	                        		{
+	                        			$totalCounter++;
+	                        		}
+	                        	}
+	                        	if($totalCounter != 0)
+	                        		echo "(".$correctCounter."/".$totalCounter.") " . number_format(($correctCounter*100)/$totalCounter, 1) . "%";
+	                        	else 
+	                        		echo "-";
+	                        	?>
+		            		</td>
+		            		<td>
+		            		<?php if($_SESSION['role']['admin'] == 1 || $fetchQnaireQu[$i]["owner_id"] == $_SESSION["id"]) {?>
+	                            <a href="?p=createEditQuestion&mode=edit&fromsite=createEditQuiz&quizId=<?php echo $_GET["id"];?>&id=<?php echo $fetchQnaireQu[$i]["question_id"];?>" class="editQuestion" original-title="Frage bearbeiten"><img id="editQuestion" src="assets/icon_edit.png" alt="" height="18px" width="18px"></a>&nbsp;
+	                            <img id="delQuestionImg" style="cursor: pointer;" class="deleteQuestion delQuestionImg" src="assets/icon_delete.png" alt="" original-title="Frage aus dieser Lernkontrolle l&ouml;schen" height="18px" width="18px" onclick="delQuestion(<?php echo $fetchQnaireQu[$i]["question_id"];?>)"><br />
+	                        <?php }?>
+		            		</td>
+		            	</tr>
+		            	<?php }?>
+		            </tbody>
+		        
+		        <?php }?>
+		        </table>
+           </div>
+           
+           
+           
            
         </div>
         
@@ -650,9 +752,7 @@
 		
 		$('#addUser').on('mouseover', function(){
 			this.style.cursor='pointer';
-	    });
-	    
-		
+	    });		
 	    
 	    $('#myTab').tabCollapse();
 	</script>
@@ -986,105 +1086,9 @@
 			<div class="panel-heading">
 				<h3 class="panel-title"><?php echo $lang["addChangeQuestions"];?></h3>
 			</div>
-			<div class="panel-body">
-				<?php 
-				if($mode == "edit")
-				{
-					$stmt = $dbh->prepare("select questionnaire.owner_id, question_id, question.text, type_id from qunaire_qu inner join question on question.id = qunaire_qu.question_id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where questionnaire_id = " . $quizFetch["id"] . " order by qunaire_qu.order");
-					$stmt->execute();
-					$fetchQnaireQu = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-				?>
-				<table class="tblListOfQuestions" id="tblListOfQuestions" style="width: 100%">
-		            <thead>
-		                <tr>
-		                	<th style="display: none;"></th>
-		                    <th><?php echo $lang["positionShort"];?></th>
-		                    <th></th>
-		                    <th><?php echo $lang["questionQuestionText"];?></th>
-		                    <th><?php echo $lang["questionAmountAnswers"];?></th>
-		                    <th><?php echo $lang["results"];?></th>
-		                    <th><?php echo $lang["quizTableActions"];?></th>
-		                </tr>
-		            </thead>
-		            <tbody id="sortable">
-		            	<?php for ($i=0; $i < count($fetchQnaireQu); $i++) {
-                        	$qType = "singlechoice";
-	                        if($fetchQnaireQu[$i]["type_id"] == 2)
-	                        	$qType = "multiplechoice";
-                        ?>
-		            	<tr id="<?php echo "question_" . $fetchQnaireQu[$i]["question_id"];?>">
-		            		<td class="qId" style="display: none;"><?php echo $fetchQnaireQu[$i]["question_id"];?></td>
-		            		<td><?php echo ($i+1);?></td>
-		            		<td>
-		            		<img alt="up" src="assets/icon_downUp.png" width="18" height="18" style="cursor: move;">
-		            		</td>
-		            		<td><img width="15" height="15" class="questionTypeInfo" original-title="<?php echo $qType;?>" style="margin-right: 5px; margin-bottom: 3px;" src="assets/icon_<?php echo $qType;?>.png"><?php echo $fetchQnaireQu[$i]["text"];?></td>
-		            		<td>
-		            		<?php 
-			            		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :qId");
-			            		$stmt->bindParam(":qId", $fetchQnaireQu[$i]["question_id"]);
-			            		$stmt->execute();
-		            		
-		            			echo $stmt->rowCount();
-							?>
-		            		</td>
-		            		<td>
-			            		<?php 
-	                        	$stmt = $dbh->prepare("select * from an_qu_user inner join answer_question on answer_question.answer_id = an_qu_user.answer_id where an_qu_user.question_id = :qId");
-	                        	$stmt->bindParam(":qId", $fetchQnaireQu[$i]["question_id"]);
-	                        	$stmt->execute();
-	                        	$fetchAnQuUser = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	                        	$correctCounter = 0;
-	                        	$totalCounter = 0;
-	                        	for($j = 0; $j < count($fetchAnQuUser); $j++)
-	                        	{
-	                        		if($fetchAnQuUser[$j]["is_correct"] == 1 && $fetchAnQuUser[$j]["selected"] == 1)
-	                        		{
-	                        			$correctCounter++;
-	                        		} else if($fetchAnQuUser[$j]["is_correct"] == -1 && $fetchAnQuUser[$j]["selected"] == -1)
-	                        		{
-	                        			$correctCounter++;
-	                        		}
-	                        		if($fetchAnQuUser[$j]["is_correct"] != 0)
-	                        		{
-	                        			$totalCounter++;
-	                        		}
-	                        	}
-	                        	if($totalCounter != 0)
-	                        		echo "(".$correctCounter."/".$totalCounter.") " . number_format(($correctCounter*100)/$totalCounter, 1) . "%";
-	                        	else 
-	                        		echo "-";
-	                        	?>
-		            		</td>
-		            		<td>
-		            		<?php if($_SESSION['role']['admin'] == 1 || $fetchQnaireQu[$i]["owner_id"] == $_SESSION["id"]) {?>
-	                            <a href="?p=createEditQuestion&mode=edit&fromsite=createEditQuiz&quizId=<?php echo $_GET["id"];?>&id=<?php echo $fetchQnaireQu[$i]["question_id"];?>" class="editQuestion" original-title="Frage bearbeiten"><img id="editQuestion" src="assets/icon_edit.png" alt="" height="18px" width="18px"></a>&nbsp;
-	                            <img id="delQuestionImg" style="cursor: pointer;" class="deleteQuestion delQuestionImg" src="assets/icon_delete.png" alt="" original-title="Frage aus dieser Lernkontrolle l&ouml;schen" height="18px" width="18px" onclick="delQuestion(<?php echo $fetchQnaireQu[$i]["question_id"];?>)"><br />
-	                        <?php }?>
-		            		</td>
-		            	</tr>
-		            	<?php }?>
-		            </tbody>
-		        </table>
-		        <?php }?>
-		        <br />
-		        <div style="margin-top: 54px;">
-					<input id="btnAddQuestion" name="btnAddQuestion" class="btn" onclick="setConfirm(false, 'btn3')" type="submit" value="<?php echo $lang["addNewQuestion"];?>" /><br />
-					<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openExcelDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
-					<input id="btnImportImageQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcelWithImages"];?>" onclick="openDirectoryDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileNames"><?php echo " <b>" . $lang["noFolderSelected"] . "</b>";?></span><br />
-					<label class="radio-inline">
-						<input type="radio" name="addOrReplaceQuestions" value="0" style="margin-left: 30px;">
-						<?php echo $lang["replaceQuestions"];?>
-					</label><br />
-					<label class="radio-inline">
-						<input type="radio" name="addOrReplaceQuestions" value="1" checked style="margin-left: 30px;">
-						<?php echo $lang["addQuestions"];?>
-					</label>
-				</div>
-				<input type="file" style="display:none;" name="btnImportQuestionsFromExcel" id="btnImportQuestionsFromExcel" accept=".xlsx"/>
-				<input type="file" style="display:none;" name="btnImportQuestionsFromDirectory[]" id="btnImportQuestionsFromDirectory" multiple directory="" webkitdirectory="" mozdirectory=""/>
-			</div>
+			
+			
+			
 		</div>
 		<div class="panel panel-default">
 			<div class="panel-heading" id="assignQuizToGroup">
