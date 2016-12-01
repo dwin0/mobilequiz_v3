@@ -412,6 +412,9 @@
 	});
     
 </script>
+
+<script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
+<link rel="stylesheet" type="text/css" href="css/style.css" />
 <div class="container theme-showcase">
 	<div class="page-header">
 		<h1><?php echo $mode == "create" ? $lang["createQuiz"] : str_replace("[1]", '&laquo;' . $quizFetch["name"] . '&raquo;', $lang["editQuiz"]);?></h1>
@@ -420,21 +423,23 @@
 	<p id="createEditQuizActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<?php }?>
 	<p><?php echo $lang["requiredFields"];?></p>
-	<form id="createQuiz"
-		action="<?php echo "?p=actionHandler&action=insertQuiz&mode=" . $mode;?>"
-		class="form-horizontal" method="POST" enctype="multipart/form-data"
-		onsubmit="return formCheck()">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h3 class="panel-title"><?php echo $lang["generalInformations"]?></h3>
-			</div>
-			<div class="panel-body">
+	
+	<div class="container">
+		<ul id="myTab" class="nav nav-tabs">
+	        <li class="active"><a href="#generalInformation" data-toggle="tab">Allgemeine Informationen</a></li>
+	        <li><a href="#questions" data-toggle="tab">Fragen</a></li>
+	        <li><a href="#execution" data-toggle="tab">Durchf&uuml;hrung</a></li>
+	    </ul>
+	
+	<div id="myTabContent" class="tab-content" >
+        <div class="tab-pane fade in active" id="generalInformation">
+			<div class="container">
 				<div class="form-group">
 					<label for="quizText" class="col-md-2 col-sm-3 control-label">
 						<?php echo $lang["quizCreateName"];?> *
 					</label>
-					<div class="col-md-10 col-sm-9">
-						<input id="quizText" name="quizText" class="form-control"
+					<div class="col-md-9 col-sm-8">
+						<input id="quizText" name="quizText" class="form-control" type="text"
 							onchange="setConfirm(true, 'name')"
 							required="required"
 							placeholder="<?php echo $lang["quizCreateName"] . " (" . $lang["maximum"] . " " . $maxCharactersQuiz . " " . $lang["characters"] . ")";?>"
@@ -450,7 +455,7 @@
 					<label for="description" class="col-md-2 col-sm-3 control-label">
 						<?php echo $lang["description"];?>
 					</label>
-					<div class="col-md-10 col-sm-9">
+					<div class="col-md-9 col-sm-8">
 						<textarea name="description" id="description" onchange="setConfirm(true, 'desc')"
 							class="form-control text-input" wrap="soft" placeholder="<?php echo $lang["descriptionOfQuiz"] . " (" . $lang["maximum"] . " " . $maxCharactersQuizDesc . " " . $lang["characters"] . ")";?>"><?php 
 							if($mode == "edit")
@@ -464,7 +469,7 @@
 					<label for="language" class="col-md-2 col-sm-3 control-label"> 
 						<?php echo $lang["quizLanguage"];?> *
 					</label>
-					<div class="col-md-10 col-sm-9">
+					<div class="col-md-9 col-sm-8">
 						<select id="language" class="form-control" name="language" required="required" onchange="showNewLanguageInput()">
 		                	<?php 
 		                	$stmt = $dbh->prepare("select id from questionnaire");
@@ -496,7 +501,7 @@
 						class="col-md-2 col-sm-3 control-label"> 
 						<?php echo $lang["quizTableTopic"];?> *
 					</label>
-					<div class="col-md-10 col-sm-9">
+					<div class="col-md-9 col-sm-8">
 						<select id="topic" class="form-control" name="topic" required="required" onchange="showNewTopicInput()">
 			                    <?php 
 			                    $stmt = $dbh->prepare("select * from subjects");
@@ -534,7 +539,7 @@
 					<label class="col-md-2 col-sm-3 control-label"> 
 			        	<?php echo $lang["createdBy"];?>
 					</label>
-					<div class="col-md-10 col-sm-9">
+					<div class="col-md-9 col-sm-8">
 						<p class="form-control-static">
 						<?php 
 							if($mode == "edit")
@@ -549,7 +554,7 @@
 					<label class="col-md-2 col-sm-3 control-label"> 
 			        	<?php echo $lang["createdAt"];?>
 					</label>
-					<div class="col-md-10 col-sm-9">
+					<div class="col-md-9 col-sm-8">
 						<p class="form-control-static">
 						<?php 
 							if($mode == "edit")
@@ -564,7 +569,7 @@
 					<label class="col-md-2 col-sm-3 control-label"> 
 			        	<?php echo $lang["lastModified"];?>
 					</label>
-					<div class="col-md-10 col-sm-9">
+					<div class="col-md-9 col-sm-8">
 						<p class="form-control-static">
 						<?php 
 							if($mode == "edit")
@@ -576,8 +581,91 @@
 					</div>
 				</div>
 				<?php }?>
+				
+
+				<div class="form-group">
+					<div> 
+						<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
+					</div>
+					<div class="col-md-9 col-sm-8">
+						<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32">
+					</div>
+				</div>
+				<div class="from-group">
+					<div class="col-md-9 col-sm-8" id="ajaxAnswer"></div>
+				</div>
+				<div class="form-group">
+					<?php 
+					$quizId = -1;
+					if($mode == "edit")
+					{
+						$quizId = $_GET["id"];
+					}
+					$stmt = $dbh->prepare("select user.email, user_id from qunaire_assigned_to inner join user on user.id = qunaire_assigned_to.user_id where questionnaire_id = :qId");
+					$stmt->bindParam(":qId", $quizId);
+					$stmt->execute();
+					$fetchAssigns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+					$dummy = bla;
+					?>
+					<table class="assignTbl" id="assignTbl" style="width: 350px; margin: 0px 0px 0px 10px">
+			            <thead>
+			                <tr>
+			                    <th><?php echo $lang["email"];?></th>
+			                    <th><?php echo $lang["quizTableActions"];?></th>
+			                </tr>
+			            </thead>
+			            <tbody>
+			            	<?php for ($i = 0; $i < count($fetchAssigns); $i++) {?>
+			            	<tr id="<?php echo "assignation_" . $fetchAssigns[$i]["user_id"];?>">
+			            		<td><?php echo $fetchAssigns[$i]["email"];?></td>
+			            		<td><img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(<?php echo $fetchAssigns[$i]["user_id"];?>)"></td>
+			            	</tr>
+			            	<?php }?>
+			            </tbody>
+		        	</table>
+	        	</div>
+
+				
+				
+				
 			</div>
-		</div>
+
+        </div>
+        
+        <div class="tab-pane fade" id="questions">
+           
+        </div>
+        
+        <div class="tab-pane fade" id="execution">
+
+        </div>
+    </div>
+	
+	</div>
+	
+	<script type="text/javascript">
+		$('#addUser').on('click', function(){
+			addCreator(<?php echo $quizFetch["id"];?>);
+	    });
+		
+		$('#addUser').on('mouseover', function(){
+			this.style.cursor='pointer';
+	    });
+	    
+		
+	    
+	    $('#myTab').tabCollapse();
+	</script>
+	
+	
+	
+	
+	<form id="createQuiz"
+		action="<?php echo "?p=actionHandler&action=insertQuiz&mode=" . $mode;?>"
+		class="form-horizontal" method="POST" enctype="multipart/form-data"
+		onsubmit="return formCheck()">
+		
+		<br>
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h3 class="panel-title"><?php echo $lang["participationOptions"];?></h3>
@@ -1057,55 +1145,8 @@
 				</div>
 			</div>
 		</div>
-		<div class="panel panel-default">
-			<div class="panel-heading" id="additionalSettingsHeading">
-				<span id="arrow1" style="float: left; margin-right: 7px;">&#9654;</span>
-				<h3 class="panel-title"><?php echo $lang["additionalsettings"];?></h3>
-			</div>
-			<div class="panel-body" id="additionalSettingsContent">
-				<div class="row">
-					<div class="col-md-3 col-sm-3"> 
-						<label><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
-					</div>
-					<div class="col-md-9 col-sm-9 radio-inline" style="padding-top: 0px;">
-						<input type="email" id="autocompleteUsers"><img style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
-					</div>
-				</div>
-				<div class="row">
-					<div style="margin: 0px 0px 0px 10px;" id="ajaxAnswer">
-					</div>
-				</div>
-				<div class="row">
-					<?php 
-					$quizId = -1;
-					if($mode == "edit")
-					{
-						$quizId = $_GET["id"];
-					}
-					$stmt = $dbh->prepare("select user.email, user_id from qunaire_assigned_to inner join user on user.id = qunaire_assigned_to.user_id where questionnaire_id = :qId");
-					$stmt->bindParam(":qId", $quizId);
-					$stmt->execute();
-					$fetchAssigns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-					?>
-					<table class="assignTbl" id="assignTbl" style="width: 350px; margin: 0px 0px 0px 10px;">
-			            <thead>
-			                <tr>
-			                    <th><?php echo $lang["email"];?></th>
-			                    <th><?php echo $lang["quizTableActions"];?></th>
-			                </tr>
-			            </thead>
-			            <tbody>
-			            	<?php for ($i = 0; $i < count($fetchAssigns); $i++) {?>
-			            	<tr id="<?php echo "assignation_" . $fetchAssigns[$i]["user_id"];?>">
-			            		<td><?php echo $fetchAssigns[$i]["email"];?></td>
-			            		<td><img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(<?php echo $fetchAssigns[$i]["user_id"];?>)"></td>
-			            	</tr>
-			            	<?php }?>
-			            </tbody>
-		        	</table>
-	        	</div>
-			</div>
-		</div>
+
+		
 		<div style="float: left;">
 			<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
 		</div>

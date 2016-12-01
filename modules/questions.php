@@ -98,7 +98,7 @@
         	'sScrollY': "600px",
             'bScrollCollapse': true,
             'bSort': true,
-            'bPaginate': false,
+            'bPaginate': true,
             'bLengthChange': false,
             "sDom": '<"toolbar">frtip',
             "oLanguage": {
