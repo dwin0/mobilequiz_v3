@@ -80,9 +80,16 @@
 	padding-bottom: 2px;
 }
 
+.btn {
+    white-space: normal;
+}
+
+
+/*
+CREATE EDIT QUIZ PAGE
+*/
 
 .tab-content {
-
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
@@ -95,9 +102,10 @@
     margin-bottom: 0;
 }
 
-.col-md-9 {
-	margin-bottom: 20px;
-}
+/*
+END CREATE EDIT QUIZ PAGE
+*/
+
 
 /*
 PARTICIPATION PAGE
