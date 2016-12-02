@@ -39,6 +39,9 @@
 		case "addQuestionToQuiz":
 			addQuestionToQuiz();
 			break;
+		case "updateQuestion":
+			updateQuestion();
+			break;
 		case "delQuestionFromQuiz":
 			deleteQuestionFromQuiz();
 			break;

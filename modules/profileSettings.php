@@ -284,19 +284,46 @@ if($_POST["action"] == 'changeRole')
 				echo "failed";
 			$fetchRequest = $stmt->fetch(PDO::FETCH_ASSOC);
 			
-			$stmt = $dbh->prepare("update questionnaire set language = :language where id = :qId");
-			$stmt->bindParam(":language", $fetchRequest["language"]);
-			$stmt->bindParam(":qId", $fetchRequest["questionnaire_id"]);
-			if($stmt->execute())
+			if(isset($fetchRequest["questionnaire_id"]))
 			{
-				$stmt = $dbh->prepare("delete from language_request where id = :id");
-				$stmt->bindParam(":id", $_POST["languageRequestId"]);
+				$stmt = $dbh->prepare("update questionnaire set language = :language where id = :qId");
+				$stmt->bindParam(":language", $fetchRequest["language"]);
+				$stmt->bindParam(":qId", $fetchRequest["questionnaire_id"]);
 				if($stmt->execute())
-					echo "ok1";
-				else 
+				{
+					$stmt = $dbh->prepare("delete from language_request where id = :id");
+					$stmt->bindParam(":id", $_POST["languageRequestId"]);
+					if($stmt->execute())
+					{
+						echo "ok1";
+					} else {
+						echo "failed";
+					}
+				} else {
 					echo "failed";
-			} else 
+				}
+			} else if(isset($fetchRequest["question_id"]))
+			{
+				$stmt = $dbh->prepare("update question set language = :language where id = :qestionId");
+				$stmt->bindParam(":language", $fetchRequest["language"]);
+				$stmt->bindParam(":qestionId", $fetchRequest["question_id"]);
+				if($stmt->execute())
+				{
+					$stmt = $dbh->prepare("delete from language_request where id = :id");
+					$stmt->bindParam(":id", $_POST["languageRequestId"]);
+					if($stmt->execute())
+					{
+						echo "ok1";
+					} else {
+						echo "failed";
+					}
+				} else {
+					echo "failed";
+				}
+			} else {
 				echo "failed";
+			}
+			
 			
 		} else if($_POST["decision"] == 0)
 		{

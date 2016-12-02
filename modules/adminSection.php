@@ -784,7 +784,7 @@ $roleNames = array(
 	}
 	if($_SESSION["role"]["manager"] == 1) {
 		//language_request query
-		$stmt = $dbh->prepare("select language_request.*, user.email, user_data.firstname, user_data.lastname, questionnaire.name from language_request inner join user on user.id = language_request.user_id inner join user_data on user.id = user_data.user_id inner join questionnaire on questionnaire.id = language_request.questionnaire_id");
+		$stmt = $dbh->prepare("select language_request.*, user.email, user_data.firstname, user_data.lastname from language_request inner join user on user.id = language_request.user_id inner join user_data on user.id = user_data.user_id");
 		$stmt->execute();
 		$fetchLanguageRequest = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	?>
@@ -806,7 +806,7 @@ $roleNames = array(
 		                    	<?php echo $lang["email"];?>
 		                    </th>
 							<th>
-		                    	<?php echo $lang["quizCreateName"];?>
+		                    	<?php echo $lang["quizCreateName"] . " / " . $lang["questionQuestionTextOnly"];?>
 		                    </th>
 							<th>
 		                    	<?php echo $lang["requestedLanguage"];?>
@@ -829,7 +829,23 @@ $roleNames = array(
 		                		<?php echo htmlspecialchars($fetchLanguageRequest[$i]["email"]);?>
 		                	</td>
 							<td>
-		                		<?php echo htmlspecialchars($fetchLanguageRequest[$i]["name"]);?>
+		                		<?php
+		                		
+		                		if(isset($fetchLanguageRequest[$i]["questionnaire_id"]))
+		                		{
+		                			$stmt = $dbh->prepare("select name from questionnaire where id = :qId");
+		                			$stmt->bindParam(":qId", $fetchLanguageRequest[$i]["questionnaire_id"]);
+		                			$stmt->execute();
+		                			$name = $stmt->fetch(PDO::FETCH_ASSOC);
+		                		} else if(isset($fetchLanguageRequest[$i]["question_id"]))
+		                		{
+		                			$stmt = $dbh->prepare("select text from question where id = :qestionId");
+		                			$stmt->bindParam(":qestionId", $fetchLanguageRequest[$i]["question_id"]);
+		                			$stmt->execute();
+		                			$name = $stmt->fetch(PDO::FETCH_ASSOC);
+		                		}
+		                		
+		                		echo htmlspecialchars($name["text"]);?>
 							</td>
 							<td>
 		                		<?php echo htmlspecialchars($fetchLanguageRequest[$i]["language"]);?>

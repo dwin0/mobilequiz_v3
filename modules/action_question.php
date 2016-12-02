@@ -1,5 +1,155 @@
 <?php
 
+function updateQuestion()
+{
+	global $dbh;
+	$response_array["status"] = "OK";
+	
+	//check if owner of admin
+	$stmt = $dbh->prepare("select owner_id from question where id = :question_id");
+	$stmt->bindParam(":question_id", $_POST["questionId"]);
+	$stmt->execute();
+	$fetchQuizOwnerPic = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	if($fetchQuizOwnerPic["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1)
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "You are not allowed to update this question.";
+	}
+	
+	$field = $_GET["field"];
+	if(!isset($field) || !isset($_POST[$field]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Not all parameters received.";
+	}
+	
+	switch($field)
+	{
+		case "questionText":
+			$response_array = updateQuestionText($_POST["questionText"], $_POST["questionId"], $dbh);
+			break;
+		case "keywords":
+			$response_array = updateQuestionKeywords($_POST["keywords"], $_POST["questionId"], $dbh);
+			break;
+		case "newLanguage":
+			$response_array = updateQuestionLanguage($_POST["newLanguage"], $_POST["questionId"], $dbh);
+			break;
+			
+			
+	}
+	
+	echo json_encode($response_array);
+	exit;
+}
+
+
+function updateQuestionText($questionText, $questionId, $dbh)
+{
+	$response_array["status"] = "OK";
+	
+	$stmt = $dbh->prepare("update question set text = :text, last_modified = ".time()." where id = :question_id");
+	$stmt->bindParam(":text", $questionText);
+	$stmt->bindParam(":question_id", $questionId);
+		
+	if(! $stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database";
+	}
+	
+	return $response_array;
+}
+
+function updateQuestionKeywords($keywords, $questionId, $dbh)
+{
+	$response_array["status"] = "OK";
+	
+	$keywordArray = explode(",", $keywords);
+	$assocKeywordFetch = array();
+		
+	for($i = 0; $i < count($keywordArray); $i++)
+	{
+		if($keywordArray[$i] == "") { continue; }
+	
+		$stmt = $dbh->prepare("select id from keyword where word = :keyword");
+		$stmt->bindParam(":keyword", $keywordArray[$i]);
+		$stmt->execute();
+		$keywordFetch = $stmt->fetch(PDO::FETCH_ASSOC);
+		if($stmt->rowCount() > 0)
+		{
+			$assocKeywordFetch[$keywordArray[$i]] = $keywordFetch["id"];
+		} else {
+			$stmt = $dbh->prepare("insert into keyword (word) values (:keyword)");
+			$stmt->bindParam(":keyword", $keywordArray[$i]);
+			if(!$stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Database-Error";
+			}
+			$assocKeywordFetch[$keywordArray[$i]] = $dbh->lastInsertId();
+		}
+	}
+	
+	$stmt = $dbh->prepare("delete from qu_keyword where qu_id = :qu_id");
+	$stmt->bindParam(":qu_id", $questionId);
+	$stmt->execute();
+		
+	for($i = 0; $i < count($keywordArray); $i++)
+	{
+		$stmt = $dbh->prepare("insert into qu_keyword (qu_id, keyword_id) values (:question_id, :keyword_id)");
+		$stmt->bindParam(":keyword_id", $assocKeywordFetch[$keywordArray[$i]]);
+		$stmt->bindParam(":question_id", $questionId);
+		if(!$stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't update database";
+		}
+	}
+	
+	return $response_array;
+}
+
+
+function updateQuestionLanguage($language, $questionId, $dbh)
+{
+	$response_array["status"] = "OK";
+		
+	$stmt = $dbh->prepare("select language from question group by language");
+	$stmt->execute();
+	$allLanguages = $stmt->fetchAll();
+	
+	for($i = 0; $i < count($allLanguages); $i++){
+		if($allLanguages[$i]["language"] == $language)
+		{
+			$existingLanguage = true;
+				
+			$stmt = $dbh->prepare("update question set language = :language, last_modified = ".time()." where id = :question_id");
+			$stmt->bindParam(":language", $language);
+			$stmt->bindParam(":question_id", $questionId);
+				
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database";
+			}
+		}
+	}
+		
+	if(!$existingLanguage)
+	{
+		$stmt = $dbh->prepare("insert into language_request (user_id, language, timestamp, question_id) values (:user_id, :language, " . time() . ", :question_id)");
+		$stmt->bindParam(":user_id", $_SESSION["id"]);
+		$stmt->bindParam(":language", $language);
+		$stmt->bindParam(":question_id", $questionId);
+		$stmt->execute();
+	}
+		
+	return $response_array;
+}
+
+
+
 function insertQuestion()
 {
 	global $dbh;

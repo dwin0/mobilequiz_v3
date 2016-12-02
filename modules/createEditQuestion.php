@@ -1,4 +1,7 @@
 <?php 
+
+	global $dbh;
+
 	if($_SESSION["role"]["user"] == 1)
 	{
 		if($_SESSION["role"]["creator"] != 1)
@@ -25,7 +28,7 @@
 	$maxCharactersTopic = 30;
 	$maxCharactersAnswer = 250;
 	
-	if($mode == edit)
+	if($mode == "edit")
 	{
 		if(isset($_GET["id"]))
 		{
@@ -45,6 +48,20 @@
 			$code = -1;
 			$codeText = "ID nicht gesetzt.";
 		}
+	} else if($mode == "create")
+	{
+		if($_SESSION["language"] == "ger")
+		{
+			$language = "Deutsch";
+		} else {
+			$language = "English";
+		}
+		
+		$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link)
+							values ('', " . $_SESSION["id"] . ", 1, NULL, '" . $language . "', " . time() . ", 1, " . time() . ", NULL);");		
+		$stmt->execute();
+		
+		$newQuestionId = $dbh->lastInsertId();
 	}
 ?>
 
@@ -120,11 +137,7 @@
 				</label>
 				<div class="col-md-10 col-sm-9">
 					<select id="language" class="form-control" name="language">
-	                	<?php 
-	                	$stmt = $dbh->prepare("select id from question");
-	                	$stmt->execute();
-	                	$allQuestionsCount = $stmt->rowCount();
-	                	
+	                	<?php
 	                    $stmt = $dbh->prepare("select language from question group by language");
 	                    $stmt->execute();
 	                    $result = $stmt->fetchAll();
@@ -184,22 +197,64 @@
 			
 			<!-- Question-Image -->
 			<div class="form-group">
-				<label for="questionLogo" class="col-md-2 col-sm-3 control-label">
-					<?php echo $lang["picture"];?>
-				</label>
-				<div class="col-md-10 col-sm-9" id="questionLogoWrapper">
-					<input type="file" id="questionLogo" name="questionLogo"
-						class="btn" accept=".jpeg,.jpg,.bmp,.png,.gif"/>
-					<div id="picturePreview">
-					<?php if($mode == "edit" && $questionFetch["picture_link"] != "")
-					{
-						echo "<br /><img style=\"float:left; max-width:300px; max-height:300px\" src=\"" . $questionFetch["picture_link"] . "\" width=\"50%\" ></img>";
-						?>
-						<img style="margin-left: 10px;" src="assets/icon_delete.png" alt="" title="" height="18px" width="18px" onclick="delPicture(<?php echo $questionFetch["id"];?>)">
-						<?php 
-					}?>	
+				
+				<form id="imageForm">
+				
+					<label for="questionLogo" class="col-md-2 col-sm-3 control-label">
+						<?php echo $lang["picture"];?>
+					</label>
+					<div class="col-md-10 col-sm-9" id="questionLogoWrapper">
+						<input type="file" id="questionLogo" name="questionLogo"
+							class="btn" accept=".jpeg,.jpg,.bmp,.png,.gif"/>
+							
+						<div id="picturePreview">
+						<?php if($mode == "edit" && $questionFetch["picture_link"] != "")
+						{
+							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px\" src=\"" . $questionFetch["picture_link"] . "\" width=\"50%\" id=\"questionImage\"></img>";
+							?>
+							<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+							    <div class="pswp__bg"></div>
+							    <div class="pswp__scroll-wrap">
+							
+							        <div class="pswp__container">
+							            <!-- don't modify these 3 pswp__item elements, data is added later on -->
+							            <div class="pswp__item"></div>
+							            <div class="pswp__item"></div>
+							            <div class="pswp__item"></div>
+							        </div>
+							
+							        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+							        <div class="pswp__ui pswp__ui--hidden">
+							
+							            <div class="pswp__top-bar">
+							            
+							            <div class="pswp__counter"></div>
+							
+							                <button id="closePhoto">Schliessen</button>
+							                
+							                <div class="pswp__preloader">
+							                    <div class="pswp__preloader__icn">
+							                      <div class="pswp__preloader__cut">
+							                        <div class="pswp__preloader__donut"></div>
+							                      </div>
+							                    </div>
+							                </div>
+							            </div>
+							
+							            <div class="pswp__caption">
+							                <div class="pswp__caption__center"></div>
+							            </div>
+							
+							          </div>
+								</div>
+							</div>
+							<img style="margin-left: 10px;" src="assets/icon_delete.png" alt="" title="" height="18px" width="18px" onclick="delPicture(<?php echo $questionFetch["id"];?>)">
+							
+							<?php 
+						}?>	
+						</div>
 					</div>
-				</div>
+				</form>
 			</div>
 			
 			
@@ -375,14 +430,26 @@
 				</div>
 			</div>
 			
-			<div style="text-align: right">
-				<input type="submit" class="btn" name="btnSave" value="<?php echo $lang["saveQuestion"]; ?>">
-			</div>
-			
 		</div>
-		
-		
 	</div>
+	
+	<div style="text-align: left; margin-top: 10px; float: left">
+		<input type="submit" class="btn" name="btnSave" value="<?php echo $lang["buttonBackToOverview"]; ?>">
+	</div>
+	
+	<div style="text-align: right; margin-top: 10px">
+		
+		<input type="submit" class="btn" name="btnSaveAndNext" value="<?php echo $lang["saveQuestion"] . " " . $lang["createNext"];?>" />
+		<input type="submit" class="btn" name="btnSave" value="<?php echo $lang["saveQuestion"]; ?>">
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -692,7 +759,7 @@
 
 			<div style="text-align: right">
 				<input type="hidden" name="mode" value="<?php echo $mode;?>">
-				<input type="hidden" name="question_id" value="<?php echo $questionFetch["id"];?>">
+				<input type="hidden" name="question_id" value="<?php echo ($mode == "edit") ? $questionFetch["id"] : $newQuestionId;?>">
 				<input type="hidden" name="fromsite" value="<?php echo isset($_GET["fromsite"]) ? $_GET["fromsite"] : '';?>">
 				<input type="hidden" name="fromQuizId" value="<?php echo isset($_GET["quizId"]) ? $_GET["quizId"] : '';?>">
 				<input type="submit" class="btn" name="btnSave" form="createQuestion"
@@ -708,9 +775,126 @@
 
 
 <script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
+<script type="text/javascript" src="js/photoSwipeController.js"></script>
 <script type="text/javascript">
 
+	$(document).ready(function() {
+		
+		$(document).on("change", "#questionText, #keywords, #language, #newLanguage, #newTopic, #questionLogo, " +
+				"[name='isPrivate'], [name='questionType'], [name^='answerText_']", function(event) {
+
+			if(this.value==this.oldvalue)return; //not really changed
+
+			var target = event.target.id;
+			if(target == "") {
+				target = event.target.name;
+			}
+			
+			var url = '?p=actionHandler&action=updateQuestion';
+			var field;
+			var data = new FormData();
+			
+
+			switch(target) {
+				case "questionText":
+					field = "questionText";
+				    data.append("questionText", event.target.value);
+					break;
+				case "keywords":
+					field = "keywords";
+				    data.append("keywords", event.target.value);
+					break;
+				case "language":
+				case "newLanguage":
+					field = "newLanguage";
+					data.append("newLanguage", event.target.value);
+					break;
+				case "newTopic":
+					console.log("keywords");
+					break;
+				case "questionLogo":
+
+					var form = $("questionForm");
+					console.log(form);
+
+					file = event.target.files[0];
+					console.log(file);
+
+					var data = new FormData();
+				    data.append("questionImage", file, file.name);
+
+
+				    $.ajax({
+				        url: '?p=actionHandler&action=addImageToQuestion',
+				        type: 'POST',
+				        data: data,
+				        cache: false,
+				        dataType: 'json',
+				        processData: false, // Don't process the files
+				        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+				        success: function(data)
+				        {
+				            console.log(data);
+				        },
+				        error: function(data)
+				        {
+				            console.log(data);
+				        }
+				    });
+					break;
+				case "isPrivate":
+					console.log("isPrivate");
+					break;
+				case "questionTypeSingleChoice":
+					console.log("questionTypeSingleChoice");
+					break;
+				case "questionTypeMultipleChoice":
+					console.log("questionTypeMultipleChoice");
+					break;
+				
+			}
+
+			if(event.target.name.startsWith("answerText_"))
+			{
+				console.log(event.target.name);
+			}
+
+			uploadChange(url, data, field);
+	        
+	    });
+	});
+
+	function uploadChange(url, data, field) 
+	{
+		data.append("questionId", $("[name='question_id']").val());
+		
+		$.ajax({
+	        url: url + '&field=' + field,
+	        type: 'POST',
+	        data: data,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false,
+	        contentType: false,
+	        success: function(data)
+	        {
+	            if(data.status == "OK")
+	            {
+		            console.log("OK");
+	            } else {
+					console.log("Error: " + data.text);
+	            }
+	        },
+	        error: function()
+	        {
+	            console.log("Ajax couldn't send data");
+	        }
+	    });
+	}
+	
+
 	$('#questionTab').tabCollapse();
+	
 
 	function formCheck()
 	{

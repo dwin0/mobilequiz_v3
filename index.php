@@ -90,6 +90,12 @@ ob_end_clean();
 
 <script src="locales/bootstrap-datepicker.de.min.js"></script>
 
+<!-- PhotoSwipe -->
+<link rel="stylesheet" href="PhotoSwipe/photoswipe.css"> 
+<link rel="stylesheet" href="PhotoSwipe/default-skin/default-skin.css"> 
+<script src="PhotoSwipe/photoswipe.min.js"></script> 
+<script src="PhotoSwipe/photoswipe-ui-default.min.js"></script>
+
 </head>
 <body>
 <div id="wrap">

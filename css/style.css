@@ -265,6 +265,15 @@ END PARTICIPATION PAGE
 	#questionType {
 		width: 50%;
 	}
+	
+	#closePhoto {
+		width: 100%;
+		border-radius: 15px;
+		font-size: 18px;
+		background: white;
+		font-weight: bold;
+		padding: 12px;
+	}
 
 	/*END CREATE_EDIT_QUESTION PAGE*/
 
