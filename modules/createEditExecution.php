@@ -1,9 +1,13 @@
+<script type="text/javascript">
+
+</script>
+
 
 <script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <div class="container theme-showcase">
 	<div class="page-header">
-		<h1><?php echo $mode == "create" ? $lang["createQuiz"] : str_replace("[1]", '&laquo;' . $quizFetch["name"] . '&raquo;', $lang["editQuiz"]);?></h1>
+		<h1><?php echo $mode == "create" ? $lang["addNewExecution"] : str_replace("[1]", '&laquo;' . "Pseudoname TODO mit fetch ersetzen" . '&raquo;', $lang["editExecution"]);?></h1>
 	</div>
 
 	<p><?php echo $lang["requiredFields"];?></p>

@@ -405,7 +405,8 @@
             autoclose: true,
             todayHighlight: true
         });
-        
+
+        //TODO gehört in createEditExecution
 		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
 			connectWith: ".assignGroupToQuizCconnectedSortable"
 		}).disableSelection();
@@ -472,7 +473,7 @@
 				<label for="quizText" class="col-md-2 col-sm-3 control-label">
 					<?php echo $lang["quizCreateName"];?> *
 				</label>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<input id="quizText" name="quizText" class="form-control" type="text"
 						onchange="setConfirm(true, 'name')"
 						required="required"
@@ -489,7 +490,7 @@
 				<label for="description" class="col-md-2 col-sm-3 control-label">
 					<?php echo $lang["description"];?>
 				</label>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<textarea name="description" id="description" onchange="setConfirm(true, 'desc')"
 						class="form-control text-input" wrap="soft" placeholder="<?php echo $lang["descriptionOfQuiz"] . " (" . $lang["maximum"] . " " . $maxCharactersQuizDesc . " " . $lang["characters"] . ")";?>"><?php 
 						if($mode == "edit")
@@ -503,7 +504,7 @@
 				<label for="language" class="col-md-2 col-sm-3 control-label"> 
 					<?php echo $lang["quizLanguage"];?> *
 				</label>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<select id="language" class="form-control" name="language" required="required" onchange="showNewLanguageInput()">
 	                	<?php 
 	                	$stmt = $dbh->prepare("select id from questionnaire");
@@ -535,7 +536,7 @@
 					class="col-md-2 col-sm-3 control-label"> 
 					<?php echo $lang["quizTableTopic"];?> *
 				</label>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<select id="topic" class="form-control" name="topic" required="required" onchange="showNewTopicInput()">
 		                    <?php 
 		                    $stmt = $dbh->prepare("select * from subjects");
@@ -573,7 +574,7 @@
 				<label class="col-md-2 col-sm-3 control-label"> 
 		        	<?php echo $lang["createdBy"];?>
 				</label>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<p class="form-control-static">
 					<?php 
 						if($mode == "edit")
@@ -588,7 +589,7 @@
 				<label class="col-md-2 col-sm-3 control-label"> 
 		        	<?php echo $lang["createdAt"];?>
 				</label>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<p class="form-control-static">
 					<?php 
 						if($mode == "edit")
@@ -603,7 +604,7 @@
 				<label class="col-md-2 col-sm-3 control-label"> 
 		        	<?php echo $lang["lastModified"];?>
 				</label>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<p class="form-control-static">
 					<?php 
 						if($mode == "edit")
@@ -621,12 +622,12 @@
 				<div> 
 					<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
 				</div>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-10 col-sm-9">
 					<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32">
 				</div>
 			</div>
 			<div class="from-group">
-				<div class="col-md-9 col-sm-8" id="ajaxAnswer"></div>
+				<div class="col-md-10 col-sm-9" id="ajaxAnswer"></div>
 			</div>
 			<div class="table-responsive">
 				<?php 
