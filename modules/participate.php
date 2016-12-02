@@ -360,4 +360,4 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 	}
 	
 </script>
-<script type="text/javascript" src="scripts/photoSwipeController.js"></script>
+<script type="text/javascript" src="js/photoSwipeController.js"></script>

@@ -106,6 +106,7 @@ $lang = array(
 		"lastModified" => "Last Modified at",
 		"correctAnswer" => "Correct answer",
 		"answertext" => "Answertext",
+		"answers" => "Answers",
 		"showAs" => "Question type",
 		"publication" => "Publication",
 		"singleChoise" => "Single Choise",

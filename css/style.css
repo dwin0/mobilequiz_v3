@@ -253,7 +253,20 @@ END PARTICIPATION PAGE
 
 
 
-/*START PARTICIPATION_CONFIRM_END_QUIZ PAGE*/
+/*END PARTICIPATION_CONFIRM_END_QUIZ PAGE*/
+
+/*START CREATE_EDIT_QUESTION PAGE*/
+	
+	.radio-inline {
+		margin-left: 0 !important;
+		margin-right: 10px;
+	}
+	
+	#questionType {
+		width: 50%;
+	}
+
+	/*END CREATE_EDIT_QUESTION PAGE*/
 
 
 /*LOading CSS*/
@@ -368,4 +381,29 @@ END PARTICIPATION PAGE
 		display: table-header-group !important;
 	}
 	/*END PARTICIPATION PAGE*/
+	
+	
+	/*START CREATE_EDIT_QUESTION PAGE*/
+	
+	.row > div:nth-child(1).col-md-2.col-sm-3.col-xs-3.control-label {
+		width: 70%;
+	}
+	
+	.row > div:nth-child(2).col-md-9.col-sm-7.col-xs-7 {
+		clear: left !important;
+	}
+	
+	.col-xs-7 {
+   		width: 80%;
+	}
+	
+	#correctAnswerHeading {
+		margin-left: -15px;
+	}
+	
+	#questionType {
+		width: 90%;
+	}
+
+	/*END CREATE_EDIT_QUESTION PAGE*/
 }

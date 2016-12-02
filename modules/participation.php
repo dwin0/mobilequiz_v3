@@ -262,7 +262,7 @@ if($action == "startQuiz")
 		}
 		
 		$questionType = "Singlechoice";
-		if($fetchQuizAnswer["type_id"] == "2")
+		if($fetchQuizAnswer[0]["type_id"] == "2")
 		{
 			$questionType = "Multiplechoice";
 		}
