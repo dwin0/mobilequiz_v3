@@ -38,7 +38,7 @@
 	
 	
 	/*--------all Errors of different pages----------*/
-	
+	//TODO: remove
 	function getQuestionsErrorText($code)
 	{
 		switch ($code)

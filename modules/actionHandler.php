@@ -25,13 +25,10 @@
 			deleteTopic();
 			break;
 		case "insertQuestion":
-			insertQuestion();
+			insertQuestion(); //TODO: Remove
 			break;
 		case "delQuestion":
 			deleteQuestion();
-			break;
-		case "delPicture":
-			deletePicture();
 			break;
 		case "insertQuiz":
 			insertQuiz();

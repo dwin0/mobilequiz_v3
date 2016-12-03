@@ -280,8 +280,8 @@ if($_POST["action"] == 'changeRole')
 		{
 			$stmt = $dbh->prepare("select * from language_request where id = :id");
 			$stmt->bindParam(":id", $_POST["languageRequestId"]);
-			if(!$stmt->execute())
-				echo "failed";
+			if(!$stmt->execute()) {	echo "failed"; }
+			
 			$fetchRequest = $stmt->fetch(PDO::FETCH_ASSOC);
 			
 			if(isset($fetchRequest["questionnaire_id"]))
@@ -289,53 +289,35 @@ if($_POST["action"] == 'changeRole')
 				$stmt = $dbh->prepare("update questionnaire set language = :language where id = :qId");
 				$stmt->bindParam(":language", $fetchRequest["language"]);
 				$stmt->bindParam(":qId", $fetchRequest["questionnaire_id"]);
-				if($stmt->execute())
-				{
-					$stmt = $dbh->prepare("delete from language_request where id = :id");
-					$stmt->bindParam(":id", $_POST["languageRequestId"]);
-					if($stmt->execute())
-					{
-						echo "ok1";
-					} else {
-						echo "failed";
-					}
-				} else {
-					echo "failed";
-				}
 			} else if(isset($fetchRequest["question_id"]))
 			{
 				$stmt = $dbh->prepare("update question set language = :language where id = :qestionId");
 				$stmt->bindParam(":language", $fetchRequest["language"]);
 				$stmt->bindParam(":qestionId", $fetchRequest["question_id"]);
-				if($stmt->execute())
-				{
-					$stmt = $dbh->prepare("delete from language_request where id = :id");
-					$stmt->bindParam(":id", $_POST["languageRequestId"]);
-					if($stmt->execute())
-					{
-						echo "ok1";
-					} else {
-						echo "failed";
-					}
-				} else {
-					echo "failed";
-				}
 			} else {
-				echo "failed";
+				echo failed;
 			}
+			
+			if($stmt->execute())
+			{
+				$stmt = $dbh->prepare("delete from language_request where id = :id");
+				$stmt->bindParam(":id", $_POST["languageRequestId"]);
+				if($stmt->execute()) { echo "ok1"; }
+					else { echo "failed"; }
+			} else { echo "failed"; }
 			
 			
 		} else if($_POST["decision"] == 0)
 		{
 			$stmt = $dbh->prepare("delete from language_request where id = :id");
 			$stmt->bindParam(":id", $_POST["languageRequestId"]);
-			if($stmt->execute())
-				echo "ok2";
-			else
-				echo "failed";
+			if($stmt->execute()) { echo "ok2"; }
+				else { echo "failed"; }
 		}
-	} else 
-		echo "failed";
+		
+	} else { echo "failed"; }
+	
+	
 } else if($_POST["action"] == 'topicDecision' && $_SESSION["role"]["manager"] == 1)
 {
 	if(isset($_POST["topicRequestId"]) && isset($_POST["decision"]))
@@ -344,50 +326,52 @@ if($_POST["action"] == 'changeRole')
 		{
 			$stmt = $dbh->prepare("select * from topic_request where id = :id");
 			$stmt->bindParam(":id", $_POST["topicRequestId"]);
-			if(!$stmt->execute())
+			if(!$stmt->execute()) {
 				echo "failed";
+			}
 			$fetchRequest = $stmt->fetch(PDO::FETCH_ASSOC);
 			
 			$stmt = $dbh->prepare("insert into subjects (name) values (:name)");
 			$stmt->bindParam(":name", $fetchRequest["topic"]);
-			if(!$stmt->execute())
-				echo "failed";
-			else
+			if($stmt->execute()) {
 				$lastInsertedId = $dbh->lastInsertId();
-			
-			$stmt = $dbh->prepare("update questionnaire set subject_id = :subject_id where id = :qId");
-			$stmt->bindParam(":subject_id", $lastInsertedId);
-			$stmt->bindParam(":qId", $fetchRequest["questionnaire_id"]);
-			if($stmt->execute())
-			{
-				//set answer topic aswell
-				$stmt = $dbh->prepare("update question set subject_id = :subject_id where question.id in (select question_id from qunaire_qu where questionnaire_id = :qId)");
-				$stmt->bindParam(":subject_id", $lastInsertedId);
-				$stmt->bindParam(":qId", $fetchRequest["questionnaire_id"]);
+				
+				if(isset($fetchRequest["questionnaire_id"]))
+				{
+					$stmt = $dbh->prepare("update questionnaire set subject_id = :subject_id where id = :qId");
+					$stmt->bindParam(":subject_id", $lastInsertedId);
+					$stmt->bindParam(":qId", $fetchRequest["questionnaire_id"]);
+				} else if(isset($fetchRequest["question_id"]))
+				{
+					$stmt = $dbh->prepare("update question set subject_id = :subject_id where id = :qestionId");
+					$stmt->bindParam(":subject_id", $lastInsertedId);
+					$stmt->bindParam(":qestionId", $fetchRequest["question_id"]);
+				} else {
+					echo "failed";
+				}
 				
 				if($stmt->execute())
 				{
 					$stmt = $dbh->prepare("delete from topic_request where id = :id");
 					$stmt->bindParam(":id", $_POST["topicRequestId"]);
 					if($stmt->execute())
-						echo "ok1";
-					else
-						echo "failed";
-				} else 
-					echo "failed";
-			} else 
-				echo "failed";
+					{ echo "ok1";}
+					else { echo "failed"; }
+				} else { echo "failed"; }
+			} else { echo "failed"; }
+			
 			
 		} else if($_POST["decision"] == 0)
 		{
 			$stmt = $dbh->prepare("delete from topic_request where id = :id");
 			$stmt->bindParam(":id", $_POST["topicRequestId"]);
-			if($stmt->execute())
-				echo "ok1";
-			else
-				echo "failed";
+			if($stmt->execute()) { echo "ok1"; }
+				else { echo "failed"; }
 		}
-	}
+		
+		} else { echo "failed"; }
+		
+
 }else if($_POST["action"] == 'joinGroup' && $_SESSION["role"]["user"] == 1)
 {
 	if(isset($_SESSION["id"]) && isset($_POST["groupToJoin"]) && $_POST["groupToJoin"] != "" && isset($_POST["token"]) && $_POST["token"] != "")

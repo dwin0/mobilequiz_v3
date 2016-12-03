@@ -18,7 +18,7 @@ function updateQuestion()
 	}
 	
 	$field = $_GET["field"];
-	if(!isset($field) || !isset($_POST[$field]))
+	if(!isset($_POST["questionId"]) || !isset($field) || (!isset($_POST[$field]) && ($field != "addQuestionImage")))
 	{
 		$response_array["status"] = "error";
 		$response_array["text"] = "Not all parameters received.";
@@ -32,8 +32,17 @@ function updateQuestion()
 		case "keywords":
 			$response_array = updateQuestionKeywords($_POST["keywords"], $_POST["questionId"], $dbh);
 			break;
-		case "newLanguage":
-			$response_array = updateQuestionLanguage($_POST["newLanguage"], $_POST["questionId"], $dbh);
+		case "language":
+			$response_array = updateQuestionLanguage($_POST["language"], $_POST["questionId"], $dbh);
+			break;
+		case "topic":
+			$response_array = updateQuestionTopic($_POST["topic"], $_POST["questionId"], $dbh);
+			break;
+		case "addQuestionImage":
+			$response_array = addPicture($_POST["questionId"], $dbh);
+			break;
+		case "deleteQuestionImage":
+			$response_array = deletePicture($_POST["questionId"], $dbh);
 			break;
 			
 			
@@ -147,6 +156,192 @@ function updateQuestionLanguage($language, $questionId, $dbh)
 		
 	return $response_array;
 }
+
+
+function updateQuestionTopic($topic, $questionId, $dbh)
+{
+	$response_array["status"] = "OK";
+		
+	$stmt = $dbh->prepare("select id from subjects where id = :id");
+	$stmt->bindParam(":id", $topic);
+	$stmt->execute();
+	$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
+		
+	if(isset($fetchTopic["id"])) //existing topic
+	{
+		$stmt = $dbh->prepare("update question set subject_id = :subject_id, last_modified = ".time()." where id = :question_id");
+		$stmt->bindParam(":subject_id", $fetchTopic["id"]);
+		$stmt->bindParam(":question_id", $questionId);
+	} else
+	{ //new topic-request
+	$stmt = $dbh->prepare("insert into topic_request (user_id, topic, timestamp, question_id) values (:user_id, :topic, " . time() . ", :question_id)");
+	$stmt->bindParam(":user_id", $_SESSION["id"]);
+	$stmt->bindParam(":topic", $topic);
+	$stmt->bindParam(":question_id", $questionId);
+	}
+		
+	if(!$stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Database-Error";
+	}
+		
+	return $response_array;
+}
+
+
+function addPicture($questionId, $dbh)
+{
+	$response_array["status"] = "ADDED";
+		
+	if(isset($_FILES["addQuestionImage"]) && $_FILES["addQuestionImage"]["name"] != "")
+	{
+		$image = $_FILES["addQuestionImage"];
+		
+		$imageFileType = pathinfo($image["name"], PATHINFO_EXTENSION);
+		$targetFile = "uploadedImages/question_" . date("d_m_y_H_i_s", time()) . "__" . $_SESSION["id"] . "." . $imageFileType;
+		
+		//check File is an image
+		if(!getimagesize($image["tmp_name"]))
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "File is not an image";
+		}
+		
+		//check if file already exists
+		if(file_exists($targetFile))
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "File already exists";
+		}
+		
+		//check file format | .jpeg,.jpg,.bmp,.png,.gif
+		$imageFileType = strtolower($imageFileType);
+		if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" && $imageFileType != "bmp")
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "File-Format is not supportet";
+		}
+		
+		//check size
+		$eightKB = 800000;
+		$size = filesize($image["tmp_name"]);
+		$sucessfullyResized = true;
+		
+		while($size > $eightKB)
+		{
+			$sucessfullyResized = shrinkQuestionImage($image);
+			clearstatcache();
+			$size = filesize($image["tmp_name"]);
+		}
+		if(!$sucessfullyResized)
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Image resize failed";
+		}
+		
+		if($response_array["status"] != "error")
+		{
+			if(!move_uploaded_file($image["tmp_name"], $targetFile))
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Datatransfer failed";
+			} else 
+			{
+				$stmt = $dbh->prepare("update question set picture_link = :picture_link, last_modified = ".time()." where id = :question_id");
+				$stmt->bindParam(":picture_link", $targetFile);
+				$stmt->bindParam(":question_id", $questionId);
+				
+				$response_array["text"] = $targetFile;
+				
+				if(!$stmt->execute())
+				{
+					$response_array["status"] = "error";
+					$response_array["text"] = "DB-Update error";
+				}
+			}
+		}
+		
+		return $response_array;
+	}
+}
+
+/**
+ * Reduces the size of the uploaded question image
+ */
+function shrinkQuestionImage($originalImage)
+{	
+	$sucessful = true;
+	
+	$filename = $originalImage["tmp_name"];
+	$percent = 0.5;
+
+	// Get new dimensions
+	list($width, $height) = getimagesize($filename);
+	$new_width = $width * $percent;
+	$new_height = $height * $percent;
+
+	// Resample
+	$image_p = imagecreatetruecolor($new_width, $new_height);
+	$image = imagecreatefromstring(file_get_contents($filename));
+	imagecopyresampled($image_p, $image, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+
+	if(!imagejpeg($image_p, $filename))
+	{
+		$sucessful = false;
+	}
+	imagedestroy($image_p);
+
+	return $sucessful;
+}
+
+
+function deletePicture($questionId, $dbh)
+{
+	$response_array["status"] = "DELETED";
+	
+	$stmt = $dbh->prepare("select picture_link from question where id = :question_id");
+	$stmt->bindParam(":question_id", $questionId);
+	$stmt->execute();
+	$fetchQuestionImage = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	$filename = $fetchQuestionImage["picture_link"];
+	
+	$stmt = $dbh->prepare("update question set picture_link = NULL where id = :question_id");
+	$stmt->bindParam(":question_id", $questionId);
+	$stmt->execute();
+	if($stmt->execute())
+	{
+		unlink($filename); //delete image from server
+	} else
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Database-Error";
+	}
+	
+	return $response_array;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -476,94 +671,6 @@ function insertQuestion()
 
 
 
-/**
- * Uploads the question image
- */
-function uploadImage() {
-	
-	$imageFileType = pathinfo($_FILES["questionLogo"]["name"], PATHINFO_EXTENSION);
-	$targetDir = "uploadedImages/";
-	$targetFile = $targetDir . "question_" . date("d_m_y_H_i_s", time()) . "__" . $_SESSION["id"] . "." . $imageFileType;
-	$uploadOk = true;
-	$subCode = 0;
-		
-	//check File is an image
-	if(!getimagesize($_FILES["questionLogo"]["tmp_name"]))
-	{
-		$uploadOk = false;
-		$subCode = -8;
-	}
-	
-	//check if file already exists
-	if(file_exists($targetFile))
-	{
-		$uploadOk = false;
-		$subCode = -9;
-	}
-	
-	//check file format | .jpeg,.jpg,.bmp,.png,.gif
-	$imageFileType = strtolower($imageFileType);
-	if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" && $imageFileType != "bmp")
-	{
-		$uploadOk = false;
-		$subCode = -11;
-	}
-	
-	//check size
-	$eightKB = 800000;
-	$size = filesize($_FILES["questionLogo"]["tmp_name"]);
-	while($size > $eightKB)
-	{
-		shrinkQuestionLogo();
-		clearstatcache();
-		$size = filesize($_FILES["questionLogo"]["tmp_name"]);
-	}
-	
-	//check if all ok?
-	if($uploadOk)
-	{
-		if(!move_uploaded_file($_FILES["questionLogo"]["tmp_name"], $targetFile))
-		{
-			header("Location: ?p=questions&code=-6");
-			exit;
-		}
-	} else {
-		header("Location: ?p=questions&code=" . $subCode);
-		exit;
-	}
-	
-	return $targetFile;
-}
-
-/**
- * Reduces the size of the uploaded question logo
- */
-function shrinkQuestionLogo()
-{
-	$filename = $_FILES["questionLogo"]["tmp_name"];
-	$percent = 0.5;
-	
-	// Get new dimensions
-	list($width, $height) = getimagesize($filename);
-	$new_width = $width * $percent;
-	$new_height = $height * $percent;
-	
-	// Resample
-	$image_p = imagecreatetruecolor($new_width, $new_height);
-	$image = imagecreatefromstring(file_get_contents($filename));
-	imagecopyresampled($image_p, $image, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-	
-	if(!imagejpeg($image_p, $filename))
-	{
-		header("Location: ?p=questions&code=-16");
-		exit;
-	}
-	imagedestroy($image_p);
-
-	return;
-}
-
-
 function deleteQuestion()
 {
 	global $dbh;
@@ -666,37 +773,6 @@ function queryAnswers()
 	} else {echo json_encode(["failed"]);}
 }
 
-/**
- * Deletes the database-entry for question logo and the image-file from the server
- */
-function deletePicture()
-{
-	global $dbh;
 
-	$stmt = $dbh->prepare("select owner_id, picture_link from question where id = :question_id");
-	$stmt->bindParam(":question_id", $_GET["questionId"]);
-	$stmt->execute();
-	$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
-
-	if(($_SESSION['role']['creator'] && $fetchQuestionOwner["owner_id"] == $_SESSION["id"]) || $_SESSION['role']['admin'])
-	{
-		$filename = $fetchQuestionOwner["picture_link"];
-		
-		$stmt = $dbh->prepare("update question set picture_link = NULL where id = :question_id");
-		$stmt->bindParam(":question_id", $_GET["questionId"]);
-		$stmt->execute();
-		if($stmt->execute())
-		{
-			unlink("../" . $filename);
-			echo "deletePictureOk";
-		} else
-		{
-			echo "deletePictureFail";
-		}
-	} else
-	{
-		echo "deletePictureFail2";
-	}
-}
 
 ?>

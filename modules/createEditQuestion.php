@@ -205,12 +205,12 @@
 					</label>
 					<div class="col-md-10 col-sm-9" id="questionLogoWrapper">
 						<input type="file" id="questionLogo" name="questionLogo"
+							style="<?php if($mode == "edit" && $questionFetch["picture_link"] != "") { echo "display: none;"; }?>"
 							class="btn" accept=".jpeg,.jpg,.bmp,.png,.gif"/>
-							
 						<div id="picturePreview">
 						<?php if($mode == "edit" && $questionFetch["picture_link"] != "")
 						{
-							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px\" src=\"" . $questionFetch["picture_link"] . "\" width=\"50%\" id=\"questionImage\"></img>";
+							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px; width:50%\" src=\"" . $questionFetch["picture_link"] . "\" id=\"questionImage\"></img>";
 							?>
 							<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 							    <div class="pswp__bg"></div>
@@ -248,7 +248,7 @@
 							          </div>
 								</div>
 							</div>
-							<img style="margin-left: 10px;" src="assets/icon_delete.png" alt="" title="" height="18px" width="18px" onclick="delPicture(<?php echo $questionFetch["id"];?>)">
+							<img style="margin-left:10px; height:18px; width:18px" src="assets/icon_delete.png" id="deleteQuestionLogo">
 							
 							<?php 
 						}?>	
@@ -780,89 +780,71 @@
 
 	$(document).ready(function() {
 		
-		$(document).on("change", "#questionText, #keywords, #language, #newLanguage, #newTopic, #questionLogo, " +
-				"[name='isPrivate'], [name='questionType'], [name^='answerText_']", function(event) {
+		$(document).on("change", "#questionText, #keywords, #language, #newLanguage, #topic, #newTopic, #questionLogo, " +
+				"[name='isPrivate'], [name='questionType'], [name^='answerText_']", updateQuestionData);
 
-			if(this.value==this.oldvalue)return; //not really changed
-
-			var target = event.target.id;
-			if(target == "") {
-				target = event.target.name;
-			}
-			
-			var url = '?p=actionHandler&action=updateQuestion';
-			var field;
-			var data = new FormData();
-			
-
-			switch(target) {
-				case "questionText":
-					field = "questionText";
-				    data.append("questionText", event.target.value);
-					break;
-				case "keywords":
-					field = "keywords";
-				    data.append("keywords", event.target.value);
-					break;
-				case "language":
-				case "newLanguage":
-					field = "newLanguage";
-					data.append("newLanguage", event.target.value);
-					break;
-				case "newTopic":
-					console.log("keywords");
-					break;
-				case "questionLogo":
-
-					var form = $("questionForm");
-					console.log(form);
-
-					file = event.target.files[0];
-					console.log(file);
-
-					var data = new FormData();
-				    data.append("questionImage", file, file.name);
-
-
-				    $.ajax({
-				        url: '?p=actionHandler&action=addImageToQuestion',
-				        type: 'POST',
-				        data: data,
-				        cache: false,
-				        dataType: 'json',
-				        processData: false, // Don't process the files
-				        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
-				        success: function(data)
-				        {
-				            console.log(data);
-				        },
-				        error: function(data)
-				        {
-				            console.log(data);
-				        }
-				    });
-					break;
-				case "isPrivate":
-					console.log("isPrivate");
-					break;
-				case "questionTypeSingleChoice":
-					console.log("questionTypeSingleChoice");
-					break;
-				case "questionTypeMultipleChoice":
-					console.log("questionTypeMultipleChoice");
-					break;
-				
-			}
-
-			if(event.target.name.startsWith("answerText_"))
-			{
-				console.log(event.target.name);
-			}
-
-			uploadChange(url, data, field);
-	        
-	    });
+		$(document).on("click", "#deleteQuestionLogo", updateQuestionData);
 	});
+
+	function updateQuestionData(event)
+	{
+		if(this.value == this.oldvalue && event.target.id != "deleteQuestionLogo") return;
+
+		var target = event.target.id;
+		if(target == "") {
+			target = event.target.name;
+		}
+
+		
+		var url = '?p=actionHandler&action=updateQuestion';
+		var field;
+		var data = new FormData();
+
+		switch(target) {
+			case "questionText":
+				field = "questionText";
+			    data.append("questionText", event.target.value);
+				break;
+			case "keywords":
+				field = "keywords";
+			    data.append("keywords", event.target.value);
+				break;
+			case "language":
+			case "newLanguage":
+				field = "language";
+				data.append("language", event.target.value);
+				break;
+			case "topic":
+			case "newTopic":
+				field = "topic";
+				data.append("topic", event.target.value);
+				break;
+			case "questionLogo":
+				file = event.target.files[0];
+				field = "addQuestionImage";
+			    data.append("addQuestionImage", file, file.name);
+				break;
+			case "deleteQuestionLogo":
+				field = "deleteQuestionImage";
+				break;
+			case "isPrivate":
+				console.log("isPrivate");
+				break;
+			case "questionTypeSingleChoice":
+				console.log("questionTypeSingleChoice");
+				break;
+			case "questionTypeMultipleChoice":
+				console.log("questionTypeMultipleChoice");
+				break;
+		}
+
+		if(event.target.name.startsWith("answerText_"))
+		{
+			console.log(event.target.name);
+		}
+
+		uploadChange(url, data, field);
+	}
 
 	function uploadChange(url, data, field) 
 	{
@@ -878,16 +860,49 @@
 	        contentType: false,
 	        success: function(data)
 	        {
-	            if(data.status == "OK")
-	            {
-		            console.log("OK");
-	            } else {
-					console.log("Error: " + data.text);
-	            }
+				switch(data.status)
+				{
+					case "OK":
+						console.log("OK");
+						break;
+					case "ADDED":
+						console.log("OK");		            	
+		            	
+		            	var parent = $("#picturePreview");
+		            	var downloadingImage = $("<img>");
+		            	var removeIcon = $("<img>");
+		            	
+		            	downloadingImage.load(function(){
+		            		parent.append(this);	
+		            	});
+
+		            	removeIcon.load(function(){
+		            		parent.append(this);	
+		            	});
+
+		            	downloadingImage.attr("style", "float:left; max-width: 300px; max-height: 300px; width: 50%");
+		            	downloadingImage.attr("id", "questionImage");
+		            	downloadingImage.attr("src", data.text);
+
+		            	removeIcon.attr("style", "margin-left: 10px; height: 18px; width: 18px");
+		            	removeIcon.attr("id", "deleteQuestionLogo");
+		            	removeIcon.attr("src", "assets/icon_delete.png");
+
+		            	$("#picturePreview > span").remove();
+		            	$("#questionLogo").hide();
+						
+		            	break;
+					case "DELETED":
+						console.log("OK");
+		            	$('#picturePreview').html("<span style=\"color:green;\">Bild erfolgreich entfernt.</span>");
+		            	$("#questionLogo").show();
+		            	break;
+				}
 	        },
 	        error: function()
 	        {
 	            console.log("Ajax couldn't send data");
+	            alert("Ajax couldn't send data");
 	        }
 	    });
 	}
@@ -939,30 +954,6 @@
 			
 			return false;
 		}
-	}
-
-	function delPicture(id)
-	{
-	    $.ajax({
-		      url: 'modules/actionHandler.php',
-		      type: 'get',
-		      data: 'action=delPicture&questionId=' + id,
-		      success: function(output) {
-			      if(output == 'deletePictureOk')
-			      {
-				      $('#picturePreview').html("<span style=\"color:green;\">Bild erfolgreich entfernt.</span>");
-			      } else if(output == 'deletePictureFail')
-			      {
-				      $('#picturePreview').append("<br/><span style=\"color:red;\">Fehler.</span>");
-			      } else if(output == 'deletePictureFail2')
-			      {
-				      $('#picturePreview').append("<br/><span style=\"color:red;\">Nicht genug Berechtigungen.</span>");
-			      }
-		      }, error: function()
-		      {
-		          alert("Deleting failed");
-		      }
-		   });
 	}
 	
 </script>
