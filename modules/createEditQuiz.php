@@ -23,7 +23,7 @@
 	
 	if($_SESSION["role"]["user"])
 	{
-		if(! $_SESSION["role"]["creator"] && ($mode == 'edit' && !amIAssignedToThisQuiz($dbh, $_GET["id"])))
+		if(! $_SESSION["role"]["creator"] && $quizFetch["owner_id"] != $_SESSION["id"] && ($mode == 'edit' && !amIAssignedToThisQuiz($dbh, $_GET["id"])))
 		{
 			header("Location: ?p=quiz&code=-1&info=qqq");
 			exit;
@@ -49,14 +49,6 @@
 		}
 	}
 	
-	// can be merged with the upper role comparation
-	if(! $_SESSION['role']['creator'] && $quizFetch["owner_id"] != $_SESSION["id"] && !amIAssignedToThisQuiz($dbh, $_GET["id"])) {
-		header("Location: ?p=quiz&code=-1&info=lll");
-		exit;
-	}
-	
-	
-	
 	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
 	{
@@ -67,8 +59,9 @@
 	$stmt = $dbh->prepare("select id, email from user");
 	$stmt->execute();
 	$fetchUserMails = $stmt->fetchAll(PDO::FETCH_COLUMN, 1);
-	$fetchUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$fetchUsers = $stmt->fetchAll(PDO::FETCH_ASSOC); // Wird auch ausser in der Funktion getIdToName nirgends benötigt
 	
+	// Wird nirgends benötigt? Kann das gelöscht werden?
 	function getIdToName($var)
 	{
 		for ($i = 0; $i < count($fetchUsers); $i++) {
@@ -104,11 +97,6 @@
         $('#btnImportQuestionsFromDirectory').click();
     }
 
-	function setChecked(id)
-	{
-		$('#' + id).prop('checked', true);
-	}
-
 	function showNewLanguageInput()
 	{
 		if($('#language').val() == "newLanguage")
@@ -129,24 +117,9 @@
 		}
 	}
 
-	function setDatesEnabled()
-	{
-		var val = false;
-		if($("#noParticipationPeriod1").prop('checked'))
-		{
-			val = true;
-		}
-
-		var timeBoxes = ["startDate", "startTime", "endDate", "endTime"];
-
-		$.each(timeBoxes, function()
-		{
-			$("#" + this).prop('readonly', val);
-		});
-	}
-
 	function addCreator()
 	{
+		// Hier läuft noch was schief... beheben!
 		var userEmail = $('#autocompleteUsers').val();
 		$.ajax({
 			url: 'modules/actionHandler.php',
@@ -230,9 +203,7 @@
 
 	function formCheck()
 	{
-		console.log("ASdasd");
 		$('#btnSave').prop('disabled', true);
-		$('#btnSaveAsDraft').prop('disabled', true);
 		$('#btnBackToOverview').prop('disabled', true);
 		var opts = {position: 'fixed', color: '#fff', length: 56, radius: 70, width: 22};
 		var spinner = new Spinner(opts).spin();
@@ -261,17 +232,12 @@
 	}
 
 	$(function() {
-		var tooltipElements = ['#singlechoiseMultHelp', '#assignationHelp', '.delAssignedImg', '.delQuestionImg',
-			'.editQuestion', '.groupName', '.questionTypeInfo', '#showQuizTaskPaperHelp'];
+		var tooltipElements = ['#assignationHelp', '.delAssignedImg', '.delQuestionImg', '.editQuestion', '.questionTypeInfo'];
 
-		$.each(tooltipElements, function(i, string)
-			{
-				$(string).tipsy({gravity: 'n'});
-			});
+		$.each(tooltipElements, function(i, string){
+			$(string).tipsy({gravity: 'n'});
+		});
 
-		setDatesEnabled();
-		$("#groupAddSuccess").hide();
-		$("#groupAddError").hide();
 		
 	    $( "#sortable" ).sortable({
 		    stop: updateData}).disableSelection();
@@ -296,6 +262,7 @@
 		    shouldConfirm = true;
 		});
 
+		/* die hier referenzierten Id's sind nirgends im Projekt zu finden... kann das gelöscht werden?
 		$( "#additionalSettingsContent" ).hide();	
 		var additionalSettingsContent = false;	
 		$("#additionalSettingsHeading").click(function() {
@@ -305,7 +272,7 @@
 				$('#arrow1').html('&#9654;');
 			else
 				$('#arrow1').html('&#9660;');
-		});
+		});*/
 
 		var sourceData = <?php echo json_encode($fetchUserMails);?>;
 		$( "#autocompleteUsers" ).autocomplete({
@@ -386,66 +353,7 @@
         $('.dataTables_filter input').addClass("form-control");
         $('.dataTables_filter input').addClass("magnifyingGlass");
         $('.dataTables_filter input').attr("style", "min-width: 350px;");
-
-		
-        $('#startDate').datepicker({
-            format: "dd.mm.yyyy",
-            startDate: "+0d",
-            language: "de",
-            orientation: "top left",
-            autoclose: true,
-            todayHighlight: true
-        });
-        
-        $('#endDate').datepicker({
-            format: "dd.mm.yyyy",
-            startDate: "+0d",
-            language: "de",
-            orientation: "top left",
-            autoclose: true,
-            todayHighlight: true
-        });
-
-        //TODO gehört in createEditExecution
-		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
-			connectWith: ".assignGroupToQuizCconnectedSortable"
-		}).disableSelection();
-
-		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
-				stop: function( event, ui ) {
-					console.log("changed");
-					var assignedGroups = [];
-					$( "#assignGroupToQuizSortable1 li").each(function(index, elem) {
-						assignedGroups.push($(elem).attr('id'));
-					});
-					console.log("assignedGroups: " + JSON.stringify(assignedGroups));
-					$.ajax({
-						url: 'modules/actionHandler.php',
-						type: "get",
-						data: "action=changeAssignedGroups&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&groups="+JSON.stringify(assignedGroups),
-						success: function(output) 
-						{
-							//alertify
-							if(output == "ok") {
-								
-								console.log("success: " + output);
-				                $("#groupAddSuccess").slideDown(1000);   
-				                $("#groupAddSuccess").fadeTo(2000, 500).slideUp(1000);   
-							} else {
-								console.log("error: " + output);
-				                $("#groupAddError").slideDown(1000);   
-				                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
-							}
-						}, error: function(output)
-						{
-							console.log("error: " + output);
-			                $("#groupAddError").slideDown(1000);   
-			                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
-						}
-					});
-				}
-			});
-		
+	
 	});
     
 </script>

@@ -1,5 +1,98 @@
 <script type="text/javascript">
 
+	function setChecked(id)
+	{
+		$('#' + id).prop('checked', true);
+	}
+
+	function setDatesEnabled()
+	{
+		var val = false;
+		if($("#noParticipationPeriod1").prop('checked'))
+		{
+			val = true;
+		}
+	
+		var timeBoxes = ["startDate", "startTime", "endDate", "endTime"];
+	
+		$.each(timeBoxes, function()
+		{
+			$("#" + this).prop('readonly', val);
+		});
+	}
+
+	
+	$(function() {
+		var tooltipElements = ['#singlechoiseMultHelp', '.groupName', '#showQuizTaskPaperHelp'];
+
+		$.each(tooltipElements, function(i, string){
+			$(string).tipsy({gravity: 'n'});
+		});
+
+		
+		setDatesEnabled();
+		$("#groupAddSuccess").hide();
+		$("#groupAddError").hide();
+
+		$('#startDate').datepicker({
+            format: "dd.mm.yyyy",
+            startDate: "+0d",
+            language: "de",
+            orientation: "top left",
+            autoclose: true,
+            todayHighlight: true
+        });
+        
+        $('#endDate').datepicker({
+            format: "dd.mm.yyyy",
+            startDate: "+0d",
+            language: "de",
+            orientation: "top left",
+            autoclose: true,
+            todayHighlight: true
+        });
+		
+		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
+			connectWith: ".assignGroupToQuizCconnectedSortable"
+		}).disableSelection();
+
+		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
+			stop: function( event, ui ) {
+				console.log("changed");
+				var assignedGroups = [];
+				$( "#assignGroupToQuizSortable1 li").each(function(index, elem) {
+					assignedGroups.push($(elem).attr('id'));
+				});
+				console.log("assignedGroups: " + JSON.stringify(assignedGroups));
+				$.ajax({
+					url: 'modules/actionHandler.php',
+					type: "get",
+					data: "action=changeAssignedGroups&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&groups="+JSON.stringify(assignedGroups),
+					success: function(output) 
+					{
+						//alertify
+						if(output == "ok") {
+							
+							console.log("success: " + output);
+			                $("#groupAddSuccess").slideDown(1000);   
+			                $("#groupAddSuccess").fadeTo(2000, 500).slideUp(1000);   
+						} else {
+							console.log("error: " + output);
+			                $("#groupAddError").slideDown(1000);   
+			                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
+						}
+					}, error: function(output)
+					{
+						console.log("error: " + output);
+		                $("#groupAddError").slideDown(1000);   
+		                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
+					}
+				});
+			}
+		});
+	});
+	
+	
 </script>
 
 
@@ -13,15 +106,14 @@
 	<p><?php echo $lang["requiredFields"];?></p>
 	
 	<ul id="myTab" class="nav nav-tabs">
-        <li class="active"><a href="#generalInformation" data-toggle="tab">Allgemeine Informationen</a></li>
-        <li><a href="#questions" data-toggle="tab">Fragen</a></li>
-        <li><a href="#execution" data-toggle="tab">Durchf&uuml;hrungen</a></li>
+        <li class="active"><a href="#execution" data-toggle="tab">Durchf&uuml;hrung</a></li>
     </ul>
     
     
     
-    
-    <div class="row">
+    <div id="createEditQuizTabContent" class="tab-content" >
+        <div class="tab-pane fade in active form-horizontal panel-body" id="execution">
+   	 		<div class="row">
 					<div class="col-md-2 col-sm-2">
 						<label><?php echo $lang["noParticipationPeriod2"];?> *</label>
 					</div>
@@ -330,18 +422,10 @@
 						</div>
 					</div>
 				</div>
+       
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <div class="panel-body" id="assignQuizToGroup" style="padding: 0px;">
+    	<div class="panel-body" id="assignQuizToGroup" style="padding: 0px;">
 				<div class="alert alert-success alert-dismissable" id="groupAddSuccess" style="border-radius: 0 0 4px 4px;">
 				    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
 				    <strong>Erfolgreich! </strong>
@@ -397,7 +481,8 @@
 			</div>
     
     
-    
+    </div>
+    </div>
     
     
     
