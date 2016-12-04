@@ -58,7 +58,7 @@
 		}
 		
 		$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link)
-							values ('', " . $_SESSION["id"] . ", 1, NULL, '" . $language . "', " . time() . ", 1, " . time() . ", NULL);");		
+							values ('', " . $_SESSION["id"] . ", 1, NULL, '" . $language . "', " . time() . ", 0, " . time() . ", NULL);");		
 		$stmt->execute();
 		
 		$newQuestionId = $dbh->lastInsertId();
@@ -74,12 +74,12 @@
 	<?php }?>
 	
 	<ul id="questionTab" class="nav nav-tabs">
-		<li class="active"><a href="#questionText" data-toggle="tab"><?php echo $lang["question"]?></a></li>
+		<li class="active"><a href="#questionTextTab" data-toggle="tab"><?php echo $lang["question"]?></a></li>
 		<li><a href="#answers" data-toggle="tab"><?php echo $lang["answers"]?></a></li>
 	</ul>
 	
 	<div id="questionTabContent" class="tab-content">
-		<div class="tab-pane fade in active form-horizontal" id="questionText">
+		<div class="tab-pane fade in active form-horizontal" id="questionTextTab">
 			
 			<!-- Question-Text -->
 			<div class="form-group">
@@ -410,6 +410,7 @@
 										echo $answerFetch[$i]["text"];
 								}
 								?></textarea>
+								<input type="hidden" id="answerId_<?php echo $i;?>" value="<?php echo $answerFetch[$i]["answer_id"];?>" />
 						</div>
 						<div class="col-md-1 col-sm-2 col-xs-1">
 							<input id="<?php echo "correctAnswer_" . $i;?>" type="checkbox" name="<?php echo "correctAnswer_" . $i;?>"
@@ -781,7 +782,7 @@
 	$(document).ready(function() {
 		
 		$(document).on("change", "#questionText, #keywords, #language, #newLanguage, #topic, #newTopic, #questionLogo, " +
-				"[name='isPrivate'], [name='questionType'], [name^='answerText_']", updateQuestionData);
+				"[name='isPrivate'], [name='questionType'], [name^='answerText_'], [name^='correctAnswer_']", updateQuestionData);
 
 		$(document).on("click", "#deleteQuestionLogo", updateQuestionData);
 	});
@@ -828,19 +829,27 @@
 				field = "deleteQuestionImage";
 				break;
 			case "isPrivate":
-				console.log("isPrivate");
+				field = "isPrivate";
+				data.append("isPrivate", event.target.value);
 				break;
 			case "questionTypeSingleChoice":
-				console.log("questionTypeSingleChoice");
-				break;
 			case "questionTypeMultipleChoice":
-				console.log("questionTypeMultipleChoice");
+				field = "questionType";
+				data.append("questionType", event.target.value);
 				break;
 		}
 
-		if(event.target.name.startsWith("answerText_"))
+		if(event.target.name.startsWith("answerText_") || event.target.name.startsWith("correctAnswer_"))
 		{
-			console.log(event.target.name);
+			var name = event.target.name;
+			var numberPos = name.indexOf("_") + 1;
+			var number = name.substring(numberPos, numberPos + 1);
+			
+			field = "answerText";
+			data.append("answerId", $("#answerId_" + number).val());
+			data.append("answerText", $("[name=answerText_" + number + "]").val());
+			data.append("answerNumber", number);
+			data.append("isCorrect", $("#correctAnswer_" + number).is(":checked"));
 		}
 
 		uploadChange(url, data, field);
@@ -897,6 +906,25 @@
 		            	$('#picturePreview').html("<span style=\"color:green;\">Bild erfolgreich entfernt.</span>");
 		            	$("#questionLogo").show();
 		            	break;
+					case "ANSWER_INSERTED":
+						console.log("OK");
+						
+						var insertedId = data.answerId;
+						var answerNumber = data.answerNumber;						
+
+						$("#answerId_" + answerNumber).attr("value", insertedId);
+								
+						break;
+					case "ANSWER_DELETED":
+						console.log("OK");
+						
+						var answerNumber = data.answerNumber;
+						$("#answerId_" + answerNumber).attr("value", "");
+								
+						break;
+					case "error":
+						alert("Error: " + data.text);
+						break;
 				}
 	        },
 	        error: function()

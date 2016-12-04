@@ -24,6 +24,12 @@ function updateQuestion()
 		$response_array["text"] = "Not all parameters received.";
 	}
 	
+	if($response_array["status"] == "error")
+	{
+		echo json_encode($response_array);
+		exit;
+	}
+	
 	switch($field)
 	{
 		case "questionText":
@@ -44,8 +50,23 @@ function updateQuestion()
 		case "deleteQuestionImage":
 			$response_array = deletePicture($_POST["questionId"], $dbh);
 			break;
-			
-			
+		case "isPrivate":
+			$response_array = updateQuestionPublication($_POST["isPrivate"], $_POST["questionId"], $dbh);
+			break;
+		case "questionType":
+			$response_array = updateQuestionType($_POST["questionType"], $_POST["questionId"], $dbh);
+			break;
+		case "answerText":
+			$response_array = updateQuestionAnswers($_POST["answerId"], $_POST["answerNumber"], $_POST["answerText"], $_POST["isCorrect"], $_POST["questionId"], $dbh);
+			break;
+	}
+	
+	$stmt = $dbh->prepare("update question set last_modified = ".time()." where id = :question_id");
+	$stmt->bindParam(":question_id", $_POST["questionId"]);
+	if(! $stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database";
 	}
 	
 	echo json_encode($response_array);
@@ -57,7 +78,7 @@ function updateQuestionText($questionText, $questionId, $dbh)
 {
 	$response_array["status"] = "OK";
 	
-	$stmt = $dbh->prepare("update question set text = :text, last_modified = ".time()." where id = :question_id");
+	$stmt = $dbh->prepare("update question set text = :text where id = :question_id");
 	$stmt->bindParam(":text", $questionText);
 	$stmt->bindParam(":question_id", $questionId);
 		
@@ -85,21 +106,24 @@ function updateQuestionKeywords($keywords, $questionId, $dbh)
 		$stmt->bindParam(":keyword", $keywordArray[$i]);
 		$stmt->execute();
 		$keywordFetch = $stmt->fetch(PDO::FETCH_ASSOC);
-		if($stmt->rowCount() > 0)
+		if($stmt->rowCount() > 0) //keyword already exists
 		{
 			$assocKeywordFetch[$keywordArray[$i]] = $keywordFetch["id"];
 		} else {
+			//create new keyword
 			$stmt = $dbh->prepare("insert into keyword (word) values (:keyword)");
 			$stmt->bindParam(":keyword", $keywordArray[$i]);
 			if(!$stmt->execute())
 			{
 				$response_array["status"] = "error";
 				$response_array["text"] = "Database-Error";
+				return $response_array;
 			}
 			$assocKeywordFetch[$keywordArray[$i]] = $dbh->lastInsertId();
 		}
 	}
 	
+	//delete all keywords from question an add new ones
 	$stmt = $dbh->prepare("delete from qu_keyword where qu_id = :qu_id");
 	$stmt->bindParam(":qu_id", $questionId);
 	$stmt->execute();
@@ -132,8 +156,9 @@ function updateQuestionLanguage($language, $questionId, $dbh)
 		if($allLanguages[$i]["language"] == $language)
 		{
 			$existingLanguage = true;
-				
-			$stmt = $dbh->prepare("update question set language = :language, last_modified = ".time()." where id = :question_id");
+			
+			//update question with existing language
+			$stmt = $dbh->prepare("update question set language = :language where id = :question_id");
 			$stmt->bindParam(":language", $language);
 			$stmt->bindParam(":question_id", $questionId);
 				
@@ -141,17 +166,22 @@ function updateQuestionLanguage($language, $questionId, $dbh)
 			{
 				$response_array["status"] = "error";
 				$response_array["text"] = "Couldn't update database";
+				return $response_array;
 			}
 		}
 	}
 		
-	if(!$existingLanguage)
+	if(!$existingLanguage) //create new language-request
 	{
 		$stmt = $dbh->prepare("insert into language_request (user_id, language, timestamp, question_id) values (:user_id, :language, " . time() . ", :question_id)");
 		$stmt->bindParam(":user_id", $_SESSION["id"]);
 		$stmt->bindParam(":language", $language);
 		$stmt->bindParam(":question_id", $questionId);
-		$stmt->execute();
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't update database";
+		}
 	}
 		
 	return $response_array;
@@ -167,13 +197,14 @@ function updateQuestionTopic($topic, $questionId, $dbh)
 	$stmt->execute();
 	$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
 		
-	if(isset($fetchTopic["id"])) //existing topic
+	if(isset($fetchTopic["id"]))
 	{
-		$stmt = $dbh->prepare("update question set subject_id = :subject_id, last_modified = ".time()." where id = :question_id");
+		//update question with existing topic
+		$stmt = $dbh->prepare("update question set subject_id = :subject_id where id = :question_id");
 		$stmt->bindParam(":subject_id", $fetchTopic["id"]);
 		$stmt->bindParam(":question_id", $questionId);
 	} else
-	{ //new topic-request
+	{ //create new topic-request
 	$stmt = $dbh->prepare("insert into topic_request (user_id, topic, timestamp, question_id) values (:user_id, :topic, " . time() . ", :question_id)");
 	$stmt->bindParam(":user_id", $_SESSION["id"]);
 	$stmt->bindParam(":topic", $topic);
@@ -206,6 +237,7 @@ function addPicture($questionId, $dbh)
 		{
 			$response_array["status"] = "error";
 			$response_array["text"] = "File is not an image";
+			return $response_array;
 		}
 		
 		//check if file already exists
@@ -213,6 +245,7 @@ function addPicture($questionId, $dbh)
 		{
 			$response_array["status"] = "error";
 			$response_array["text"] = "File already exists";
+			return $response_array;
 		}
 		
 		//check file format | .jpeg,.jpg,.bmp,.png,.gif
@@ -221,6 +254,7 @@ function addPicture($questionId, $dbh)
 		{
 			$response_array["status"] = "error";
 			$response_array["text"] = "File-Format is not supportet";
+			return $response_array;
 		}
 		
 		//check size
@@ -238,17 +272,19 @@ function addPicture($questionId, $dbh)
 		{
 			$response_array["status"] = "error";
 			$response_array["text"] = "Image resize failed";
+			return $response_array;
 		}
 		
 		if($response_array["status"] != "error")
 		{
+			//transfer tmp-file to uploadedImages-folder
 			if(!move_uploaded_file($image["tmp_name"], $targetFile))
 			{
 				$response_array["status"] = "error";
 				$response_array["text"] = "Datatransfer failed";
 			} else 
 			{
-				$stmt = $dbh->prepare("update question set picture_link = :picture_link, last_modified = ".time()." where id = :question_id");
+				$stmt = $dbh->prepare("update question set picture_link = :picture_link where id = :question_id");
 				$stmt->bindParam(":picture_link", $targetFile);
 				$stmt->bindParam(":question_id", $questionId);
 				
@@ -323,9 +359,266 @@ function deletePicture($questionId, $dbh)
 }
 
 
+function updateQuestionPublication($publication, $questionId, $dbh)
+{
+	$response_array["status"] = "OK";
+
+	$stmt = $dbh->prepare("update question set public = :public where id = :question_id");
+	$stmt->bindParam(":public", $publication);
+	$stmt->bindParam(":question_id", $questionId);
+
+	if(! $stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database";
+	}
+
+	return $response_array;
+}
 
 
+function updateQuestionType($type, $questionId, $dbh)
+{
+	$response_array["status"] = "OK";
 
+	//get question-type
+	$stmt = $dbh->prepare("select id from question_type where type = :type");
+	$stmt->bindParam(":type", $type);
+	$stmt->execute();
+	
+	$fetchType = $stmt->fetch(PDO::FETCH_ASSOC);
+	if($fetchType == false)
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't find question-type";
+		return $response_array;
+	}
+	
+	//update type_id
+	$stmt = $dbh->prepare("update question set type_id = :type_id where id = :question_id");
+	$stmt->bindParam(":type_id", $fetchType["id"]);
+	$stmt->bindParam(":question_id", $questionId);
+
+	if(! $stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database";
+		return $response_array;
+	}
+	
+	//update isCorrect -> Singlechoice (wrong == 0 points) / Multiplechoice (wrong == -1 point)
+	if($type == "singelchoise")
+	{
+		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId and is_correct = -1");
+		$stmt->bindParam(":questionId", $questionId);
+		$stmt->execute();
+		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		for($i = 0; $i < count($fetchAnswers); $i++)
+		{
+			$stmt = $dbh->prepare("update answer_question set is_correct = 0 where answer_id = :answerId");
+			$stmt->bindParam(":answerId", $fetchAnswers[$i]["answer_id"]);
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database";
+				return $response_array;
+			}
+		}
+
+	} else if($type == "multiplechoise")
+	{
+		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId and is_correct = 0");
+		$stmt->bindParam(":questionId", $questionId);
+		$stmt->execute();
+		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		for($i = 0; $i < count($fetchAnswers); $i++)
+		{
+			$stmt = $dbh->prepare("update answer_question set is_correct = -1 where answer_id = :answerId");
+			$stmt->bindParam(":answerId", $fetchAnswers[$i]["answer_id"]);
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database";
+				return $response_array;
+			}
+		}
+	}
+	
+	return $response_array;
+}
+
+
+function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect, $questionId, $dbh)
+{
+	$response_array["status"] = "OK";
+	
+	$stmt = $dbh->prepare("select type from question_type inner join question on question_type.id = question.type_id where question.id = :questionId");
+	$stmt->bindParam(":questionId", $questionId);
+	$stmt->execute();
+	$fetchQuestionType = $stmt->fetch(PDO::FETCH_ASSOC);
+	$questionType = $fetchQuestionType["type"];
+	
+	//calculate isCorrect-points
+	if($questionType == "singelchoise")
+	{
+		if($isCorrect == "true")
+		{
+			$isCorrect = 1;
+		} else 
+		{
+			$isCorrect = 0;
+		}
+	} else if($questionType == "multiplechoise")
+	{
+		if($isCorrect == "true")
+		{
+			$isCorrect = 1;
+		} else
+		{
+			$isCorrect = -1;
+		}
+	}
+	
+	$stmt = $dbh->prepare("select id from answer where id = :answerId");
+	$stmt->bindParam(":answerId", $answerId);
+	$stmt->execute();
+	$fetchAnswerId = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	if(!isset($fetchAnswerId["id"]) && $answerText != "") //new answer
+	{	
+		//create new answer
+		$stmt = $dbh->prepare("insert into answer (text) values (:answerText)");
+		$stmt->bindParam(":answerText", $answerText);
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't insert new answer";
+			return $response_array;
+		}
+		
+		//return-values for ajax-success
+		$answerId = $dbh->lastInsertId();
+		$response_array["status"] = "ANSWER_INSERTED";
+		$response_array["answerId"] = $answerId;
+		$response_array["answerNumber"] = $answerNumber;
+		
+		
+		//calculate order-attribute
+		$stmt = $dbh->prepare("select count(answer_id) as total from answer_question where question_id = :questionId");
+		$stmt->bindParam(":questionId", $questionId);
+		$stmt->execute();
+		$fetchAmountOfAnswers = $stmt->fetch(PDO::FETCH_ASSOC);
+		$nextOrder = $fetchAmountOfAnswers["total"]; //starts with 0
+		
+		
+		//create new answer_question-entry
+		$stmt = $dbh->prepare("insert into answer_question values (:answerId, :questionId, :isCorrect, :order)");
+		$stmt->bindParam(":answerId", $answerId);
+		$stmt->bindParam(":questionId", $questionId);
+		$stmt->bindParam(":isCorrect", $isCorrect);
+		$stmt->bindParam(":order", $nextOrder);
+		
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't insert new answer_question";
+			return $response_array;
+		}
+		
+	} else //existing answer
+	{
+		if($answerText == "") //empty -> delete answer and answer_question
+		{
+			//return-values for ajax-success
+			$response_array["status"] = "ANSWER_DELETED";
+			$response_array["answerNumber"] = $answerNumber;
+			
+			//get current order from current question
+			$stmt = $dbh->prepare("select `order` from answer_question where answer_id = :answerId");
+			$stmt->bindParam(":answerId", $answerId);
+			$stmt->execute();
+			$fetchQuestionOrder = $stmt->fetch(PDO::FETCH_ASSOC);
+			$deletedQuestionOrder = $fetchQuestionOrder["order"];
+			
+			//delete answer_question-entry
+			$stmt = $dbh->prepare("delete from answer_question where answer_id = :answerId");
+			$stmt->bindParam(":answerId", $answerId);
+			
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't delete empty answer_question";
+				return $response_array;
+			}
+			
+			//delete answer-entry
+			$stmt = $dbh->prepare("delete from answer where id = :answerId");
+			$stmt->bindParam(":answerId", $answerId);
+			
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't delete empty answer";
+				return $response_array;
+			}
+			
+			//update order from other question-answers
+			$stmt = $dbh->prepare("select answer_id, `order` from answer_question where question_id = :questionId");
+			$stmt->bindParam(":questionId", $questionId);
+			$stmt->execute();
+			$fetchQuestionAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			
+			for($i = 0; $i < count($fetchQuestionAnswers); $i++)
+			{
+				$stmt = $dbh->prepare("update answer_question set `order` = :order where answer_id = :answerId");
+				
+				if($deletedQuestionOrder > $fetchQuestionAnswers[$i]["order"])
+				{
+					continue;
+				}
+				$newOrder = $fetchQuestionAnswers[$i]["order"] - 1;
+				$stmt->bindParam(":order", $newOrder);
+				$stmt->bindParam(":answerId", $fetchQuestionAnswers[$i]["answer_id"]);
+				
+				if(! $stmt->execute())
+				{
+					$response_array["status"] = "error";
+					$response_array["text"] = "Couldn't update order";
+					return $response_array;
+				}
+			}
+			
+			return $response_array;
+		} else //update existing answer
+		{
+			$stmt = $dbh->prepare("update answer set text = :text where id = :answerId");
+			$stmt->bindParam(":text", $answerText);
+			$stmt->bindParam(":answerId", $answerId);
+			
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update answer-table";
+				return $response_array;
+			}
+			
+			$stmt = $dbh->prepare("update answer_question set is_correct = :isCorrect where answer_id = :answerId");
+			$stmt->bindParam(":isCorrect", $isCorrect);
+			$stmt->bindParam(":answerId", $answerId);
+				
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update answer_question-table";
+				return $response_array;
+			}
+		}
+	}
+	
+	return $response_array;
+}
 
 
 
