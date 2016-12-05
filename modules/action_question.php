@@ -1,5 +1,7 @@
 <?php
 
+include_once 'action_quiz_question_common.php';
+
 function updateQuestion()
 {
 	global $dbh;
@@ -39,7 +41,7 @@ function updateQuestion()
 			$response_array = updateQuestionKeywords($_POST["keywords"], $_POST["questionId"], $dbh);
 			break;
 		case "language":
-			$response_array = updateQuestionLanguage($_POST["language"], $_POST["questionId"], $dbh);
+			$response_array = updateLanguage($_POST["language"], "question", $_POST["questionId"], $dbh);
 			break;
 		case "topic":
 			$response_array = updateQuestionTopic($_POST["topic"], $_POST["questionId"], $dbh);
@@ -143,79 +145,6 @@ function updateQuestionKeywords($keywords, $questionId, $dbh)
 	return $response_array;
 }
 
-
-function updateQuestionLanguage($language, $questionId, $dbh)
-{
-	$response_array["status"] = "OK";
-	
-	if($language == "newLanguage") //Option to show the new-language-field
-	{
-		return $response_array;
-	}
-	
-	if($language == "")
-	{
-		return $response_array;
-	}
-		
-	$stmt = $dbh->prepare("select language from question group by language");
-	$stmt->execute();
-	$allLanguages = $stmt->fetchAll();
-	
-	for($i = 0; $i < count($allLanguages); $i++){
-		if($allLanguages[$i]["language"] == $language)
-		{
-			$existingLanguage = true;
-			
-			//update question with existing language
-			$stmt = $dbh->prepare("update question set language = :language where id = :question_id");
-			$stmt->bindParam(":language", $language);
-			$stmt->bindParam(":question_id", $questionId);
-				
-			if(! $stmt->execute())
-			{
-				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update database";
-				return $response_array;
-			}
-		}
-	}
-		
-	if(!$existingLanguage) //requested language doesn't exist
-	{
-		$stmt = $dbh->prepare("select id from language_request where question_id = :questionId");
-		$stmt->bindParam(":questionId", $questionId);
-		$stmt->execute();
-		$fetchRequestId = $stmt->fetch(PDO::FETCH_ASSOC);
-		
-		if(isset($fetchRequestId["id"])) //question has already requested a new language -> update request
-		{
-			$stmt = $dbh->prepare("update language_request set language = :language, timestamp = " . time() . " where id = :reqId");
-			$stmt->bindParam(":language", $language);
-			$stmt->bindParam(":reqId", $fetchRequestId["id"]);
-			
-			if(! $stmt->execute())
-			{
-				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update database";
-			}
-
-		} else //create new language-request
-		{
-			$stmt = $dbh->prepare("insert into language_request (user_id, language, timestamp, question_id) values (:user_id, :language, " . time() . ", :question_id)");
-			$stmt->bindParam(":user_id", $_SESSION["id"]);
-			$stmt->bindParam(":language", $language);
-			$stmt->bindParam(":question_id", $questionId);
-			if(! $stmt->execute())
-			{
-				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update database";
-			}
-		}
-	}
-		
-	return $response_array;
-}
 
 
 function updateQuestionTopic($topic, $questionId, $dbh)
