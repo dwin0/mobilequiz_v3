@@ -31,13 +31,16 @@
 			deleteQuestion();
 			break;
 		case "insertQuiz":
-			insertQuiz();
+			insertQuiz(); //TODO: Remove
 			break;
 		case "addQuestionToQuiz":
 			addQuestionToQuiz();
 			break;
 		case "updateQuestion":
 			updateQuestion();
+			break;
+		case "updateQuiz":
+			updateQuiz();
 			break;
 		case "delQuestionFromQuiz":
 			deleteQuestionFromQuiz();

@@ -1,5 +1,224 @@
 <?php
 
+function updateQuiz() {
+	global $dbh;
+	$response_array["status"] = "OK";
+	
+	//check correct owner
+	if($_POST["mode"] == 'edit')
+	{
+		//fetch owner of this quiz
+		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :q_id");
+		$stmt->bindParam(":q_id", $_POST["quizId"]);
+		$stmt->execute();
+		$fetchQuizOwnerPic = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+		//return if it is not the owner of this quiz
+		if($fetchQuizOwnerPic["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1 && !amIAssignedToThisQuiz($dbh, $_POST["quiz_id"]))
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "You are not allowed to edit this quiz.";
+		}
+	}
+		
+	//check new Language is not empty --> TODO: schlägt bei der ersten einblendung noch fehl!
+	if($_POST["language"] == "newLanguage")
+	{
+		if($_POST["newLanguage"] == "")
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "New language is not allowed to be emtpy.";
+		}
+	}
+		
+	//check new Topic is not empty --> TODO: schlägt bei der ersten einblendung noch fehl!
+	if($_POST["topic"] == "newTopic")
+	{
+		if($_POST["newTopic"] == "")
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "New topic is not allowed to be empty.";
+		}
+	}
+	
+	
+	$field = $_GET["field"];
+	if(!isset($_POST["quizId"]) || !isset($field) || !isset($_POST[$field]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Not all parameters received.";
+	}
+	
+	if($response_array["status"] == "error")
+	{
+		echo json_encode($response_array);
+		exit;
+	}
+	
+	switch($field)
+	{
+		case "quizText":
+			$response_array = updateQuizText($_POST["quizText"], $_POST["maxChar"], $_POST["quizId"], $dbh);
+			break;
+		case "description":
+			$response_array = updateQuizDescription($_POST["description"], $_POST["maxChar"], $_POST["quizId"], $dbh);
+			break;
+		case "language":
+			$response_array = updateQuizLanguage($_POST["language"], $_POST["quizId"], $dbh);
+			break;
+		case "topic":
+			$response_array = updateQuizTopic($_POST["topic"], $_POST["quizId"], $dbh);
+			break;
+	}
+	
+	$stmt = $dbh->prepare("update questionnaire set last_modified = ".time()." where id = :quiz_id");
+	$stmt->bindParam(":quiz_id", $_POST["quizId"]);
+	if(! $stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database last modified";
+	}
+	
+	
+	echo json_encode($response_array);
+	exit;
+}
+
+
+function updateQuizText($quizText, $maxChar, $quizId, $dbh)
+{
+	$response_array["status"] = "OK";
+	
+	if(strlen($quizText) > $maxChar) {
+		$response_array["status"] = "error";
+		$response_array["text"] = "Name is to long (maximum 30 characters).";
+		return $response_array;
+	}
+
+	$stmt = $dbh->prepare("update questionnaire set name = :text where id = :quiz_id");
+	$stmt->bindParam(":text", $quizText);
+	$stmt->bindParam(":quiz_id", $quizId);
+	
+	if(! $stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database quizname";
+	}
+	
+	return $response_array;
+}
+
+function updateQuizDescription($description, $maxChar, $quizId, $dbh)
+{
+	$response_array["status"] = "OK";
+
+	if(strlen($description) > $maxChar) {
+		$response_array["status"] = "error";
+		$response_array["text"] = "Description is to long (maximum 30 characters).";
+		return $response_array;
+	}
+
+	$stmt = $dbh->prepare("update questionnaire set description = :text where id = :quiz_id");
+	$stmt->bindParam(":text", $description);
+	$stmt->bindParam(":quiz_id", $quizId);
+
+	if(! $stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database description";
+	}
+
+	return $response_array;
+}
+
+function updateQuizLanguage($language, $quizId, $dbh)
+{
+	$response_array["status"] = "OK";
+
+	$stmt = $dbh->prepare("select language from questionnaire group by language");
+	$stmt->execute();
+	$allLanguages = $stmt->fetchAll();
+
+	for($i = 0; $i < count($allLanguages); $i++){
+		if($allLanguages[$i]["language"] == $language)
+		{
+			$existingLanguage = true;
+				
+			//update question with existing language
+			$stmt = $dbh->prepare("update questionnaire set language = :language where id = :quiz_id");
+			$stmt->bindParam(":language", $language);
+			$stmt->bindParam(":quiz_id", $quizId);
+
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database language";
+				return $response_array;
+			}
+		}
+	}
+
+	if(!$existingLanguage) //create new language-request
+	{
+		$stmt = $dbh->prepare("insert into language_request (user_id, language, timestamp, questionnaire_id) values (:user_id, :language, " . time() . ", :quiz_id)");
+		$stmt->bindParam(":user_id", $_SESSION["id"]);
+		$stmt->bindParam(":language", $language);
+		$stmt->bindParam(":quiz_id", $quizId);
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't update database language request";
+		}
+	}
+
+	return $response_array;
+}
+
+function updateQuizTopic($topic, $quizId, $dbh)
+{
+	$response_array["status"] = "OK";
+
+	$stmt = $dbh->prepare("select id from subjects where id = :id");
+	$stmt->bindParam(":id", $topic);
+	$stmt->execute();
+	$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	if(isset($fetchTopic["id"]))
+	{
+		//update question with existing topic
+		$stmt = $dbh->prepare("update questionnaire set subject_id = :subject_id where id = :quiz_id");
+		$stmt->bindParam(":subject_id", $fetchTopic["id"]);
+		$stmt->bindParam(":quiz_id", $quizId);
+	} else
+	{ //create new topic-request
+		$stmt = $dbh->prepare("insert into topic_request (user_id, topic, timestamp, questionnaire_id) values (:user_id, :topic, " . time() . ", :quiz_id)");
+		$stmt->bindParam(":user_id", $_SESSION["id"]);
+		$stmt->bindParam(":topic", $topic);
+		$stmt->bindParam(":quiz_id", $quizId);
+	}
+
+	if(!$stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Couldn't update database topic";
+	}
+
+	return $response_array;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// insertQuiz ist alt!
 function insertQuiz()
 {
 	global $dbh;
@@ -58,7 +277,7 @@ function insertQuiz()
 		//insert quiz
 		if($_POST["mode"] == "create")
 		{
-			//qnaire_token
+			//qnaire_token für was genau wird dieses Token benötigt? Braucht es das wirklich?
 			$qnaire_token = NULL;
 
 			do {
@@ -636,14 +855,14 @@ function deleteQuestionFromQuiz()
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["questionaireId"]);
+		$stmt->bindParam(":id", $_GET["questionnaireId"]);
 		$stmt->execute();
 		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $_GET["questionaireId"]))
+		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
 		{
 			$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :questionnaireId and question_id = :questionId");
-			$stmt->bindParam(":questionnaireId", $_GET["questionaireId"]);
+			$stmt->bindParam(":questionnaireId", $_GET["questionnaireId"]);
 			$stmt->bindParam(":questionId", $_GET["questionId"]);
 			if($stmt->execute())
 			{

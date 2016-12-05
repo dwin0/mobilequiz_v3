@@ -47,6 +47,21 @@
 			$mode = "create";
 			$code = -2;
 		}
+	} else if($mode == 'create') {
+		
+		if($_SESSION["language"] == "ger")
+		{
+			$language = "Deutsch";
+		} else {
+			$language = "English";
+		}
+		
+		$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoise_multiplier, noParticipationPeriod, showTaskPaper)
+					values (" . $_SESSION["id"] . ", NULL, '', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, '" . $language . "', NULL, NULL, '', ".time().", ".time().", NULL, NULL, NULL, NULL, NULL, NULL)");
+		
+		$stmt->execute();
+		
+		$newQuizId = $dbh->lastInsertId();
 	}
 	
 	$errorCode = new mobileError("", "red");
@@ -56,36 +71,24 @@
 	}
 	
 	
-	$stmt = $dbh->prepare("select id, email from user");
+	$stmt = $dbh->prepare("select email, id from user");
 	$stmt->execute();
-	$fetchUserMails = $stmt->fetchAll(PDO::FETCH_COLUMN, 1);
-	$fetchUsers = $stmt->fetchAll(PDO::FETCH_ASSOC); // Wird auch ausser in der Funktion getIdToName nirgends benötigt
+	$fetchUserMails = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$dummy = $fetchUserMails[0]["email"];
 	
 	// Wird nirgends benötigt? Kann das gelöscht werden?
-	function getIdToName($var)
+	function getIdToEMail($var)
 	{
-		for ($i = 0; $i < count($fetchUsers); $i++) {
-			if($fetchUsers[$i]["email"] == $var)
-				return $fetchUsers[$i]["id"];
+		for ($i = 0; $i < count($fetchUserMails); $i++) {
+			if($fetchUserMails[$i]["email"] == $var) {
+				return $fetchUserMails[$i]["id"];
+			}
 		}
 		return -1;
 	}
 ?>
 <script src="js/spin.min.js"></script>
 <script type="text/javascript">
-
-	var shouldConfirm = false;
-	window.onbeforeunload = function() {
-        if(shouldConfirm) {
-            return "Seite wirklich verlassen?";
-        }
-    }
-
-    function setConfirm(val, elem)
-    {
-    	shouldConfirm = val;
-    	//console.log("e:" + elem);
-    }
 
 	function openExcelDialog()
     {
@@ -119,12 +122,12 @@
 
 	function addCreator()
 	{
-		// Hier läuft noch was schief... beheben!
 		var userEmail = $('#autocompleteUsers').val();
+		console.log(userEmail);
 		$.ajax({
 			url: 'modules/actionHandler.php',
 			type: "get",
-			data: "action=addAssignation&userEmail="+userEmail+"&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>,
+			data: "action=addAssignation&userEmail="+userEmail+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
 			success: function(output) 
 			{
 				if(output == "ok1")
@@ -133,16 +136,18 @@
 					//$('#assignTbl > tbody:last-child').append('<tr><td>'+userEmail+'</td><td></td></tr>');
 					$('#assignTbl').DataTable().row.add([userEmail, '']).draw(false);
 					$('#autocompleteUsers').val('');
-					
+					console.log("ok");
 				}
 				if(output == "failed")
 				{
 					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+					console.log("Fehler1");
 				}
 			},
 			error: function(output) 
 			{
 				$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+				console.log("Fehler2");
 			}	      
 		});
 	}
@@ -150,10 +155,11 @@
 	function delAssigned(userId)
 	{
 		console.log("del: " + userId);
+
 		$.ajax({
 			url: 'modules/actionHandler.php',
 			type: "get",
-			data: "action=delAssignation&userId="+userId+"&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>,
+			data: "action=delAssignation&userId="+userId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
 			success: function(output) 
 			{
 				if(output == "ok1")
@@ -181,7 +187,7 @@
 		$.ajax({
 			url: 'modules/actionHandler.php',
 			type: "get",
-			data: "action=delQuestionFromQuiz&questionId="+qId+"&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>,
+			data: "action=delQuestionFromQuiz&questionId="+qId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
 			success: function(output) 
 			{
 				if(output == "ok")
@@ -223,7 +229,7 @@
 		$.ajax({
 			url: 'modules/actionHandler.php',
 			type: "get",
-			data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&qOrder="+JSON.stringify(qOrder),
+			data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>+"&qOrder="+JSON.stringify(qOrder),
 			success: function(output) 
 			{
 				console.log(output);
@@ -245,7 +251,6 @@
 		
 		document.getElementById("btnImportQuestionsFromExcel").addEventListener("change",function(){
 		    document.getElementById("fileName").innerHTML = document.getElementById("btnImportQuestionsFromExcel").files[0].name;
-		    shouldConfirm = true;
 		});
 
 		document.getElementById("btnImportQuestionsFromDirectory").addEventListener("change",function(){			
@@ -259,22 +264,10 @@
 				}
 			}
 			document.getElementById("fileNames").innerHTML = fileNames;
-		    shouldConfirm = true;
 		});
 
-		/* die hier referenzierten Id's sind nirgends im Projekt zu finden... kann das gelöscht werden?
-		$( "#additionalSettingsContent" ).hide();	
-		var additionalSettingsContent = false;	
-		$("#additionalSettingsHeading").click(function() {
-			$( "#additionalSettingsContent" ).toggle("slow", false);
-			additionalSettingsContent = !additionalSettingsContent;
-			if(!additionalSettingsContent)
-				$('#arrow1').html('&#9654;');
-			else
-				$('#arrow1').html('&#9660;');
-		});*/
 
-		var sourceData = <?php echo json_encode($fetchUserMails);?>;
+		var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
 		$( "#autocompleteUsers" ).autocomplete({
 		  source: sourceData
 		});
@@ -377,13 +370,14 @@
 	
 	<div id="createEditQuizTabContent" class="tab-content" >
         <div class="tab-pane fade in active form-horizontal panel-body" id="generalInformation">
+			
+			<!-- Quiz Name -->
 			<div class="form-group">
 				<label for="quizText" class="col-md-2 col-sm-3 control-label">
 					<?php echo $lang["quizCreateName"];?> *
 				</label>
 				<div class="col-md-10 col-sm-9">
 					<input id="quizText" name="quizText" class="form-control" type="text"
-						onchange="setConfirm(true, 'name')"
 						required="required"
 						placeholder="<?php echo $lang["quizCreateName"] . " (" . $lang["maximum"] . " " . $maxCharactersQuiz . " " . $lang["characters"] . ")";?>"
 						maxlength="<?php echo $maxCharactersQuiz;?>" value="<?php 
@@ -394,12 +388,14 @@
 						?>"/>
 				</div>
 			</div>
+			
+			<!-- Quiz Description -->
 			<div class="form-group">
 				<label for="description" class="col-md-2 col-sm-3 control-label">
 					<?php echo $lang["description"];?>
 				</label>
 				<div class="col-md-10 col-sm-9">
-					<textarea name="description" id="description" onchange="setConfirm(true, 'desc')"
+					<textarea name="description" id="description"
 						class="form-control text-input" wrap="soft" placeholder="<?php echo $lang["descriptionOfQuiz"] . " (" . $lang["maximum"] . " " . $maxCharactersQuizDesc . " " . $lang["characters"] . ")";?>"><?php 
 						if($mode == "edit")
 						{
@@ -408,28 +404,26 @@
 						?></textarea>
 				</div>
 			</div>
+			
+			<!-- Quiz Language -->
 			<div class="form-group">
 				<label for="language" class="col-md-2 col-sm-3 control-label"> 
 					<?php echo $lang["quizLanguage"];?> *
 				</label>
 				<div class="col-md-10 col-sm-9">
 					<select id="language" class="form-control" name="language" required="required" onchange="showNewLanguageInput()">
-	                	<?php 
-	                	$stmt = $dbh->prepare("select id from questionnaire");
-	                	$stmt->execute();
-	                	$allQuestionsCount = $stmt->rowCount();
-	                	
+	                	<?php         	
 	                    $stmt = $dbh->prepare("select language from questionnaire group by language");
 	                    $stmt->execute();
-	                    $result = $stmt->fetchAll();
+	                    $allLanguages = $stmt->fetchAll();
 	                    
-	                    for($i = 0; $i < count($result); $i++){
-							$stmt = $dbh->prepare("select id from questionnaire where language = '" . $result[$i]["language"] . "'");
+	                    for($i = 0; $i < count($allLanguages); $i++){
+							$stmt = $dbh->prepare("select id from questionnaire where language = '" . $allLanguages[$i]["language"] . "'");
 							$stmt->execute();
 							$selected = "";
 							if($mode == "edit")
-								$selected = ($quizFetch["language"] == $result[$i]["language"]) ? ' selected="selected"' : '';
-							echo "<option value=\"" . $result[$i]["language"] . "\"" . $selected . ">" . $result[$i]["language"] . " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")</option>";
+								$selected = ($quizFetch["language"] == $allLanguages[$i]["language"]) ? ' selected="selected"' : '';
+							echo "<option value=\"" . $allLanguages[$i]["language"] . "\"" . $selected . ">" . $allLanguages[$i]["language"] . " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")</option>";
 	                    } ?>
 	                    <option value="newLanguage"><?php echo $lang["requestNewLanguage"];?></option>
 	                </select> 
@@ -439,6 +433,8 @@
 						maxlength="30" style="display:none;"/>
 				</div>
 			</div>
+			
+			<!-- Quiz Topic -->
 			<div class="form-group">
 				<label for="applicationArea"
 					class="col-md-2 col-sm-3 control-label"> 
@@ -449,17 +445,17 @@
 		                    <?php 
 		                    $stmt = $dbh->prepare("select * from subjects");
 		                    $stmt->execute();
-		                    $result = $stmt->fetchAll();
+		                    $allLanguages = $stmt->fetchAll();
 		                    
-		                    for($i = 0; $i < count($result); $i++){
-								$stmt = $dbh->prepare("select id from questionnaire where subject_id = " . $result[$i]["id"]);
+		                    for($i = 0; $i < count($allLanguages); $i++){
+								$stmt = $dbh->prepare("select id from questionnaire where subject_id = " . $allLanguages[$i]["id"]);
 								$stmt->execute();
 								$rowCount = $stmt->rowCount();
 								
 								$selected = "";
 								if($mode == "edit")
-									$selected = ($quizFetch["subject_id"] == $result[$i]["id"]) ? 'selected="selected"' : '';
-								echo "<option value=\"" . $result[$i]["id"] . "\" " . $selected . ">" . $result[$i]["name"] . " (" . $rowCount . " " . $lang["quizzes"] . ")</option>";
+									$selected = ($quizFetch["subject_id"] == $allLanguages[$i]["id"]) ? 'selected="selected"' : '';
+								echo "<option value=\"" . $allLanguages[$i]["id"] . "\" " . $selected . ">" . $allLanguages[$i]["name"] . " (" . $rowCount . " " . $lang["quizzes"] . ")</option>";
 		                    } ?>
 		                    <option value="null"
 							<?php if($mode != "edit") {echo ' selected="selected"';} else {
@@ -477,6 +473,8 @@
 						maxlength="<?php echo $maxCharactersTopic?>"  style="display:none;"/>
 				</div>
 			</div>
+			
+			
 			<?php if($mode == 'edit') {?>
 			<div class="form-group">
 				<label class="col-md-2 col-sm-3 control-label"> 
@@ -525,13 +523,13 @@
 			</div>
 			<?php }?>
 			
-
+			<!-- Assign New Responsible Member -->
 			<div class="form-group">
 				<div> 
 					<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
 				</div>
 				<div class="col-md-10 col-sm-9">
-					<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32">
+					<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
 				</div>
 			</div>
 			<div class="from-group">
@@ -539,7 +537,7 @@
 			</div>
 			<div class="table-responsive">
 				<?php 
-				$quizId = -1;
+				$quizId = $newQuizId;
 				if($mode == "edit")
 				{
 					$quizId = $_GET["id"];
@@ -576,7 +574,7 @@
         <div class="tab-pane fade from-horizontal panel-body" id="questions">
        		
        		<input id="btnAddNewQuestion" name="btnAddNewQuestion" class="btn" onclick="" type="button" value="<?php echo $lang["addNewQuestion"];?>" /><br />
-			<input id="btnAddExistingQuestion" name="btnAddExistingQuestion" class="btn" onclick="setConfirm(false, 'btn3');" type="button" value="<?php echo $lang["addExistingQuestion"];?>" style="margin-top: 10px;"/><br />
+			<input id="btnAddExistingQuestion" name="btnAddExistingQuestion" class="btn" type="button" value="<?php echo $lang["addExistingQuestion"];?>" style="margin-top: 10px;"/><br />
 			<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openExcelDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
 			<input id="btnImportImageQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcelWithImages"];?>" onclick="openDirectoryDialog()" style="margin-top: 10px; margin-bottom: 10px;"/>&nbsp;<span id="fileNames"><?php echo " <b>" . $lang["noFolderSelected"] . "</b>";?></span><br />
 			
@@ -698,13 +696,94 @@
     </div>
 		
 	<script type="text/javascript">
-		$('#addUser').on('click', function(){
-			addCreator(<?php echo $quizFetch["id"];?>);
-	    });
+		$(document).ready(function() {
+			
+			$(document).on("change", "#quizText, #description, #language, #newLanguage, #topic, #newTopic", updateQuizData);
+
+			$('#addUser').on('mouseover', function(){
+				this.style.cursor='pointer';
+		    });
+			
+		});
+
+
+
+		function updateQuizData(event)
+		{
+			$maxCharactersQuiz = 30;
+			$maxCharactersTopic = 30;
+			$maxCharactersQuizDesc = 120;
+			
+			if(this.value == this.oldvalue) return;
+
+			var target = event.target.id;
+			if(target == "") {
+				target = event.target.name;
+			}
+
+			var url = '?p=actionHandler&action=updateQuiz';
+			var field;
+			var data = new FormData();
+
+			switch(target) {
+				case "quizText":
+					field = "quizText";
+				    data.append("quizText", event.target.value);
+				    data.append("maxChar", $maxCharactersQuiz);
+					break;
+				case "description":
+					field = "description";
+					data.append("description", event.target.value);
+					data.append("maxChar", $maxCharactersQuizDesc);
+					break;
+				case "language":
+				case "newLanguage":
+					field = "language";
+					data.append("language", event.target.value);
+					break;
+				case "topic":
+				case "newTopic":
+					field = "topic";
+					data.append("topic", event.target.value);
+					break;
+			}
+
+			uploadChange(url, data, field);
+		}
 		
-		$('#addUser').on('mouseover', function(){
-			this.style.cursor='pointer';
-	    });		
+
+		function uploadChange(url, data, field) 
+		{
+			data.append("quizId", $("[name='quiz_id']").val());
+			
+			$.ajax({
+		        url: url + '&field=' + field,
+		        type: 'POST',
+		        data: data,
+		        cache: false,
+		        dataType: 'json',
+		        processData: false,
+		        contentType: false,
+		        success: function(data)
+		        {
+					switch(data.status)
+					{
+						case "OK":
+							console.log("OK");
+							break;
+						case "error":
+							alert("Error: " + data.text);
+							break;
+					}
+		        },
+		        error: function()
+		        {
+		            console.log("Ajax couldn't send data");
+		            alert("Ajax couldn't send data");
+		        }
+		    });
+		}
+		
 	    
 	    $('#createEditQuizTab').tabCollapse();
 	</script>
@@ -725,12 +804,10 @@
 			<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
 		</div>
 		<input type="hidden" name="mode" value="<?php echo $mode;?>">
-		<?php if($mode == "edit"){?>
-			<input type="hidden" name="quiz_id" value="<?php echo $quizFetch["id"];?>">
-		<?php }?>
+		<input type="hidden" name="quiz_id" value="<?php echo ($mode == "edit") ? $quizFetch["id"] : $newQuizId;;?>">
 		<div style="float: right; padding-left: 10px; margin-top: 10px;">
 			<input type="hidden" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
-			<input type="submit" class="btn" id="btnSave" name="btnSave" onclick="setConfirm(false, 'btn1')" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
+			<input type="submit" class="btn" id="btnSave" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
 		</div>
 	</form>
 </div>
