@@ -115,6 +115,7 @@ $lang = array(
 		"public" => "Public",
 		"privateMoreInfo" => "Private (only visible for the creator) ",
 		"createNext" => "and create next",
+		"andGoBack" => " and go back",
 		"saveQuestion" => "Save question",
 		"help" => "Help",
 		"createQuiz" => "Create new quiz",

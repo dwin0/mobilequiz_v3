@@ -24,9 +24,9 @@
 		$mode = $_GET["mode"];
 	}
 	
-	$maxCharactersQuestion = 400;
-	$maxCharactersTopic = 30;
-	$maxCharactersAnswer = 250;
+	const MAX_CHARACTERS_PER_QUESTION = 400;
+	const MAX_CHARACTERS_PER_TOPIC = 30;
+	const MAX_CHARACTERS_PER_ANSWER = 250;
 	
 	if($mode == "edit")
 	{
@@ -59,7 +59,11 @@
 		
 		$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link)
 							values ('', " . $_SESSION["id"] . ", 1, NULL, '" . $language . "', " . time() . ", 0, " . time() . ", NULL);");		
-		$stmt->execute();
+		if(!$stmt->execute())
+		{
+			header("Location: ?p=home&code=-21");
+			exit;
+		}
 		
 		$newQuestionId = $dbh->lastInsertId();
 	}
@@ -72,6 +76,7 @@
 	<?php if($code != 0) {?>
 	<p style="color:red"><?php echo $codeText;?></p>
 	<?php }?>
+	<p><?php echo $lang["requiredFields"];?></p>
 	
 	<ul id="questionTab" class="nav nav-tabs">
 		<li class="active"><a href="#questionTextTab" data-toggle="tab"><?php echo $lang["question"]?></a></li>
@@ -89,7 +94,7 @@
 				<div class="col-md-10 col-sm-9">
 					<textarea name="questionText" wrap="soft" id="questionText"
 						class="form-control text-input" required="required"
-						placeholder="<?php echo $lang["questionQuestionTextOnly"] . " (" . $lang["maximum"] . " " . $maxCharactersQuestion . " " . $lang["characters"] . ")";?>" maxlength="<?php echo $maxCharactersQuestion;?>"><?php 
+						placeholder="<?php echo $lang["questionQuestionTextOnly"] . " (" . $lang["maximum"] . " " . MAX_CHARACTERS_PER_QUESTION . " " . $lang["characters"] . ")";?>" maxlength="<?php echo MAX_CHARACTERS_PER_QUESTION;?>"><?php 
 						if($mode == "edit")
 						{
 							echo $questionFetch["text"];
@@ -136,7 +141,7 @@
 					<?php echo $lang["quizLanguage"];?> *
 				</label>
 				<div class="col-md-10 col-sm-9">
-					<select id="language" class="form-control" name="language">
+					<select id="language" class="form-control" name="language" onchange="showNewLanguageInput()">
 	                	<?php
 	                    $stmt = $dbh->prepare("select language from question group by language");
 	                    $stmt->execute();
@@ -150,9 +155,30 @@
 								$selected = ($questionFetch["language"] == $result[$i]["language"]) ? 'selected="selected"' : '';
 							echo "<option value=\"" . $result[$i]["language"] . "\"" . $selected . ">" . $result[$i]["language"] . " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")</option>";
 	                    } ?>
+	                	<option value="newLanguage"><?php echo $lang["requestNewLanguage"];?></option>
 	                </select>
 	                <input type="text" id="newLanguage"
 						class="form-control" name="newLanguage"
+						<?php
+						
+						$style = "style='display: none'";
+						
+						if($mode == "edit")
+						{
+							$stmt = $dbh->prepare("select language from language_request where question_id = :questionId");
+							$stmt->bindParam(":questionId", $questionFetch["id"]);
+							$stmt->execute();
+							
+							$fetchLanguage = $stmt->fetch(PDO::FETCH_ASSOC);
+							
+							if(isset($fetchLanguage["language"]))
+							{
+								$style = "style='display: initial' value=" . $lang["requested"] . ":&nbsp;" . $fetchLanguage["language"];
+							}
+						}
+						
+						echo $style;
+						?>
 						placeholder="<?php echo $lang["newLanguagePlaceholder"];?>" maxlength="30"/>
 				</div>
 			</div>
@@ -164,7 +190,7 @@
 					<?php echo $lang["quizTableTopic"];?> *
 				</label>
 				<div class="col-md-10 col-sm-9">
-					<select id="topic" class="form-control" name="topic">
+					<select id="topic" class="form-control" name="topic" onchange="showNewTopicInput()">
 		                    <?php 
 		                    $stmt = $dbh->prepare("select * from subjects");
 		                    $stmt->execute();
@@ -187,10 +213,31 @@
 			                    $stmt->execute();
 			                    echo " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")";
 		                    ?></option>
+		                	<option value="newTopic"><?php echo $lang["requestNewTopic"];?></option>
 		                </select>
 					<input type="text" id="newTopic"
 						class="form-control" name="newTopic"
-						placeholder="<?php echo $lang["newTopicPlaceholder"] . " (" . $lang["maximum"] . " " . $maxCharactersTopic . " " . $lang["characters"] . ")";?>" maxlength="<?php echo $maxCharactersTopic?>"/>
+						<?php
+						
+						$style = "style='display: none'";
+						
+						if($mode == "edit")
+						{
+							$stmt = $dbh->prepare("select topic from topic_request where question_id = :questionId");
+							$stmt->bindParam(":questionId", $questionFetch["id"]);
+							$stmt->execute();
+							
+							$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
+							
+							if(isset($fetchTopic["topic"]))
+							{
+								$style = "style='display: initial' value=" . $lang["requested"] . ":&nbsp;" . $fetchTopic["topic"];
+							}
+						}
+						
+						echo $style;
+						?>
+						placeholder="<?php echo $lang["newTopicPlaceholder"] . " (" . $lang["maximum"] . " " . MAX_CHARACTERS_PER_TOPIC . " " . $lang["characters"] . ")";?>" maxlength="<?php echo MAX_CHARACTERS_PER_TOPIC?>"/>
 				</div>
 			</div>
 			
@@ -403,7 +450,7 @@
 						<div class="col-md-9 col-sm-7 col-xs-10">
 							<textarea name="<?php echo "answerText_" . $i;?>" wrap="soft" style="margin-bottom: 15px"
 								class="form-control" <?php echo $i < 2 ? " required='required' " : ''?>
-								placeholder="<?php echo $lang["answertext"] . " " . ($i+1) . " (" . $lang["maximum"] . " " . $maxCharactersAnswer . " " . $lang["characters"] . ")";?>" maxlength="<?php echo $maxCharactersAnswer;?>"><?php 
+								placeholder="<?php echo $lang["answertext"] . " " . ($i+1) . " (" . $lang["maximum"] . " " . MAX_CHARACTERS_PER_ANSWER . " " . $lang["characters"] . ")";?>" maxlength="<?php echo MAX_CHARACTERS_PER_ANSWER;?>"><?php 
 								if($mode == "edit")
 								{
 									if($i < $stmt->rowCount())
@@ -434,15 +481,29 @@
 		</div>
 	</div>
 	
-	<div style="text-align: left; margin-top: 10px; float: left">
-		<input type="submit" class="btn" name="btnSave" value="<?php echo $lang["buttonBackToOverview"]; ?>">
-	</div>
+	<div>
+			<div style="text-align: left; float: left;">
+				<input type="button" class="btn" id="btnBack"
+					value="<?php echo $lang["saveQuestion"] . $lang["andGoBack"];?>"/>
+			</div>
+
+			<div style="text-align: right; margin-top: 10px;">
+				<input type="hidden" name="mode" value="<?php echo $mode;?>">
+				<input type="hidden" name="question_id" value="<?php echo ($mode == "edit") ? $questionFetch["id"] : $newQuestionId;?>">
+				<input type="hidden" name="fromsite" value="<?php echo isset($_GET["fromsite"]) ? $_GET["fromsite"] : '';?>">
+				<input type="hidden" name="fromQuizId" value="<?php echo isset($_GET["quizId"]) ? $_GET["quizId"] : '';?>">
+				<input type="button" class="btn" id="btnSaveAndNext"
+					value="<?php echo $lang["saveQuestion"] . " " . $lang["createNext"];?>" />
+			</div>
+		</div>
 	
-	<div style="text-align: right; margin-top: 10px">
-		
-		<input type="submit" class="btn" name="btnSaveAndNext" value="<?php echo $lang["saveQuestion"] . " " . $lang["createNext"];?>" />
-		<input type="submit" class="btn" name="btnSave" value="<?php echo $lang["saveQuestion"]; ?>">
-	</div>
+	
+
+	
+	
+	
+	
+	
 	
 	
 	
@@ -467,15 +528,12 @@
 					<div class="col-md-10 col-sm-9">
 						<textarea name="questionText" wrap="soft" id="questionText"
 							class="form-control text-input" required="required"
-							placeholder="<?php echo $lang["questionQuestionTextOnly"] . " (" . $lang["maximum"] . " " . $maxCharactersQuestion . " " . $lang["characters"] . ")";?>" maxlength="<?php echo $maxCharactersQuestion;?>"><?php 
+							placeholder="<?php echo $lang["questionQuestionTextOnly"] . " (" . $lang["maximum"] . " " . MAX_CHARACTERS_PER_QUESTION . " " . $lang["characters"] . ")";?>" maxlength="<?php echo MAX_CHARACTERS_PER_QUESTION;?>"><?php 
 							if($mode == "edit")
 							{
 								echo $questionFetch["text"];
 							}
 							?></textarea>
-							<?php
-							//TODO: Link to Help-Site
-							?>
 							<p id="questionTextHelp" title="Wie m&uuml;ssen Texte eingegeben werden?" style="cursor: pointer; text-decoration: underline;"><?php echo $lang["help"];?></p>
 					</div>
 				</div>
@@ -585,7 +643,7 @@
 			                </select>
 						<input type="text" id="newTopic"
 							class="form-control" name="newTopic"
-							placeholder="<?php echo $lang["newTopicPlaceholder"] . " (" . $lang["maximum"] . " " . $maxCharactersTopic . " " . $lang["characters"] . ")";?>" maxlength="<?php echo $maxCharactersTopic?>"/>
+							placeholder="<?php echo $lang["newTopicPlaceholder"] . " (" . $lang["maximum"] . " " . MAX_CHARACTERS_PER_TOPIC . " " . $lang["characters"] . ")";?>" maxlength="<?php echo MAX_CHARACTERS_PER_TOPIC?>"/>
 					</div>
 				</div>
 				<?php if($mode == 'edit') {?>
@@ -670,7 +728,7 @@
 					<div class="col-md-9 col-sm-7 col-xs-7">
 						<textarea name="<?php echo "answerText_" . $i;?>" wrap="soft"
 							class="form-control" <?php echo $i < 2 ? " required='required' " : ''?>
-							placeholder="<?php echo $lang["answertext"] . " " . ($i+1) . " (" . $lang["maximum"] . " " . $maxCharactersAnswer . " " . $lang["characters"] . ")";?>" maxlength="<?php echo $maxCharactersAnswer;?>"><?php 
+							placeholder="<?php echo $lang["answertext"] . " " . ($i+1) . " (" . $lang["maximum"] . " " . MAX_CHARACTERS_PER_ANSWER . " " . $lang["characters"] . ")";?>" maxlength="<?php echo MAX_CHARACTERS_PER_ANSWER;?>"><?php 
 							if($mode == "edit")
 							{
 								if($i < $stmt->rowCount())
@@ -789,13 +847,13 @@
 
 	function updateQuestionData(event)
 	{
+		
 		if(this.value == this.oldvalue && event.target.id != "deleteQuestionLogo") return;
 
 		var target = event.target.id;
 		if(target == "") {
 			target = event.target.name;
 		}
-
 		
 		var url = '?p=actionHandler&action=updateQuestion';
 		var field;
@@ -944,7 +1002,7 @@
 		var correctAnswersOk1 = false;
 		var correctAnswersOk2 = false;
 		var answerCount = 0;
-		for(var i = 0; i < 6; i++)
+		for(var i = 0; i < 5; i++)
 		{
 			if(document.getElementById("correctAnswer_" + i).checked)
 				answerCount++;
@@ -975,13 +1033,71 @@
 			$('#failMsg').html("Mindestens ein ben&ouml;tigtes Feld ist nicht korrekt ausgef&uuml;llt.");
 
 			if(document.getElementById("questionTypeSingleChoice").checked && !correctAnswersOk1)
-				$('#failMsg').append('<br />Es darf nur eine Antwort bei Singlechoise ausgew&auml;hlt werden.');
+				$('#failMsg').append('<br />Bei Singlechoice darf nur eine Antwort korrekt sein.');
 
 			if(document.getElementById("questionTypeMultipleChoice").checked && !correctAnswersOk2)
-				$('#failMsg').append('<br />Es m&uuml;ssen mindestens zwei Antworten bei Multiplechoise ausgew&auml;hlt werden.');
+				$('#failMsg').append('<br />Bei Multiplechoice muss mindestens eine Antworten korrekt sein.');
 			
 			return false;
 		}
 	}
+
+
+	function showNewLanguageInput()
+	{
+		if($('#language').val() == "newLanguage")
+		{
+			$( "#newLanguage" ).show("slow", false);
+		}else {
+			$( "#newLanguage" ).hide("slow", false);
+		}
+	}
+
+	function showNewTopicInput()
+	{
+		if($('#topic').val() == "newTopic")
+		{
+			$( "#newTopic" ).show("slow", false);
+		} else {
+			$( "#newTopic" ).hide("slow", false);
+		}
+	}
+
+	
+	$("#btnBack").on("click", function() {
+
+		if(formCheck())
+		{
+			var fromsite = $("[name=fromsite]").val();
+			var quizId = $("[name=fromQuizId]").val();
+
+			if(fromsite == "")
+			{
+				window.location = "?p=questions";
+			} else 
+			{
+				window.location = "?p=" + fromsite + "&mode=edit&id=" + quizId;
+			}
+		}
+	});
+
+	$("#btnSaveAndNext").on("click", function() {
+		
+		if(formCheck())
+		{
+			var nextSite = "createEditQuestion";
+			var mode = "create";
+			var fromsite = $("[name=fromsite]").val();
+			var quizId = $("[name=fromQuizId]").val();
+
+			if(fromsite == "")
+			{
+				window.location = "?p=createEditQuestion";
+			} else 
+			{
+				window.location = "?p=" + nextSite + "&mode=" + mode + "&fromsite=" + fromsite + "&quizId=" + quizId;
+			}
+		}
+	});
 	
 </script>

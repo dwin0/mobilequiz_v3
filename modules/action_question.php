@@ -18,7 +18,7 @@ function updateQuestion()
 	}
 	
 	$field = $_GET["field"];
-	if(!isset($_POST["questionId"]) || !isset($field) || (!isset($_POST[$field]) && ($field != "addQuestionImage")))
+	if(!isset($_POST["questionId"]) || !isset($field) || (!isset($_POST[$field]) && (strpos($field, "QuestionImage") == false)))
 	{
 		$response_array["status"] = "error";
 		$response_array["text"] = "Not all parameters received.";
@@ -147,6 +147,11 @@ function updateQuestionKeywords($keywords, $questionId, $dbh)
 function updateQuestionLanguage($language, $questionId, $dbh)
 {
 	$response_array["status"] = "OK";
+	
+	if($language == "newLanguage") //Option to show the new-language-field
+	{
+		return $response_array;
+	}
 		
 	$stmt = $dbh->prepare("select language from question group by language");
 	$stmt->execute();
@@ -171,16 +176,36 @@ function updateQuestionLanguage($language, $questionId, $dbh)
 		}
 	}
 		
-	if(!$existingLanguage) //create new language-request
+	if(!$existingLanguage) //requested language doesn't exist
 	{
-		$stmt = $dbh->prepare("insert into language_request (user_id, language, timestamp, question_id) values (:user_id, :language, " . time() . ", :question_id)");
-		$stmt->bindParam(":user_id", $_SESSION["id"]);
-		$stmt->bindParam(":language", $language);
-		$stmt->bindParam(":question_id", $questionId);
-		if(! $stmt->execute())
+		$stmt = $dbh->prepare("select id from language_request where question_id = :questionId");
+		$stmt->bindParam(":questionId", $questionId);
+		$stmt->execute();
+		$fetchRequestId = $stmt->fetch(PDO::FETCH_ASSOC);
+		
+		if(isset($fetchRequestId["id"])) //question has already requested a new language -> update request
 		{
-			$response_array["status"] = "error";
-			$response_array["text"] = "Couldn't update database";
+			$stmt = $dbh->prepare("update language_request set language = :language, timestamp = " . time() . " where id = :reqId");
+			$stmt->bindParam(":language", $language);
+			$stmt->bindParam(":reqId", $fetchRequestId["id"]);
+			
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database";
+			}
+
+		} else //create new language-request
+		{
+			$stmt = $dbh->prepare("insert into language_request (user_id, language, timestamp, question_id) values (:user_id, :language, " . time() . ", :question_id)");
+			$stmt->bindParam(":user_id", $_SESSION["id"]);
+			$stmt->bindParam(":language", $language);
+			$stmt->bindParam(":question_id", $questionId);
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database";
+			}
 		}
 	}
 		
@@ -191,6 +216,11 @@ function updateQuestionLanguage($language, $questionId, $dbh)
 function updateQuestionTopic($topic, $questionId, $dbh)
 {
 	$response_array["status"] = "OK";
+	
+	if($topic == "newTopic") //Option to show the new-topic-field
+	{
+		return $response_array;
+	}
 		
 	$stmt = $dbh->prepare("select id from subjects where id = :id");
 	$stmt->bindParam(":id", $topic);
@@ -203,19 +233,45 @@ function updateQuestionTopic($topic, $questionId, $dbh)
 		$stmt = $dbh->prepare("update question set subject_id = :subject_id where id = :question_id");
 		$stmt->bindParam(":subject_id", $fetchTopic["id"]);
 		$stmt->bindParam(":question_id", $questionId);
-	} else
-	{ //create new topic-request
-	$stmt = $dbh->prepare("insert into topic_request (user_id, topic, timestamp, question_id) values (:user_id, :topic, " . time() . ", :question_id)");
-	$stmt->bindParam(":user_id", $_SESSION["id"]);
-	$stmt->bindParam(":topic", $topic);
-	$stmt->bindParam(":question_id", $questionId);
-	}
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't update database";
+		}
 		
-	if(!$stmt->execute())
-	{
-		$response_array["status"] = "error";
-		$response_array["text"] = "Database-Error";
-	}
+	} else
+	{ //requested topic doesn't exist
+		
+		$stmt = $dbh->prepare("select id from topic_request where question_id = :questionId");
+		$stmt->bindParam(":questionId", $questionId);
+		$stmt->execute();
+		$fetchRequestId = $stmt->fetch(PDO::FETCH_ASSOC);
+		
+		if(isset($fetchRequestId["id"])) //question has already requested a new topic -> update request
+		{
+			$stmt = $dbh->prepare("update topic_request set topic = :topic, timestamp = " . time() . " where id = :reqId");
+			$stmt->bindParam(":topic", $topic);
+			$stmt->bindParam(":reqId", $fetchRequestId["id"]);
+				
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database";
+			}
+		} else //create new topic-request
+		{
+			$stmt = $dbh->prepare("insert into topic_request (user_id, topic, timestamp, question_id) values (:user_id, :topic, " . time() . ", :question_id)");
+			$stmt->bindParam(":user_id", $_SESSION["id"]);
+			$stmt->bindParam(":topic", $topic);
+			$stmt->bindParam(":question_id", $questionId);
+			}
+			
+			if(!$stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Database-Error";
+			}
+		}
 		
 	return $response_array;
 }

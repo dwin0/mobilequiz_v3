@@ -319,6 +319,8 @@
 				return "Versenden der E-Mail fehlgeschlagen.";
 			case -20:
 				return "Sie sind nicht eingeloggt.";
+			case -21:
+				return "Datenbank-Fehler";
 			case -3:
 			case -4:
 			case -5:

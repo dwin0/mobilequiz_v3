@@ -115,6 +115,7 @@ $lang = array(
 		"public" => "&Ouml;ffentlich",
 		"privateMoreInfo" => "Privat \n(wird nur dem Ersteller angezeigt) ",
 		"createNext" => "und n&auml;chste erstellen",
+		"andGoBack" => " und zur&uuml;ck",
 		"saveQuestion" => "Frage speichern",
 		"help" => "Hilfe",
 		"createQuiz" => "Neues Quiz erstellen",
