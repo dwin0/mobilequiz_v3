@@ -89,4 +89,81 @@ function updateLanguage($language, $type, $id, $dbh)
 }
 
 
+function updateTopic($topic, $type, $id, $dbh)
+{
+	$response_array["status"] = "OK";
+
+	if($topic == "newTopic") //Option to show the new-topic-field
+	{
+		return $response_array;
+	}
+
+	if($topic == "")
+	{
+		return $response_array;
+	}
+
+	$stmt = $dbh->prepare("select id from subjects where id = :id");
+	$stmt->bindParam(":id", $topic);
+	$stmt->execute();
+	$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	if(isset($fetchTopic["id"]))
+	{
+		//update question/questionnaire with existing topic
+		$stmt = $dbh->prepare("update $type set subject_id = :subject_id where id = :id");
+		$stmt->bindParam(":subject_id", $fetchTopic["id"]);
+		$stmt->bindParam(":id", $id);
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Couldn't update database";
+		}
+
+	} else
+	{ //requested topic doesn't exist
+		
+		if($type == "question")
+		{
+			$type_id = "question_id";
+		} else
+		{
+			$type_id = "questionnaire_id";
+		}
+		
+		$stmt = $dbh->prepare("select id from topic_request where $type_id = :id");
+		$stmt->bindParam(":id", $id);
+		$stmt->execute();
+		$fetchRequestId = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		if(isset($fetchRequestId["id"])) //question/questionnaire has already requested a new topic -> update request
+		{
+			$stmt = $dbh->prepare("update topic_request set topic = :topic, timestamp = " . time() . " where id = :reqId");
+			$stmt->bindParam(":topic", $topic);
+			$stmt->bindParam(":reqId", $fetchRequestId["id"]);
+
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update database";
+			}
+		} else //create new topic-request
+		{
+			$stmt = $dbh->prepare("insert into topic_request (user_id, topic, timestamp, $type_id) values (:user_id, :topic, " . time() . ", :id)");
+			$stmt->bindParam(":user_id", $_SESSION["id"]);
+			$stmt->bindParam(":topic", $topic);
+			$stmt->bindParam(":id", $id);
+		}
+			
+		if(!$stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Database-Error";
+		}
+	}
+
+	return $response_array;
+}
+
+
 ?>
