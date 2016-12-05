@@ -179,7 +179,7 @@ PARTICIPATION PAGE
 	float: right;
 }
 
-.question, .questionImage {
+.question {
     text-align: center; 
     font-size: 0.9em;
     font-weight: bold;

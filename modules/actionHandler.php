@@ -24,9 +24,6 @@
 		case "delTopic":
 			deleteTopic();
 			break;
-		case "insertQuestion":
-			insertQuestion(); //TODO: Remove
-			break;
 		case "delQuestion":
 			deleteQuestion();
 			break;

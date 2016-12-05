@@ -306,7 +306,7 @@
 						<div id="picturePreview">
 						<?php if($mode == "edit" && $questionFetch["picture_link"] != "")
 						{
-							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px; width:50%\" src=\"" . $questionFetch["picture_link"] . "\" id=\"questionImage\"></img>";
+							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px; width:70%\" src=\"" . $questionFetch["picture_link"] . "\" id=\"questionImage\"></img>";
 							?>
 							<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 							    <div class="pswp__bg"></div>
@@ -606,6 +606,7 @@
 				break;
 			case "deleteQuestionLogo":
 				field = "deleteQuestionImage";
+				$("#questionLogo").val(null); //remove input-field value to enable selecting the same image twice
 				break;
 			case "isPrivate":
 				field = "isPrivate";
@@ -668,7 +669,7 @@
 		            		parent.append(this);	
 		            	});
 
-		            	downloadingImage.attr("style", "float:left; max-width: 300px; max-height: 300px; width: 50%");
+		            	downloadingImage.attr("style", "float:left; max-width: 300px; max-height: 300px; width: 70%");
 		            	downloadingImage.attr("id", "questionImage");
 		            	downloadingImage.attr("src", data.text);
 
@@ -682,7 +683,9 @@
 		            	break;
 					case "DELETED":
 						console.log("OK");
-		            	$('#picturePreview').html("<span style=\"color:green;\">Bild erfolgreich entfernt.</span>");
+						$("#questionImage").remove();
+						$("#deleteQuestionLogo").remove();
+		            	$("#picturePreview").append("<span style=\"color:green;\">Bild erfolgreich entfernt.</span>");
 		            	$("#questionLogo").show();
 		            	break;
 					case "ANSWER_INSERTED":

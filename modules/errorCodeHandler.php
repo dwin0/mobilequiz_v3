@@ -38,46 +38,6 @@
 	
 	
 	/*--------all Errors of different pages----------*/
-	//TODO: remove
-	function getQuestionsErrorText($code)
-	{
-		switch ($code)
-		{
-			case -1:
-			case -2:
-			case -3:
-			case -13:
-			case -14:
-			case -15:
-				return "Fehler in der Bearbeitung des Vorgangs (Code: " . $code .")";
-			case -4:
-				return "DB insert Fehler.";
-			case -5:
-				return "Weniger als 2 Antwortm&ouml;glichkeiten oder keine korrekte Antwort ausgew&auml;hlt.";
-			case -6:
-				return "Datentransfer fehlgeschlagen.";
-			case -7:
-				return "Bild&uumlberpr&uumlfung fehlgeschlagen.";
-			case -8:
-				return "Datei ist kein Bild.";
-			case -9:
-				return "Datei schon vorhanden.";
-			case -10:
-				return "Datei zu gross.";
-			case -11:
-				return "Dateityp wird nicht unterst&uuml;tzt.";
-			case -12:
-				return "Unzureichende Berechtigungen.";
-			case 1:
-				return "Neue Frage erstellt";
-			case 2:
-				return "Frage wurde bearbeitet";
-			case -16:
-				return "Komprimierung fehlgeschlagen. Bitte versuchen Sie ein kleineres oder anderes Bild";
-			default:
-				return "Fehler (Code: " . $code .")";
-		}
-	}
 	
 	function getAdminSectionErrorText($code)
 	{
@@ -395,11 +355,6 @@
 	
 	/*-----------handle Errors of different pages------*/
 	
-	
-	function handleQuestionsError($code)
-	{
-		return new mobileError(getQuestionsErrorText($code), getErrorColor($code));
-	}
 	
 	function handleAdminSectionError($code)
 	{
