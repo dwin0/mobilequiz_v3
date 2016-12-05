@@ -82,7 +82,7 @@
 			$stmt->execute();
 			
 			$fetchAmoutOfQuestions = $stmt->fetch(PDO::FETCH_ASSOC);
-			$nextOrder = $fetchAmoutOfQuestions["total"] - 1; //order starts with 0
+			$nextOrder = $fetchAmoutOfQuestions["total"]; //order starts with 0
 			
 			$stmt = $dbh->prepare("insert into qunaire_qu values (:qunaireId, :questionId, :order)");
 			$stmt->bindParam(":qunaireId", $_GET["quizId"]);
@@ -533,7 +533,7 @@
 	<div>
 			<div style="text-align: left; float: left;">
 				<input type="button" class="btn" id="btnBack"
-					value="<?php echo $lang["saveQuestion"] . $lang["andGoBack"];?>"/>
+					value="<?php echo $lang["btnBack"];?>"/>
 			</div>
 
 			<div style="text-align: right; margin-top: 10px;">
@@ -542,7 +542,7 @@
 				<input type="hidden" name="fromsite" value="<?php echo isset($_GET["fromsite"]) ? $_GET["fromsite"] : '';?>">
 				<input type="hidden" name="fromQuizId" value="<?php echo isset($_GET["quizId"]) ? $_GET["quizId"] : '';?>">
 				<input type="button" class="btn" id="btnSaveAndNext"
-					value="<?php echo $lang["saveQuestion"] . " " . $lang["createNext"];?>" />
+					value="<?php echo $lang["createNext"];?>" />
 			</div>
 		</div>
 	
@@ -1048,53 +1048,68 @@
 
 	function formCheck()
 	{
-		var correctAnswersOk1 = false;
-		var correctAnswersOk2 = false;
+		var correctAnswersOk = false;
+		var answerTextOK = true;
 		var answerCount = 0;
+		
+		$("#failMsg").html("");
+		$("#correctAnswerHeading").css("color","black");
+		
 		for(var i = 0; i < 5; i++)
 		{
-			if(document.getElementById("correctAnswer_" + i).checked)
+			if($("#correctAnswer_" + i + ":checked").length > 0)
+			{
 				answerCount++;
-		}
+			}
 
-		if(document.getElementById("questionTypeSingleChoice").checked)
+			$("[name=answerText_" + i + "]").css("background-color","white");
+			
+			if($("#correctAnswer_" + i + ":checked").length > 0 && $("[name=answerText_" + i + "]").val() == "")
+			{
+				answerTextOK = false;
+				$("[name=answerText_" + i + "]").css("background-color","#ffdbdb");
+			}
+		}
+		
+		if($("#questionTypeSingleChoice").is(":checked"))
 		{
 			if(answerCount == 1)
-				correctAnswersOk1 = true;
+			{
+				correctAnswersOk = true;
+			} else
+			{
+				$("#failMsg").append("<?php echo $lang["singechoiceAnswerError"]?>");
+			}
 		}
 		
-		if(document.getElementById("questionTypeMultipleChoice").checked)
+		if($("#questionTypeMultipleChoice").is(":checked"))
 		{
 			if(answerCount >= 1)
-				correctAnswersOk2 = true;
+			{
+				correctAnswersOk = true;
+			} else
+			{
+				$("#failMsg").append("<?php echo $lang["multiplechoiceAnswerError"]?>");
+			}
 		}
 		
-		if(!correctAnswersOk1)
+		if(!correctAnswersOk)
 		{
-			$('#correctAnswerHeading').css('color','#ff0000');
+			$("#correctAnswerHeading").css("color","#ff0000");
 		}
 
-		if(((document.getElementById("questionTypeSingleChoice").checked && correctAnswersOk1) || 
-				(document.getElementById("questionTypeMultipleChoice").checked && correctAnswersOk2)))
+		if(!answerTextOK)
 		{
-			return true;
-		} else {
-			$('#failMsg').html("Mindestens ein ben&ouml;tigtes Feld ist nicht korrekt ausgef&uuml;llt.");
-
-			if(document.getElementById("questionTypeSingleChoice").checked && !correctAnswersOk1)
-				$('#failMsg').append('<br />Bei Singlechoice darf nur eine Antwort korrekt sein.');
-
-			if(document.getElementById("questionTypeMultipleChoice").checked && !correctAnswersOk2)
-				$('#failMsg').append('<br />Bei Multiplechoice muss mindestens eine Antworten korrekt sein.');
-			
-			return false;
+			$("#failMsg").append("<br /><?php echo $lang["noAnswerTextError"]?>");
 		}
+
+		return correctAnswersOk && answerTextOK;
 	}
 
 
 	function showNewLanguageInput()
 	{
-		if($('#language').val() == "newLanguage")
+		if($("#language").val() == "newLanguage")
 		{
 			$( "#newLanguage" ).show("slow", false);
 		}else {
@@ -1104,7 +1119,7 @@
 
 	function showNewTopicInput()
 	{
-		if($('#topic').val() == "newTopic")
+		if($("#topic").val() == "newTopic")
 		{
 			$( "#newTopic" ).show("slow", false);
 		} else {

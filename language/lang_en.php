@@ -114,9 +114,7 @@ $lang = array(
 		"cloze" => "Cloze",
 		"public" => "Public",
 		"privateMoreInfo" => "Private (only visible for the creator) ",
-		"createNext" => "and create next",
-		"andGoBack" => " and go back",
-		"saveQuestion" => "Save question",
+		"createNext" => "Create next Question",
 		"help" => "Help",
 		"createQuiz" => "Create new quiz",
 		"editQuiz" => "Edit quiz [1]",
@@ -354,6 +352,9 @@ $lang = array(
 								"<br />Answers: [answers]<br /><br />Message from Participant: [participantText]",
 		"participantEmailSubject" => "Confirmation: MobileQuiz participant-question",
 		"participantEmailText" => "Your Question was sent to the quiz-creator as follows:<br /><br />To: [creatorMail]<br />Name: [creatorName]<br />Concerns the question: " .
-								"[currentQuestionText]<br />Questiontype: [questionType]<br />Answers: <ul>[answers]<ul><br /><br />Your Message: [participantText]"
+								"[currentQuestionText]<br />Questiontype: [questionType]<br />Answers: <ul>[answers]<ul><br /><br />Your Message: [participantText]",
+		"singechoiceAnswerError" => "A singlechoice question has to have exactly one correct answer.",
+		"multiplechoiceAnswerError" => "A multiplechoice question has to have at least one correct answer.",
+		"noAnswerTextError" => "There's at least one empty answer."
 );
 ?>

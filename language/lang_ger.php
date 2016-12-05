@@ -114,9 +114,7 @@ $lang = array(
 		"cloze" => "L&uuml;ckentext",
 		"public" => "&Ouml;ffentlich",
 		"privateMoreInfo" => "Privat \n(wird nur dem Ersteller angezeigt) ",
-		"createNext" => "und n&auml;chste erstellen",
-		"andGoBack" => " und zur&uuml;ck",
-		"saveQuestion" => "Frage speichern",
+		"createNext" => "Erstelle n&auml;chste Frage",
 		"help" => "Hilfe",
 		"createQuiz" => "Neues Quiz erstellen",
 		"editQuiz" => "Lernkontrolle [1] bearbeiten",
@@ -354,6 +352,9 @@ $lang = array(
 								"<br />Antwortm&ouml;glichkeiten: <ul>[answers]<ul><br /><br />Nachricht des Teilnehmers: [participantText]",
 		"participantEmailSubject" => "Bestaetigung: MobileQuiz Teilnehmer-Frage",
 		"participantEmailText" => "Ihre Frage wurde wie folgt an den Quiz-Ersteller gesendet:<br /><br />An: [creatorMail]<br />Name: [creatorName]<br />Betrifft Frage: " .
-								"[currentQuestionText]<br />Fragetyp: [questionType]<br />Antwortm&ouml;glichkeiten: <ul>[answers]<ul><br /><br />Ihre Nachricht: [participantText]"
+								"[currentQuestionText]<br />Fragetyp: [questionType]<br />Antwortm&ouml;glichkeiten: <ul>[answers]<ul><br /><br />Ihre Nachricht: [participantText]",
+		"singechoiceAnswerError" => "Bei Singlechoice darf genau eine Antwort korrekt sein.",
+		"multiplechoiceAnswerError" => "Bei Multiplechoice muss mindestens eine Antworten korrekt sein.",
+		"noAnswerTextError" => "Mindestens eine Antwortm&ouml;glichkeit enh&auml;lt kein Text."
 );
 ?>
