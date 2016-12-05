@@ -87,271 +87,7 @@
 		return -1;
 	}
 ?>
-<script src="js/spin.min.js"></script>
-<script type="text/javascript">
 
-	function openExcelDialog()
-    {
-        $('#btnImportQuestionsFromExcel').click();
-    }
-    
-	function openDirectoryDialog()
-    {
-        $('#btnImportQuestionsFromDirectory').click();
-    }
-
-	function showNewLanguageInput()
-	{
-		if($('#language').val() == "newLanguage")
-		{
-			$( "#newLanguage" ).show("slow", false);
-		}else {
-			$( "#newLanguage" ).hide("slow", false);
-		}
-	}
-
-	function showNewTopicInput()
-	{
-		if($('#topic').val() == "newTopic")
-		{
-			$( "#newTopic" ).show("slow", false);
-		} else {
-			$( "#newTopic" ).hide("slow", false);
-		}
-	}
-
-	function addCreator()
-	{
-		var userEmail = $('#autocompleteUsers').val();
-		console.log(userEmail);
-		$.ajax({
-			url: 'modules/actionHandler.php',
-			type: "get",
-			data: "action=addAssignation&userEmail="+userEmail+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
-			success: function(output) 
-			{
-				if(output == "ok1")
-				{
-					$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
-					//$('#assignTbl > tbody:last-child').append('<tr><td>'+userEmail+'</td><td></td></tr>');
-					$('#assignTbl').DataTable().row.add([userEmail, '']).draw(false);
-					$('#autocompleteUsers').val('');
-					console.log("ok");
-				}
-				if(output == "failed")
-				{
-					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-					console.log("Fehler1");
-				}
-			},
-			error: function(output) 
-			{
-				$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-				console.log("Fehler2");
-			}	      
-		});
-	}
-
-	function delAssigned(userId)
-	{
-		console.log("del: " + userId);
-
-		$.ajax({
-			url: 'modules/actionHandler.php',
-			type: "get",
-			data: "action=delAssignation&userId="+userId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
-			success: function(output) 
-			{
-				if(output == "ok1")
-				{
-					$('#ajaxAnswer').html('<span style="color: green;">Berechtigung aberkannt.</span>');
-					//$('#assignation_'+userId).css('display', 'none');
-					$('#assignTbl').DataTable().row($('#assignation_'+userId)).remove().draw();
-					$('.tipsy').remove();
-				}
-				if(output == "failed")
-				{
-					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-				}
-			},
-			error: function(output) 
-			{
-				$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-			}	      
-		});
-	}
-
-	function delQuestion(qId)
-	{
-		console.log("del: " + qId);
-		$.ajax({
-			url: 'modules/actionHandler.php',
-			type: "get",
-			data: "action=delQuestionFromQuiz&questionId="+qId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
-			success: function(output) 
-			{
-				if(output == "ok")
-				{
-					$('#tblListOfQuestions').DataTable().row($('#question_'+qId)).remove().draw();
-					$('.tipsy').remove();
-				}
-				if(output == "failed")
-				{
-					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-				}
-			},
-			error: function(output) 
-			{
-				$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-			}
-		});
-	}
-
-	function formCheck()
-	{
-		$('#btnSave').prop('disabled', true);
-		$('#btnBackToOverview').prop('disabled', true);
-		var opts = {position: 'fixed', color: '#fff', length: 56, radius: 70, width: 22};
-		var spinner = new Spinner(opts).spin();
-		var over = '<div id="overlay"></div>';
-		$(over).appendTo('body');
-		$('body').append(spinner.el);
-		return true;
-	}
-
-	var updateData = function(e, ui)
-	{
-		var qOrder = [];
-		$('#sortable').find('.qId').each (function(col, td) {
-			qOrder.push($(td).html());
-		});   
-		console.log(JSON.stringify(qOrder));
-		$.ajax({
-			url: 'modules/actionHandler.php',
-			type: "get",
-			data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>+"&qOrder="+JSON.stringify(qOrder),
-			success: function(output) 
-			{
-				console.log(output);
-			}
-		});
-	}
-
-	$(function() {
-		var tooltipElements = ['#assignationHelp', '.delAssignedImg', '.delQuestionImg', '.editQuestion', '.questionTypeInfo'];
-
-		$.each(tooltipElements, function(i, string){
-			$(string).tipsy({gravity: 'n'});
-		});
-
-		
-	    $( "#sortable" ).sortable({
-		    stop: updateData}).disableSelection();
-
-		
-		document.getElementById("btnImportQuestionsFromExcel").addEventListener("change",function(){
-		    document.getElementById("fileName").innerHTML = document.getElementById("btnImportQuestionsFromExcel").files[0].name;
-		});
-
-		document.getElementById("btnImportQuestionsFromDirectory").addEventListener("change",function(){			
-			var files = document.getElementById("btnImportQuestionsFromDirectory").files;
-
-			var fileNames = "";
-			for(var i = 0; i < files.length; i++) {
-				fileNames += files[i].name;
-				if(i+1 < files.length) {
-					fileNames += ", ";
-				}
-			}
-			document.getElementById("fileNames").innerHTML = fileNames;
-		});
-
-
-		var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
-		$( "#autocompleteUsers" ).autocomplete({
-		  source: sourceData
-		});
-
-		$('#tblListOfQuestions').DataTable({
-            'bSort': true,
-            'bPaginate': false,
-            'bInfo': false,
-            'bLengthChange': true,
-            'aaSorting': [[1, 'asc']],
-            'aoColumns': [
-				{'bSearchable': false, 'bSortable':false},
-                {'bSearchable': false, 'bSortable':true},
-                {'bSearchable': false, 'bSortable':false},
-                {'bSortable':false},
-                {'bSearchable': false, 'bSortable':false},
-                {'bSearchable': false},
-                {'bSearchable': false, 'bSortable':false}
-            ],
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
-            "sDom": 'lfrtip',
-            "oLanguage": {
-                "sZeroRecords": "Es sind keine Fragen dieser Art vorhanden",
-                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Fragen",
-                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Fragen",
-                "sInfoFiltered": "(von insgesamt _MAX_ Fragen)",
-                "sSearch": ""
-            }
-        });
-        $('.dataTables_filter input').attr("placeholder", 'Suchbegriff in Spalte "Fragetext (Beschreibung)" suchen');
-        $('.dataTables_filter input').addClass("form-control");
-        $('.dataTables_filter input').addClass("magnifyingGlass");
-        $('.dataTables_filter input').attr("style", "min-width: 350px;");
-
-
-        $('#tblListOfExecutions').DataTable({
-            'bSort': true,
-            'bPaginate': false,
-            'bInfo': false,
-            'bLengthChange': true,
-            'aoColumns': [
-                {'bSearchable': true, 'bSortable':true},
-                {'bSearchable': false, 'bSortable':true},
-                {'bSearchable': false, 'bSortable':false}
-            ],
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
-            "sDom": 'lfrtip',
-            "oLanguage": {
-                "sZeroRecords": "Es sind keine Durchf&uuml;hrungen dieser Art vorhanden",
-                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Durchf&uuml;hrungen",
-                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Durchf&uuml;hrungen",
-                "sInfoFiltered": "(von insgesamt _MAX_ Durchf&uuml;hrungen)",
-                "sSearch": ""
-            }
-        });
-        $('.dataTables_filter input').addClass("form-control");
-        $('.dataTables_filter input').addClass("magnifyingGlass");
-        $('.dataTables_filter input').attr("style", "min-width: 350px;");
-
-        
-        $('#assignTbl').DataTable({
-            'bSort': true,
-            'bPaginate': false,
-            'bLengthChange': false,
-            'bInfo': false,
-            'aoColumns': [
-				{'bSearchable': false, 'bSortable': false},
-				{'bSearchable': false, 'bSortable': false}
-            ],
-            "sDom": 'lfrtip',
-            "oLanguage": {
-                "sZeroRecords": "Es sind keine Berechtigungen vergeben worden",
-                "sSearch": ""
-            }
-        });
-        $('.dataTables_filter input').addClass("form-control");
-        $('.dataTables_filter input').addClass("magnifyingGlass");
-        $('.dataTables_filter input').attr("style", "min-width: 350px;");
-	
-	});
-    
-</script>
-
-<script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <div class="container theme-showcase">
 	<div class="page-header">
@@ -573,7 +309,7 @@
         
         <div class="tab-pane fade from-horizontal panel-body" id="questions">
        		
-       		<input id="btnAddNewQuestion" name="btnAddNewQuestion" class="btn" onclick="" type="button" value="<?php echo $lang["addNewQuestion"];?>" /><br />
+       		<input id="btnAddNewQuestion" name="btnAddNewQuestion" class="btn" type="button" value="<?php echo $lang["addNewQuestion"];?>" /><br />
 			<input id="btnAddExistingQuestion" name="btnAddExistingQuestion" class="btn" type="button" value="<?php echo $lang["addExistingQuestion"];?>" style="margin-top: 10px;"/><br />
 			<input id="btnImportQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcel"];?>" onclick="openExcelDialog()" style="margin-top: 10px;"/>&nbsp;<span id="fileName"><?php echo " <b>" . $lang["noFileSelected"] . "</b>";?></span><br />
 			<input id="btnImportImageQuestion" name="btnImportQuestion" class="btn" type="button" value="<?php echo $lang["importQuestionsFromExcelWithImages"];?>" onclick="openDirectoryDialog()" style="margin-top: 10px; margin-bottom: 10px;"/>&nbsp;<span id="fileNames"><?php echo " <b>" . $lang["noFolderSelected"] . "</b>";?></span><br />
@@ -694,18 +430,167 @@
 		</div>
 
     </div>
-		
+	
+	<script src="js/spin.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
 	<script type="text/javascript">
+
 		$(document).ready(function() {
 			
 			$(document).on("change", "#quizText, #description, #language, #newLanguage, #topic, #newTopic", updateQuizData);
-
+	
 			$('#addUser').on('mouseover', function(){
 				this.style.cursor='pointer';
 		    });
 			
 		});
-
+	
+		function openExcelDialog()
+	    {
+	        $('#btnImportQuestionsFromExcel').click();
+	    }
+	    
+		function openDirectoryDialog()
+	    {
+	        $('#btnImportQuestionsFromDirectory').click();
+	    }
+	
+		function showNewLanguageInput()
+		{
+			if($('#language').val() == "newLanguage")
+			{
+				$( "#newLanguage" ).show("slow", false);
+			}else {
+				$( "#newLanguage" ).hide("slow", false);
+			}
+		}
+	
+		function showNewTopicInput()
+		{
+			if($('#topic').val() == "newTopic")
+			{
+				$( "#newTopic" ).show("slow", false);
+			} else {
+				$( "#newTopic" ).hide("slow", false);
+			}
+		}
+	
+		function addCreator()
+		{
+			var userEmail = $('#autocompleteUsers').val();
+			console.log(userEmail);
+			$.ajax({
+				url: 'modules/actionHandler.php',
+				type: "get",
+				data: "action=addAssignation&userEmail="+userEmail+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
+				success: function(output) 
+				{
+					if(output == "ok1")
+					{
+						$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
+						//$('#assignTbl > tbody:last-child').append('<tr><td>'+userEmail+'</td><td></td></tr>');
+						$('#assignTbl').DataTable().row.add([userEmail, '']).draw(false);
+						$('#autocompleteUsers').val('');
+						console.log("ok");
+					}
+					if(output == "failed")
+					{
+						$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+						console.log("Fehler1");
+					}
+				},
+				error: function(output) 
+				{
+					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+					console.log("Fehler2");
+				}	      
+			});
+		}
+	
+		function delAssigned(userId)
+		{
+			console.log("del: " + userId);
+	
+			$.ajax({
+				url: 'modules/actionHandler.php',
+				type: "get",
+				data: "action=delAssignation&userId="+userId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
+				success: function(output) 
+				{
+					if(output == "ok1")
+					{
+						$('#ajaxAnswer').html('<span style="color: green;">Berechtigung aberkannt.</span>');
+						//$('#assignation_'+userId).css('display', 'none');
+						$('#assignTbl').DataTable().row($('#assignation_'+userId)).remove().draw();
+						$('.tipsy').remove();
+					}
+					if(output == "failed")
+					{
+						$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+					}
+				},
+				error: function(output) 
+				{
+					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+				}	      
+			});
+		}
+	
+		function delQuestion(qId)
+		{
+			console.log("del: " + qId);
+			$.ajax({
+				url: 'modules/actionHandler.php',
+				type: "get",
+				data: "action=delQuestionFromQuiz&questionId="+qId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
+				success: function(output) 
+				{
+					if(output == "ok")
+					{
+						$('#tblListOfQuestions').DataTable().row($('#question_'+qId)).remove().draw();
+						$('.tipsy').remove();
+					}
+					if(output == "failed")
+					{
+						$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+					}
+				},
+				error: function(output) 
+				{
+					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+				}
+			});
+		}
+	
+		function formCheck()
+		{
+			$('#btnSave').prop('disabled', true);
+			$('#btnBackToOverview').prop('disabled', true);
+			var opts = {position: 'fixed', color: '#fff', length: 56, radius: 70, width: 22};
+			var spinner = new Spinner(opts).spin();
+			var over = '<div id="overlay"></div>';
+			$(over).appendTo('body');
+			$('body').append(spinner.el);
+			return true;
+		}
+	
+		var updateData = function(e, ui)
+		{
+			var qOrder = [];
+			$('#sortable').find('.qId').each (function(col, td) {
+				qOrder.push($(td).html());
+			});   
+			console.log(JSON.stringify(qOrder));
+			$.ajax({
+				url: 'modules/actionHandler.php',
+				type: "get",
+				data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>+"&qOrder="+JSON.stringify(qOrder),
+				success: function(output) 
+				{
+					console.log(output);
+				}
+			});
+		}
 
 
 		function updateQuizData(event)
@@ -784,30 +669,153 @@
 		    });
 		}
 		
-	    
-	    $('#createEditQuizTab').tabCollapse();
-	</script>
 	
+		$(function() {
+			var tooltipElements = ['#assignationHelp', '.delAssignedImg', '.delQuestionImg', '.editQuestion', '.questionTypeInfo'];
 	
+			$.each(tooltipElements, function(i, string){
+				$(string).tipsy({gravity: 'n'});
+			});
 	
-	
-	<form id="createQuiz"
-		action="<?php echo "?p=actionHandler&action=insertQuiz&mode=" . $mode;?>"
-		class="form-horizontal" method="POST" enctype="multipart/form-data"
-		onsubmit="return formCheck()">
-		
-
-		
 			
+		    $( "#sortable" ).sortable({
+			    stop: updateData}).disableSelection();
+	
+			
+			document.getElementById("btnImportQuestionsFromExcel").addEventListener("change",function(){
+			    document.getElementById("fileName").innerHTML = document.getElementById("btnImportQuestionsFromExcel").files[0].name;
+			});
+	
+			document.getElementById("btnImportQuestionsFromDirectory").addEventListener("change",function(){			
+				var files = document.getElementById("btnImportQuestionsFromDirectory").files;
+	
+				var fileNames = "";
+				for(var i = 0; i < files.length; i++) {
+					fileNames += files[i].name;
+					if(i+1 < files.length) {
+						fileNames += ", ";
+					}
+				}
+				document.getElementById("fileNames").innerHTML = fileNames;
+			});
+	
+	
+			$("#btnAddNewQuestion").on("click", function() {
+	
+				if(formCheck())
+				{
+					var nextSite = "createEditQuestion";
+					var mode = "create";
+					var fromsite = "createEditQuiz";
+					var quizId = <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>;
+					window.location = "?p=" + nextSite + "&mode=" + mode + "&fromsite=" + fromsite + "&quizId=" + quizId;
+				}
+			});
+	
+			$("#btnAddExistingQuestion").on("click", function() {
+	
+				if(formCheck())
+				{
+					var nextSite = "addQuestions";
+					var quizId = <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>;
+					window.location = "?p=" + nextSite + "&quizId=" + quizId;
+				}
+			});
+			
+			var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
+			$( "#autocompleteUsers" ).autocomplete({
+			  source: sourceData
+			});
+	
+			$('#tblListOfQuestions').DataTable({
+	            'bSort': true,
+	            'bPaginate': false,
+	            'bInfo': false,
+	            'bLengthChange': true,
+	            'aaSorting': [[1, 'asc']],
+	            'aoColumns': [
+					{'bSearchable': false, 'bSortable':false},
+	                {'bSearchable': false, 'bSortable':true},
+	                {'bSearchable': false, 'bSortable':false},
+	                {'bSortable':false},
+	                {'bSearchable': false, 'bSortable':false},
+	                {'bSearchable': false},
+	                {'bSearchable': false, 'bSortable':false}
+	            ],
+	            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
+	            "sDom": 'lfrtip',
+	            "oLanguage": {
+	                "sZeroRecords": "Es sind keine Fragen dieser Art vorhanden",
+	                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Fragen",
+	                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Fragen",
+	                "sInfoFiltered": "(von insgesamt _MAX_ Fragen)",
+	                "sSearch": ""
+	            }
+	        });
+	        $('.dataTables_filter input').attr("placeholder", 'Suchbegriff in Spalte "Fragetext (Beschreibung)" suchen');
+	        $('.dataTables_filter input').addClass("form-control");
+	        $('.dataTables_filter input').addClass("magnifyingGlass");
+	        $('.dataTables_filter input').attr("style", "min-width: 350px;");
+	
+	
+	        $('#tblListOfExecutions').DataTable({
+	            'bSort': true,
+	            'bPaginate': false,
+	            'bInfo': false,
+	            'bLengthChange': true,
+	            'aoColumns': [
+	                {'bSearchable': true, 'bSortable':true},
+	                {'bSearchable': false, 'bSortable':true},
+	                {'bSearchable': false, 'bSortable':false}
+	            ],
+	            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
+	            "sDom": 'lfrtip',
+	            "oLanguage": {
+	                "sZeroRecords": "Es sind keine Durchf&uuml;hrungen dieser Art vorhanden",
+	                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Durchf&uuml;hrungen",
+	                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Durchf&uuml;hrungen",
+	                "sInfoFiltered": "(von insgesamt _MAX_ Durchf&uuml;hrungen)",
+	                "sSearch": ""
+	            }
+	        });
+	        $('.dataTables_filter input').addClass("form-control");
+	        $('.dataTables_filter input').addClass("magnifyingGlass");
+	        $('.dataTables_filter input').attr("style", "min-width: 350px;");
+	
+	        
+	        $('#assignTbl').DataTable({
+	            'bSort': true,
+	            'bPaginate': false,
+	            'bLengthChange': false,
+	            'bInfo': false,
+	            'aoColumns': [
+					{'bSearchable': false, 'bSortable': false},
+					{'bSearchable': false, 'bSortable': false}
+	            ],
+	            "sDom": 'lfrtip',
+	            "oLanguage": {
+	                "sZeroRecords": "Es sind keine Berechtigungen vergeben worden",
+	                "sSearch": ""
+	            }
+	        });
+	        $('.dataTables_filter input').addClass("form-control");
+	        $('.dataTables_filter input').addClass("magnifyingGlass");
+	        $('.dataTables_filter input').attr("style", "min-width: 350px;");
 		
-		<div style="float: left; margin-top: 10px;">
-			<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
-		</div>
-		<input type="hidden" name="mode" value="<?php echo $mode;?>">
-		<input type="hidden" name="quiz_id" value="<?php echo ($mode == "edit") ? $quizFetch["id"] : $newQuizId;;?>">
-		<div style="float: right; padding-left: 10px; margin-top: 10px;">
-			<input type="hidden" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
-			<input type="submit" class="btn" id="btnSave" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
-		</div>
-	</form>
+		});
+
+		$('#createEditQuizTab').tabCollapse();
+	</script>
+
+
+	<div style="float: left; margin-top: 10px;">
+		<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
+	</div>
+	<input type="hidden" name="mode" value="<?php echo $mode;?>">
+	<input type="hidden" name="quiz_id" value="<?php echo ($mode == "edit") ? $quizFetch["id"] : $newQuizId;;?>">
+	<div style="float: right; padding-left: 10px; margin-top: 10px;">
+		<input type="hidden" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
+		<input type="submit" class="btn" id="btnSave" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
+	</div>
+
 </div>

@@ -1,5 +1,7 @@
 <?php
 
+include_once 'action_quiz_question_common.php';
+
 function updateQuiz() {
 	global $dbh;
 	$response_array["status"] = "OK";
@@ -21,27 +23,6 @@ function updateQuiz() {
 		}
 	}
 		
-	//check new Language is not empty --> TODO: schlägt bei der ersten einblendung noch fehl!
-	if($_POST["language"] == "newLanguage")
-	{
-		if($_POST["newLanguage"] == "")
-		{
-			$response_array["status"] = "error";
-			$response_array["text"] = "New language is not allowed to be emtpy.";
-		}
-	}
-		
-	//check new Topic is not empty --> TODO: schlägt bei der ersten einblendung noch fehl!
-	if($_POST["topic"] == "newTopic")
-	{
-		if($_POST["newTopic"] == "")
-		{
-			$response_array["status"] = "error";
-			$response_array["text"] = "New topic is not allowed to be empty.";
-		}
-	}
-	
-	
 	$field = $_GET["field"];
 	if(!isset($_POST["quizId"]) || !isset($field) || !isset($_POST[$field]))
 	{
@@ -64,10 +45,10 @@ function updateQuiz() {
 			$response_array = updateQuizDescription($_POST["description"], $_POST["maxChar"], $_POST["quizId"], $dbh);
 			break;
 		case "language":
-			$response_array = updateQuizLanguage($_POST["language"], $_POST["quizId"], $dbh);
+			$response_array = updateLanguage($_POST["language"], "questionnaire", $_POST["quizId"], $dbh);
 			break;
 		case "topic":
-			$response_array = updateQuizTopic($_POST["topic"], $_POST["quizId"], $dbh);
+			$response_array = updateTopic($_POST["topic"], "questionnaire" , $_POST["quizId"], $dbh);
 			break;
 	}
 	
@@ -131,80 +112,6 @@ function updateQuizDescription($description, $maxChar, $quizId, $dbh)
 	return $response_array;
 }
 
-function updateQuizLanguage($language, $quizId, $dbh)
-{
-	$response_array["status"] = "OK";
-
-	$stmt = $dbh->prepare("select language from questionnaire group by language");
-	$stmt->execute();
-	$allLanguages = $stmt->fetchAll();
-
-	for($i = 0; $i < count($allLanguages); $i++){
-		if($allLanguages[$i]["language"] == $language)
-		{
-			$existingLanguage = true;
-				
-			//update question with existing language
-			$stmt = $dbh->prepare("update questionnaire set language = :language where id = :quiz_id");
-			$stmt->bindParam(":language", $language);
-			$stmt->bindParam(":quiz_id", $quizId);
-
-			if(! $stmt->execute())
-			{
-				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update database language";
-				return $response_array;
-			}
-		}
-	}
-
-	if(!$existingLanguage) //create new language-request
-	{
-		$stmt = $dbh->prepare("insert into language_request (user_id, language, timestamp, questionnaire_id) values (:user_id, :language, " . time() . ", :quiz_id)");
-		$stmt->bindParam(":user_id", $_SESSION["id"]);
-		$stmt->bindParam(":language", $language);
-		$stmt->bindParam(":quiz_id", $quizId);
-		if(! $stmt->execute())
-		{
-			$response_array["status"] = "error";
-			$response_array["text"] = "Couldn't update database language request";
-		}
-	}
-
-	return $response_array;
-}
-
-function updateQuizTopic($topic, $quizId, $dbh)
-{
-	$response_array["status"] = "OK";
-
-	$stmt = $dbh->prepare("select id from subjects where id = :id");
-	$stmt->bindParam(":id", $topic);
-	$stmt->execute();
-	$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
-
-	if(isset($fetchTopic["id"]))
-	{
-		//update question with existing topic
-		$stmt = $dbh->prepare("update questionnaire set subject_id = :subject_id where id = :quiz_id");
-		$stmt->bindParam(":subject_id", $fetchTopic["id"]);
-		$stmt->bindParam(":quiz_id", $quizId);
-	} else
-	{ //create new topic-request
-		$stmt = $dbh->prepare("insert into topic_request (user_id, topic, timestamp, questionnaire_id) values (:user_id, :topic, " . time() . ", :quiz_id)");
-		$stmt->bindParam(":user_id", $_SESSION["id"]);
-		$stmt->bindParam(":topic", $topic);
-		$stmt->bindParam(":quiz_id", $quizId);
-	}
-
-	if(!$stmt->execute())
-	{
-		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database topic";
-	}
-
-	return $response_array;
-}
 
 
 
