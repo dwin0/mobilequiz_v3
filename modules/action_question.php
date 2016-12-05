@@ -5,13 +5,13 @@ function updateQuestion()
 	global $dbh;
 	$response_array["status"] = "OK";
 	
-	//check if owner of admin
+	//check if owner or admin
 	$stmt = $dbh->prepare("select owner_id from question where id = :question_id");
 	$stmt->bindParam(":question_id", $_POST["questionId"]);
 	$stmt->execute();
-	$fetchQuizOwnerPic = $stmt->fetch(PDO::FETCH_ASSOC);
+	$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-	if($fetchQuizOwnerPic["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1)
+	if($fetchQuestionOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1)
 	{
 		$response_array["status"] = "error";
 		$response_array["text"] = "You are not allowed to update this question.";
@@ -152,6 +152,11 @@ function updateQuestionLanguage($language, $questionId, $dbh)
 	{
 		return $response_array;
 	}
+	
+	if($language == "")
+	{
+		return $response_array;
+	}
 		
 	$stmt = $dbh->prepare("select language from question group by language");
 	$stmt->execute();
@@ -218,6 +223,11 @@ function updateQuestionTopic($topic, $questionId, $dbh)
 	$response_array["status"] = "OK";
 	
 	if($topic == "newTopic") //Option to show the new-topic-field
+	{
+		return $response_array;
+	}
+	
+	if($topic == "")
 	{
 		return $response_array;
 	}

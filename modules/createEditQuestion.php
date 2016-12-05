@@ -1,35 +1,36 @@
 <?php 
 
-	global $dbh;
-
-	if($_SESSION["role"]["user"] == 1)
+	if($_SESSION["role"]["creator"] != 1)
 	{
-		if($_SESSION["role"]["creator"] != 1)
-		{
-			header("Location: ?p=quiz&code=-1");
-			exit;
-		}
-	}
-	else 
-	{
-		header("Location: ?p=home&code=-20");
+		header("Location: ?p=quiz&code=-1");
 		exit;
 	}
 	
-	$code = 0;
-	$codeText = "";
+
+	global $dbh;
+	
 	$mode = "create";
 	if(isset($_GET["mode"]))
 	{
 		$mode = $_GET["mode"];
 	}
 	
-	const MAX_CHARACTERS_PER_QUESTION = 400;
-	const MAX_CHARACTERS_PER_TOPIC = 30;
-	const MAX_CHARACTERS_PER_ANSWER = 250;
-	
 	if($mode == "edit")
 	{
+		//check if owner or admin
+		$stmt = $dbh->prepare("select owner_id from question where id = :question_id");
+		$stmt->bindParam(":question_id", $_GET["id"]);
+		$stmt->execute();
+		$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
+		
+		if($fetchQuestionOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1)
+		{
+			header("Location: ?p=quiz&code=-1");
+			exit;
+		}
+		
+		
+		//get question
 		if(isset($_GET["id"]))
 		{
 			$stmt = $dbh->prepare("select question.*, user_data.firstname, user_data.lastname from question inner join user on user.id = question.owner_id inner join user_data on user_data.user_id = user.id where question.id = :id");
@@ -39,21 +40,20 @@
 				$questionFetch = $stmt->fetch(PDO::FETCH_ASSOC);
 			else 
 			{
-				$mode = "create";
-				$code = -2;
-				$codeText = "ID nicht gefunden.";
+				header("Location: ?p=quiz&code=-48");
+				exit;
 			}
 		} else {
-			$mode = "create";
-			$code = -1;
-			$codeText = "ID nicht gesetzt.";
+			header("Location: ?p=quiz&code=-48");
+			exit;
 		}
+		
 	} else if($mode == "create")
-	{
-		if($_SESSION["language"] == "ger")
+	{		
+		$language = "Deutsch";
+		
+		if($_SESSION["language"] == "en")
 		{
-			$language = "Deutsch";
-		} else {
 			$language = "English";
 		}
 		
@@ -66,7 +66,40 @@
 		}
 		
 		$newQuestionId = $dbh->lastInsertId();
+		
+		
+		//Call from questionnaire-site -> add question to this questionnaire
+		if(isset($_GET["fromsite"]) && $_GET["fromsite"] == "createEditQuiz")
+		{
+			if(!isset($_GET["quizId"]))
+			{
+				header("Location: ?p=quiz&code=-46");
+				exit;
+			}
+			
+			$stmt = $dbh->prepare("select count(question_id) as total from qunaire_qu where questionnaire_id = :qunaireId");
+			$stmt->bindParam(":qunaireId", $_GET["quizId"]);
+			$stmt->execute();
+			
+			$fetchAmoutOfQuestions = $stmt->fetch(PDO::FETCH_ASSOC);
+			$nextOrder = $fetchAmoutOfQuestions["total"] - 1; //order starts with 0
+			
+			$stmt = $dbh->prepare("insert into qunaire_qu values (:qunaireId, :questionId, :order)");
+			$stmt->bindParam(":qunaireId", $_GET["quizId"]);
+			$stmt->bindParam(":questionId", $newQuestionId);
+			$stmt->bindParam(":order", $nextOrder);
+			
+			if(!$stmt->execute())
+			{
+				header("Location: ?p=quiz&code=-47");
+				exit;
+			}			
+		}
 	}
+	
+	const MAX_CHARACTERS_PER_QUESTION = 400;
+	const MAX_CHARACTERS_PER_TOPIC = 30;
+	const MAX_CHARACTERS_PER_ANSWER = 250;
 ?>
 
 <div class="container theme-showcase">
@@ -150,31 +183,42 @@
 	                    for($i = 0; $i < count($result); $i++){
 							$stmt = $dbh->prepare("select id from question where language = '" . $result[$i]["language"] . "'");
 							$stmt->execute();
-							$selected = "";
+							$selected = $language;
 							if($mode == "edit")
-								$selected = ($questionFetch["language"] == $result[$i]["language"]) ? 'selected="selected"' : '';
+							{
+								$selected = ($questionFetch["language"] == $result[$i]["language"]) ? 'selected' : '';
+							} else if($mode == "create") {
+								$selected = ($language == $result[$i]["language"]) ? 'selected' : '';
+							}
 							echo "<option value=\"" . $result[$i]["language"] . "\"" . $selected . ">" . $result[$i]["language"] . " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")</option>";
 	                    } ?>
 	                	<option value="newLanguage"><?php echo $lang["requestNewLanguage"];?></option>
 	                </select>
+	                <?php
+						if($mode == "edit")
+						{
+							$stmt = $dbh->prepare("select language from language_request where question_id = :questionId");
+							$stmt->bindParam(":questionId", $questionFetch["id"]);
+							$stmt->execute();
+							$fetchLanguage = $stmt->fetch(PDO::FETCH_ASSOC);
+							
+							if(isset($fetchLanguage["language"]))
+							{
+								echo "<p style='margin-top: 10px; margin-bottom:5px;'>" . $lang["requested"] . ":</p>";
+							}
+						}
+						
+						echo $style;
+						?>
 	                <input type="text" id="newLanguage"
 						class="form-control" name="newLanguage"
 						<?php
 						
 						$style = "style='display: none'";
 						
-						if($mode == "edit")
+						if(isset($fetchLanguage["language"]))
 						{
-							$stmt = $dbh->prepare("select language from language_request where question_id = :questionId");
-							$stmt->bindParam(":questionId", $questionFetch["id"]);
-							$stmt->execute();
-							
-							$fetchLanguage = $stmt->fetch(PDO::FETCH_ASSOC);
-							
-							if(isset($fetchLanguage["language"]))
-							{
-								$style = "style='display: initial' value=" . $lang["requested"] . ":&nbsp;" . $fetchLanguage["language"];
-							}
+							$style = "style='display: initial' value=" . $fetchLanguage["language"];
 						}
 						
 						echo $style;
@@ -215,24 +259,29 @@
 		                    ?></option>
 		                	<option value="newTopic"><?php echo $lang["requestNewTopic"];?></option>
 		                </select>
+		                <?php
+						if($mode == "edit")
+						{
+							$stmt = $dbh->prepare("select topic from topic_request where question_id = :questionId");
+							$stmt->bindParam(":questionId", $questionFetch["id"]);
+							$stmt->execute();
+							$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
+							
+							if(isset($fetchTopic["topic"]))
+							{
+								echo "<p style='margin-top: 10px; margin-bottom:5px;'>" . $lang["requested"] . ":</p>";
+							}
+						}
+						?>
 					<input type="text" id="newTopic"
 						class="form-control" name="newTopic"
 						<?php
 						
 						$style = "style='display: none'";
 						
-						if($mode == "edit")
+						if(isset($fetchTopic["topic"]))
 						{
-							$stmt = $dbh->prepare("select topic from topic_request where question_id = :questionId");
-							$stmt->bindParam(":questionId", $questionFetch["id"]);
-							$stmt->execute();
-							
-							$fetchTopic = $stmt->fetch(PDO::FETCH_ASSOC);
-							
-							if(isset($fetchTopic["topic"]))
-							{
-								$style = "style='display: initial' value=" . $lang["requested"] . ":&nbsp;" . $fetchTopic["topic"];
-							}
+							$style = "style='display: initial' value=" . $fetchTopic["topic"];
 						}
 						
 						echo $style;

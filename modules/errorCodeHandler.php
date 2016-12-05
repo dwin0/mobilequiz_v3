@@ -282,6 +282,12 @@
 				return "Frage mit nur 1 Antwortm&ouml;glichkeit vorhanden. Bei jeder Frage m&uuml;ssen mindestens 2 vorhanden sein.";
 			case -45:
 				return "Frage ohne 1 korrekte Antwort vorhanden. Mindestens 1 Antwortm&ouml;glichkeit pro Frage muss richtig sein.";
+			case -46:
+				return "Nicht alle Parameter erhalten.";
+			case -47:
+				return "Datenbank-Fehler";
+			case -48:
+				return "Frage-ID nicht gefunden.";
 		}
 	}
 	
