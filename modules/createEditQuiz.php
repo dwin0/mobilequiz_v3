@@ -74,17 +74,6 @@
 	$stmt = $dbh->prepare("select email, id from user");
 	$stmt->execute();
 	$fetchUserMails = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	
-	// Wird nirgends benötigt? Kann das gelöscht werden?
-	function getIdToEMail($var)
-	{
-		for ($i = 0; $i < count($fetchUserMails); $i++) {
-			if($fetchUserMails[$i]["email"] == $var) {
-				return $fetchUserMails[$i]["id"];
-			}
-		}
-		return -1;
-	}
 ?>
 
 <link rel="stylesheet" type="text/css" href="css/style.css" />
@@ -259,12 +248,12 @@
 			<?php }?>
 			
 			<!-- Assign New Responsible Member -->
-			<div class="form-group">
+			<div class="form-group assignationMngmt">
 				<div> 
 					<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
 				</div>
 				<div class="col-md-10 col-sm-9">
-					<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px;" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
+					<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
 				</div>
 			</div>
 			<div class="from-group">
@@ -441,10 +430,6 @@
 			
 			$(document).on("change", "#quizText, #description, #language, #newLanguage, #topic, #newTopic", updateQuizData);
 	
-			$('#addUser').on('mouseover', function(){
-				this.style.cursor='pointer';
-		    });
-			
 		});
 	
 		function openExcelDialog()
@@ -848,6 +833,7 @@
 	        });
 	        $('.dataTables_filter input').addClass("form-control");
 	        $('.dataTables_filter input').addClass("magnifyingGlass");
+	        $('.dataTables_filter').attr("style", "margin-top: 0");
 	        $('.dataTables_filter input').attr("style", "min-width: 350px;");
 		
 		});

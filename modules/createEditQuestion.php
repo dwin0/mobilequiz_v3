@@ -543,7 +543,7 @@
 			<input type="hidden" name="fromsite" value="<?php echo isset($_GET["fromsite"]) ? $_GET["fromsite"] : '';?>">
 			<input type="hidden" name="fromQuizId" value="<?php echo isset($_GET["quizId"]) ? $_GET["quizId"] : '';?>">
 			<input type="button" class="btn" id="btnSaveAndNext"
-				value="<?php echo $lang["createNext"];?>" />
+				value="<?php echo $lang["createNextQuestion"];?>" />
 		</div>
 	</div>
 
