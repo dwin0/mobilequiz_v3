@@ -119,6 +119,7 @@ $lang = array(
 		"createQuiz" => "Create new quiz",
 		"editQuiz" => "Edit quiz [1]",
 		"quizCreateName" => "Name of quiz",
+		"executionCreateName" => "Name of execution",
 		"description" => "Remark",
 		"generalInformations" => "General Informations",
 		"participationOptions" => "Participationoptions",

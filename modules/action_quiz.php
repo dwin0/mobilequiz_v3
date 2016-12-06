@@ -113,6 +113,322 @@ function updateQuizDescription($description, $maxChar, $quizId, $dbh)
 }
 
 
+function uploadExcel()
+{
+	$multipleFiles = $_FILES['btnImportQuestionsFromDirectory'];
+	if($multipleFiles["name"][0] != "")
+	{
+		$excelTemplate = array();
+		$uploadedImages = array();
+	
+		for($i = 0; $i < count($multipleFiles["name"]); $i++)
+		{
+			if(strtolower(pathinfo($multipleFiles["name"][$i], PATHINFO_EXTENSION)) == "xlsx")
+			{
+				$excelTemplate["name"] = $multipleFiles["name"][$i];
+				$excelTemplate["type"] = $multipleFiles["type"][$i];
+				$excelTemplate["tmp_name"] = $multipleFiles["tmp_name"][$i];
+				$excelTemplate["error"] = $multipleFiles["error"][$i];
+				$excelTemplate["size"] = $multipleFiles["size"][$i];
+			} else
+			{
+				$image = array();
+				$image["name"] = $multipleFiles["name"][$i];
+				$image["type"] = $multipleFiles["type"][$i];
+				$image["tmp_name"] = $multipleFiles["tmp_name"][$i];
+				$image["error"] = $multipleFiles["error"][$i];
+				$image["size"] = $multipleFiles["size"][$i];
+				array_push($uploadedImages, $image);
+			}
+		}
+	
+		foreach($uploadedImages as $image)
+		{
+			if ($image["error"] > 0) {
+				header("Location: ?p=quiz&code=-28");
+				exit;
+			}
+		}
+	
+		if(!isset($excelTemplate))
+		{
+			header("Location: ?p=quiz&code=-29");
+			exit;
+		}
+			
+	} elseif (isset($_FILES["btnImportQuestionsFromExcel"]) && $_FILES["btnImportQuestionsFromExcel"]["name"] != "")
+	{
+		if(strtolower(pathinfo($_FILES["btnImportQuestionsFromExcel"]["name"], PATHINFO_EXTENSION)) == "xlsx")
+		{
+			$excelTemplate["name"] = $_FILES["btnImportQuestionsFromExcel"]["name"];
+			$excelTemplate["type"] = $_FILES["btnImportQuestionsFromExcel"]["type"];
+			$excelTemplate["tmp_name"] = $_FILES["btnImportQuestionsFromExcel"]["tmp_name"];
+			$excelTemplate["error"] = $_FILES["btnImportQuestionsFromExcel"]["error"];
+			$excelTemplate["size"] = $_FILES["btnImportQuestionsFromExcel"]["size"];
+		}
+	
+		if(!isset($excelTemplate))
+		{
+			header("Location: ?p=quiz&code=-29");
+			exit;
+		}
+	}
+	
+		
+	//questions with Excel upload
+	if(isset($excelTemplate))
+	{
+		//error while uploading
+		if ($excelTemplate["error"] > 0) {
+			header("Location: ?p=quiz&code=-28");
+			exit;
+		}
+	
+		include_once 'importExcel.php';
+	
+		$excelContent = importExcel($excelTemplate);
+		$questions = createQuestionArray($excelContent);
+	
+		//Excel contains no questions
+		if(count($questions) == 0)
+		{
+			header("Location: ?p=quiz&code=-39");
+			exit;
+		}
+	
+		foreach($questions as $question)
+		{
+			if($question->getNumberOfAnswers() < 2)
+			{
+				header("Location: ?p=quiz&code=-44");
+				exit;
+			} else if($question->getNumberOfCorrectAnswers() == 0)
+			{
+				header("Location: ?p=quiz&code=-45");
+				exit;
+			}
+		}
+	
+	
+		if($_POST["addOrReplaceQuestions"] == 0 && $_POST["mode"] == "edit") //replace questions
+		{
+			//unlink all existing questions
+			$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :qId");
+			$stmt->bindParam(":qId", $_POST["quiz_id"]);
+			$stmt->execute();
+		}
+	
+	
+		$invalidQuestions = array();
+		$imageCounter = 1;
+	
+		foreach($questions as $question)
+		{
+			//check if questiontext AND all answers are already there
+			//if yes use this id instead of insert the same question
+			$stmt = $dbh->prepare("select question.id as qId, question.text as qText from question where question.text = :text");
+			$stmt->bindParam(":text", $question->getText());
+			$stmt->execute();
+				
+			$numOfEqualQuestions = $stmt->rowCount();
+			$allIn = false;
+				
+			if($numOfEqualQuestions > 0) //Question already exists
+			{
+				$stmt = $dbh->prepare("select question.id as qId, question.text as qText, answer.id as aId, answer.text as aText, is_correct from question inner join answer_question on answer_question.question_id = question.id inner join answer on answer.id = answer_question.answer_id where question.text = :text");
+				$stmt->bindParam(":text", $question->getText());
+				$stmt->execute();
+	
+				$allInCount = 0;
+				$fetchCheckQuestion = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+				//compare all DB-Answers to all Excel-Answers
+				for($i = 0; $i < count($fetchCheckQuestion); $i++) //DB-Answers
+				{
+					for($j = 0; $j < $question->getNumberOfAnswers(); $j++) //Excel-Answers
+					{
+						$dbQuestionText = $fetchCheckQuestion[$i]["aText"];
+						$excelQuestionText = $question->getAnswers()[$j]->getText();
+						if($dbQuestionText == $excelQuestionText)
+						{
+							$allInCount++;
+						}
+					}
+						
+					if($allInCount == $question->getNumberOfAnswers())
+					{
+						$allIn = true;
+					}
+				}
+			}
+				
+			if(!$allIn)
+			{
+				//Singlechoice with != 1 correct Answers
+				if(!$question->isValid())
+				{
+					array_push($invalidQuestions, htmlspecialchars($question->getText()));
+				}
+					
+				$language = "Deutsch";
+				if($_SESSION["language"] == "en")
+				{
+					$language = "English";
+				}
+	
+				$imageName = $question->getImage();
+				$uploadedImagePath = null;
+				if(isset($imageName))
+				{
+					foreach($uploadedImages as $uploadedImage)
+					{
+						if($uploadedImage["name"] == $imageName)
+						{
+							//Check if file is image
+							if(!getimagesize($uploadedImage["tmp_name"]))
+							{
+								header("Location: ?p=quiz&code=-43");
+								exit;
+							}
+							$uploadedQuestionImage = $uploadedImage;
+								
+						}
+					}
+						
+					if(!isset($uploadedQuestionImage))
+					{
+						header("Location: ?p=quiz&code=-41");
+						exit;
+					}
+	
+					$uploadedImageFileType = strtolower(pathinfo($uploadedQuestionImage["name"], PATHINFO_EXTENSION));
+					$uploadedImagePath = "uploadedImages/" . "question_" . date("d_m_y_H_i_s", time()) . "__" . $imageCounter . "__" . $_SESSION["id"] . "." . $uploadedImageFileType;
+					if(!move_uploaded_file($uploadedQuestionImage["tmp_name"], $uploadedImagePath))
+					{
+						header("Location: ?p=quiz&code=-42");
+						exit;
+					}
+						
+					$imageCounter++;
+						
+				}
+	
+	
+				//insert Question
+				$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link) values (:text, :owner_id, :type_id, :subject_id, :language, ".time().", :public, ".time().", :picLink)");
+				$stmt->bindParam(":text", $question->getText());
+				$stmt->bindParam(":owner_id", $_SESSION["id"]);
+				$stmt->bindParam(":type_id", $question->getTypeCode());
+				$stmt->bindValue(":subject_id", NULL);
+				$stmt->bindValue(":language", $language);
+				$stmt->bindValue(":public", 0);
+				$stmt->bindValue(":picLink", $uploadedImagePath);
+				if(!$stmt->execute())
+				{
+					header("Location: ?p=quiz&code=-31");
+					exit;
+				}
+	
+				$insertedQuestionId = $dbh->lastInsertId();
+	
+				//insert all Answers
+				foreach($question->getAnswers() as $answer)
+				{
+					$stmt = $dbh->prepare("insert into answer (text) values (:text)");
+					$stmt->bindParam(":text", $answer->getText());
+					if(!$stmt->execute())
+					{
+						header("Location: ?p=quiz&code=-32");
+						exit;
+					}
+						
+					$insertedAnswerId = $dbh->lastInsertId();
+					$answerNumber = 0;
+						
+					if($question->getTypeCode() == 1) //Singlechoice
+					{
+						if($answer->isCorrect())
+						{
+							$isCorrect = 1;
+						} else {
+							$isCorrect = 0;
+						}
+					} else { //Multiplechoice
+						if($answer->isCorrect())
+						{
+							$isCorrect = 1;
+						} else {
+							$isCorrect = -1;
+						}
+					}
+						
+					$stmt = $dbh->prepare("insert into answer_question values (:answer_id, :question_id, :is_correct, :order)");
+					$stmt->bindParam(":answer_id", $insertedAnswerId);
+					$stmt->bindParam(":question_id", $insertedQuestionId);
+					$stmt->bindParam(":is_correct", $isCorrect);
+					$stmt->bindValue(":order", $answerNumber);
+	
+					if(!$stmt->execute())
+					{
+						header("Location: ?p=quiz&code=-33");
+						exit;
+					}
+					$answerNumber++;
+				}
+			} else
+			{
+				$insertedQuestionId = $fetchCheckQuestion[0]["qId"];
+			}
+				
+			$orderCounter = 0;
+			$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id, `order`) values (:questionnaire_id, :question_id, :order)");
+			$stmt->bindParam(":questionnaire_id", $insertedQuizId);
+			$stmt->bindParam(":question_id", $insertedQuestionId);
+			$stmt->bindParam(":order", $orderCounter);
+				
+			if(!$stmt->execute())
+			{
+				header("Location: ?p=quiz&code=-34"); //TODO: Bestehende Question-ID aus Quiz holen und diese nicht mehr in DB einfügen
+				exit;
+			}
+			$orderCounter++;
+				
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

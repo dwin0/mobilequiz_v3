@@ -119,6 +119,7 @@ $lang = array(
 		"createQuiz" => "Neues Quiz erstellen",
 		"editQuiz" => "Lernkontrolle [1] bearbeiten",
 		"quizCreateName" => "Quizname",
+		"executionCreateName" => "Durchf&uuml;hrungsname",
 		"description" => "Kommentar",
 		"generalInformations" => "Allgemeine Informationen",
 		"participationOptions" => "Durchf&uuml;hrungsoptionen",

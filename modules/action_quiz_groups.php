@@ -4,40 +4,63 @@ function addAssignation()
 {
 	global $dbh;
 	
-	if($_SESSION['role']['creator'])
+	$response_array["status"] = "OK";
+	
+	
+	if(!$_SESSION['role']['creator'])
 	{
-		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["questionnaireId"]);
-		$stmt->execute();
-		$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
+		$response_array["status"] = "error";
+		$response_array["text"] = "You are not creator.";
+	}
 	
-		if($_SESSION["id"] == $fetchOwner["owner_id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
-		{
-			$stmt = $dbh->prepare("select id from questionnaire where id = :qId");
-			$stmt->bindParam(":qId", $_GET["questionnaireId"]);
-			$stmt->execute();
-			if($stmt->rowCount() != 1)
-			{
-				echo "failed";
-			}
+	$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
+	$stmt->bindParam(":id", $_POST["questionnaireId"]);
+	$stmt->execute();
+	if($stmt->rowCount() != 1)
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "No quiz found.";
+	}
+	$fetchOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-			$stmt = $dbh->prepare("select id from user where email = :email");
-			$stmt->bindParam(":email", $_GET["userEmail"]);
-			if(!$stmt->execute())
-				echo "failed";
-				$userId = $stmt->fetch(PDO::FETCH_ASSOC);
+	if($_SESSION["id"] != $fetchOwner["owner_id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $_POST["questionnaireId"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "You are not allowed to update this quiz.";
+	}
 	
-				$stmt = $dbh->prepare("insert into qunaire_assigned_to values (:questionnaireId, :user_id)");
-				$stmt->bindParam(":questionnaireId", $_GET["questionnaireId"]);
-				$stmt->bindParam(":user_id", $userId["id"]);
-				if($stmt->execute())
-				{
-					echo "ok1";
-				} else {
-					echo "failed";
-				}
-		} else {echo "failed";}
-	} else {echo "failed";}
+	if(!isset($_POST["questionnaireId"]) || !isset($_POST["userEmail"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Not all parameters received.";
+	}
+	
+	if($response_array["status"] == "error")
+	{
+		echo json_encode($response_array);
+		exit;
+	}
+
+	
+	$stmt = $dbh->prepare("select id from user where email = :email");
+	$stmt->bindParam(":email", $_POST["userEmail"]);
+	$stmt->execute();
+	$userId = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	$stmt = $dbh->prepare("insert into qunaire_assigned_to values (:questionnaireId, :user_id)");
+	$stmt->bindParam(":questionnaireId", $_POST["questionnaireId"]);
+	$stmt->bindParam(":user_id", $userId["id"]);
+	if($stmt->execute())
+	{
+		$response_array["userId"] = $userId["id"];
+		
+	} else {
+		$response_array["status"] = ["error"];
+		$response_array["text"] = ["Couldn't update database."];
+	}
+	
+	echo json_encode($response_array);
+	exit;
 }
 
 

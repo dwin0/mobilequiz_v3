@@ -74,7 +74,6 @@
 	$stmt = $dbh->prepare("select email, id from user");
 	$stmt->execute();
 	$fetchUserMails = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	$dummy = $fetchUserMails[0]["email"];
 	
 	// Wird nirgends benötigt? Kann das gelöscht werden?
 	function getIdToEMail($var)
@@ -413,7 +412,7 @@
         
         <div class="tab-pane fade form-horizontal panel-body" id="execution">
 		
-			<input id="btnAddNewExecution" name="btnAddNewExecution" class="btn" onclick="" type="button" value="<?php echo $lang["addNewExecution"];?>" /><br />
+			<input id="btnAddNewExecution" name="btnAddNewExecution" class="btn" type="button" value="<?php echo $lang["addNewExecution"];?>" /><br />
 			
 			<div class="table-responsive">
            		<table class="tblListOfExecutions" id="tblListOfExecutions">
@@ -424,6 +423,9 @@
 		                    <th><?php echo $lang["quizTableActions"];?></th>
 		                </tr>
 		            </thead>
+		            <tbody>
+		            	<!-- TODO Logik -->
+		            </tbody>
 		        </table>
 	        </div>
 	        
@@ -479,30 +481,41 @@
 		{
 			var userEmail = $('#autocompleteUsers').val();
 			console.log(userEmail);
+
+			var form = new FormData();
+			form.append("userEmail", userEmail);
+			form.append("questionnaireId", <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>);
+
+			console.log("test");
+			
 			$.ajax({
-				url: 'modules/actionHandler.php',
-				type: "get",
-				data: "action=addAssignation&userEmail="+userEmail+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
-				success: function(output) 
+				url: '?p=actionHandler&action=addAssignation',
+				type: 'POST',
+				data: form,
+				dataType: 'json',
+				contentType: false,
+				processData: false,
+				cache: false,
+				success: function(response) 
 				{
-					if(output == "ok1")
+					if(response["status"] == "OK")
 					{
-						$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
-						//$('#assignTbl > tbody:last-child').append('<tr><td>'+userEmail+'</td><td></td></tr>');
-						$('#assignTbl').DataTable().row.add([userEmail, '']).draw(false);
-						$('#autocompleteUsers').val('');
 						console.log("ok");
+						$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
+						var rowData = [userEmail, '<img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(' + response["userId"] + ')">'];
+						var rowIndex = $('#assignTbl').dataTable().fnAddData(rowData);
+						var row = $('#assignTbl').dataTable().fnGetNodes(rowIndex);
+						$(row).attr("id", "assignation_"+response["userId"]);
+						$('#autocompleteUsers').val('');
 					}
-					if(output == "failed")
+					else if(response["status"] == "error")
 					{
-						$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-						console.log("Fehler1");
+						$('#ajaxAnswer').html('<span style="color: red;">' + response["text"] + '</span>');
 					}
 				},
-				error: function(output) 
+				error: function() 
 				{
-					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-					console.log("Fehler2");
+					$('#ajaxAnswer').html("<span style='color: red;'>Ajax couldn't send data.</span>");
 				}	      
 			});
 		}
@@ -520,7 +533,6 @@
 					if(output == "ok1")
 					{
 						$('#ajaxAnswer').html('<span style="color: green;">Berechtigung aberkannt.</span>');
-						//$('#assignation_'+userId).css('display', 'none');
 						$('#assignTbl').DataTable().row($('#assignation_'+userId)).remove().draw();
 						$('.tipsy').remove();
 					}
@@ -682,8 +694,44 @@
 			    stop: updateData}).disableSelection();
 	
 			
-			document.getElementById("btnImportQuestionsFromExcel").addEventListener("change",function(){
-			    document.getElementById("fileName").innerHTML = document.getElementById("btnImportQuestionsFromExcel").files[0].name;
+			$("#btnImportQuestionsFromExcel").on("change",function(){
+
+				var file = $("#btnImportQuestionsFromExcel")[0].files[0];				
+			    $("#fileName").html(file.name);
+			    
+				var data = new FormData();
+				data.append("excelFile", file, file.name);
+
+				$.ajax({
+			        url: "",
+			        type: 'POST',
+			        data: data,
+			        cache: false,
+			        dataType: 'json',
+			        processData: false,
+			        contentType: false,
+			        success: function(data)
+			        {
+						switch(data.status)
+						{
+							case "OK":
+								console.log("OK");
+								break;
+							case "error":
+								alert("Error: " + data.text);
+								break;
+						}
+			        },
+			        error: function()
+			        {
+			            console.log("Ajax couldn't send data");
+			            alert("Ajax couldn't send data");
+			        }
+			    });
+
+
+
+			    
 			});
 	
 			document.getElementById("btnImportQuestionsFromDirectory").addEventListener("change",function(){			
