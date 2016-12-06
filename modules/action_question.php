@@ -13,7 +13,7 @@ function updateQuestion()
 	$stmt->execute();
 	$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-	if($fetchQuestionOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1)
+	if(! $_SESSION["role"]["creator"] || ($fetchQuestionOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1))
 	{
 		$response_array["status"] = "error";
 		$response_array["text"] = "You are not allowed to update this question.";

@@ -23,7 +23,7 @@
 		$stmt->execute();
 		$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 		
-		if($fetchQuestionOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1)
+		if(!$_SESSION["role"]["creator"] || ($fetchQuestionOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1))
 		{
 			header("Location: ?p=quiz&code=-1");
 			exit;

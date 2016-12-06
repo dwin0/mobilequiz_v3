@@ -1,6 +1,4 @@
 <?php
-
-	include_once 'errorCodeHandler.php';
 	
 	if($_SESSION["role"]["user"])
 	{
@@ -14,12 +12,6 @@
 	{
 		header("Location: ?p=home&code=-20");
 		exit;
-	}
-	
-	$errorCode = new mobileError("", "red");
-	if(isset($_GET["code"]))
-	{
-		$errorCode = handleQuestionsError($_GET["code"]);
 	}
 	
 ?>
@@ -161,7 +153,6 @@
 	<div class="page-header">
 		<h1><?php echo $lang["questionsHeadline"];?></h1>
 	</div>
-	<p id="questionActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<div class="panel panel-default">
 		<div class="panel-body">
 			<form id="quizFilter" class="form-horizontal" action="?p=questions" method="POST">
