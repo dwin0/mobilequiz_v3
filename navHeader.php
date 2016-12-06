@@ -60,11 +60,18 @@
 									'user' => 'roleUser'
 							);
 					
+					if($_SESSION["role"]["fakeUser"] == -1)
+					{
+						$role = $_SESSION["role"]["name"];
+					} else if($_SESSION["role"]["fakeUser"] == 1)
+					{
+						$role = "user";
+					}
+					
 					$navText = $lang["navHeaderHello"] . " " . $lang["guest"];
 					if(isset($_SESSION["nickname"]))
 					{
-						//TODO hier entsteht der Bug mit der falsch ausgewiesenen Rolle (also wenn Rolle gewechselt wird, wird immer noch die höhere Rolle angezeigt!)
-						$navText = $lang["loggedInAs"] . " " . $lang[$roleNames[$_SESSION["role"]["name"]]] . " - " . htmlspecialchars($_SESSION["email"]);
+						$navText = $lang["loggedInAs"] . " " . $lang[$roleNames[$role]] . " - " . htmlspecialchars($_SESSION["email"]);
 					}
 				?>
 				<a href="" class="dropdown-toggle" data-toggle="dropdown"><?php echo $navText;?> <b class="caret"></b></a>
