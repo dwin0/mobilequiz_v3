@@ -464,8 +464,8 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			$stmt = $dbh->prepare("select `order` from answer_question where answer_id = :answerId");
 			$stmt->bindParam(":answerId", $answerId);
 			$stmt->execute();
-			$fetchQuestionOrder = $stmt->fetch(PDO::FETCH_ASSOC);
-			$deletedQuestionOrder = $fetchQuestionOrder["order"];
+			$fetchAnswerOrder = $stmt->fetch(PDO::FETCH_ASSOC);
+			$deletedAnswerOrder = $fetchAnswerOrder["order"];
 			
 			//delete answer_question-entry
 			$stmt = $dbh->prepare("delete from answer_question where answer_id = :answerId");
@@ -497,12 +497,12 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			
 			for($i = 0; $i < count($fetchQuestionAnswers); $i++)
 			{
-				$stmt = $dbh->prepare("update answer_question set `order` = :order where answer_id = :answerId");
-				
-				if($deletedQuestionOrder > $fetchQuestionAnswers[$i]["order"])
+				if($deletedAnswerOrder > $fetchQuestionAnswers[$i]["order"])
 				{
 					continue;
 				}
+				
+				$stmt = $dbh->prepare("update answer_question set `order` = :order where answer_id = :answerId");
 				$newOrder = $fetchQuestionAnswers[$i]["order"] - 1;
 				$stmt->bindParam(":order", $newOrder);
 				$stmt->bindParam(":answerId", $fetchQuestionAnswers[$i]["answer_id"]);

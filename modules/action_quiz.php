@@ -230,6 +230,13 @@ function uploadExcel()
 
 	$invalidQuestions = array();
 	$imageCounter = 1;
+	
+	
+	$stmt = $dbh->prepare("select count(question_id) as total from qunaire_qu where questionnaire_id = :qId");
+	$stmt->bindParam(":qId", $_POST["quizId"]);
+	$stmt->execute();
+	$fetchTotal = $stmt->fetch(PDO::FETCH_ASSOC);
+	$orderCounter = $fetchTotal["total"];
 
 	foreach($questions as $question)
 	{		
@@ -349,7 +356,8 @@ function uploadExcel()
 			}
 
 			$insertedQuestionId = $dbh->lastInsertId();
-
+			$answerNumber = 0;
+			
 			//insert all Answers
 			foreach($question->getAnswers() as $answer)
 			{
@@ -364,7 +372,6 @@ function uploadExcel()
 				}
 					
 				$insertedAnswerId = $dbh->lastInsertId();
-				$answerNumber = 0;
 					
 				if($question->getTypeCode() == 1) //Singlechoice
 				{
@@ -424,7 +431,7 @@ function uploadExcel()
 			continue;
 		}
 			
-		$orderCounter = 0;
+		
 		$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id, `order`) values (:questionnaire_id, :question_id, :order)");
 		$stmt->bindParam(":questionnaire_id", $_POST["quizId"]);
 		$stmt->bindParam(":question_id", $insertedQuestionId);
@@ -450,7 +457,9 @@ function uploadExcel()
 }
 
 
-
+/**
+ * Method to return the necessary information to display the uploaded answers with AJAX
+ */
 function getQuestionInfos($questionId, $quizId)
 {
 	global $dbh;
@@ -1168,9 +1177,16 @@ function addQuestionToQuiz()
 	
 	if($_POST["checked"] == "true") //Add question
 	{
-		$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id) values (:qunaire_id, :question_id)");
+		$stmt = $dbh->prepare("select count(question_id) as total from qunaire_qu where questionnaire_id = :qunaire_id");
+		$stmt->bindParam(":qunaire_id", $_POST["quizId"]);
+		$stmt->execute();
+		$fetchTotal = $stmt->fetch(PDO::FETCH_ASSOC);
+		$nextOrder = $fetchTotal["total"];
+		
+		$stmt = $dbh->prepare("insert into qunaire_qu values (:qunaire_id, :question_id, :order)");
 		$stmt->bindParam(":qunaire_id", $_POST["quizId"]);
 		$stmt->bindParam(":question_id", $_POST["questionId"]);
+		$stmt->bindParam(":order", $nextOrder);
 		
 		if(!$stmt->execute())
 		{
@@ -1180,6 +1196,15 @@ function addQuestionToQuiz()
 		
 		$response_array["text"] = "Added Question";
 	} else { //Remove question
+		
+		//get current order from current question
+		$stmt = $dbh->prepare("select `order` from qunaire_qu where question_id = :questionId");
+		$stmt->bindParam(":questionId", $_POST["questionId"]);
+		$stmt->execute();
+		$fetchQuestionOrder = $stmt->fetch(PDO::FETCH_ASSOC);
+		$deletedQuestionOrder = $fetchQuestionOrder["order"];
+		
+		
 		$stmt = $dbh->prepare("delete from qunaire_qu where question_id = :question_id");
 		$stmt->bindParam(":question_id", $_POST["questionId"]);
 		
@@ -1188,6 +1213,34 @@ function addQuestionToQuiz()
 			$response_array["status"] = "error";
 			$response_array["text"] = "Couldn't remove question from DB";
 		}
+		
+
+		//update order from other questions
+		$stmt = $dbh->prepare("select question_id, `order` from qunaire_qu where questionnaire_id = :qunaireId");
+		$stmt->bindParam(":qunaireId", $_POST["quizId"]);
+		$stmt->execute();
+		$fetchQuizQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			
+		for($i = 0; $i < count($fetchQuizQuestions); $i++)
+		{
+			if($deletedQuestionOrder > $fetchQuizQuestions[$i]["order"])
+			{
+				continue;
+			}
+			
+			$stmt = $dbh->prepare("update qunaire_qu set `order` = :order where question_id = :questionId");
+			$newOrder = $fetchQuizQuestions[$i]["order"] - 1;
+			$stmt->bindParam(":order", $newOrder);
+			$stmt->bindParam(":questionId", $fetchQuizQuestions[$i]["question_id"]);
+		
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Couldn't update order";
+				return $response_array;
+			}
+		}
+		
 		$response_array["text"] = "Removed Question";
 	}
 	
@@ -1209,12 +1262,45 @@ function deleteQuestionFromQuiz()
 	
 		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $_GET["questionnaireId"]))
 		{
+			//get current order from current question
+			$stmt = $dbh->prepare("select `order` from qunaire_qu where question_id = :questionId");
+			$stmt->bindParam(":questionId", $_GET["questionId"]);
+			$stmt->execute();
+			$fetchQuestionOrder = $stmt->fetch(PDO::FETCH_ASSOC);
+			$deletedQuestionOrder = $fetchQuestionOrder["order"];
+			
 			$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :questionnaireId and question_id = :questionId");
 			$stmt->bindParam(":questionnaireId", $_GET["questionnaireId"]);
 			$stmt->bindParam(":questionId", $_GET["questionId"]);
 			if($stmt->execute())
 			{
+				
+				//update order from other questions
+				$stmt = $dbh->prepare("select question_id, `order` from qunaire_qu where questionnaire_id = :qunaireId");
+				$stmt->bindParam(":qunaireId", $_GET["questionnaireId"]);
+				$stmt->execute();
+				$fetchQuizQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+					
+				for($i = 0; $i < count($fetchQuizQuestions); $i++)
+				{
+					if($deletedQuestionOrder > $fetchQuizQuestions[$i]["order"])
+					{
+						continue;
+					}
+						
+					$stmt = $dbh->prepare("update qunaire_qu set `order` = :order where question_id = :questionId");
+					$newOrder = $fetchQuizQuestions[$i]["order"] - 1;
+					$stmt->bindParam(":order", $newOrder);
+					$stmt->bindParam(":questionId", $fetchQuizQuestions[$i]["question_id"]);
+				
+					if(! $stmt->execute())
+					{
+						echo "failed";
+					}
+				}
+				
 				echo "ok";
+				
 			} else {echo "failed";}
 		} else {echo "failed";}
 	} else {echo "failed";}
