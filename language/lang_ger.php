@@ -1,5 +1,7 @@
 <?php
 $lang = array(
+		"yes" => "Ja",
+		"no" => "Nein",
 		"welcomeHeadingHome" => "Willkommen bei MobileQuiz.ch v3",
 		"upperTextHome" => "Mit der MobileQuiz.ch Anwendung wollen wir Sie bei der Vertiefung Ihrer Kenntnisse zu verschiedenen Themenbereichen und Vorlesungsmodulen unterst&uuml;tzen. Die Fragen sollen jeweils nach den Vorlesungen beantwortet werden. Daf&uuml;r d&uuml;rfen Sie das Skript beiziehen und Fragen mit anderen Studierenden diskutieren.<br />
 							<br />Wir hoffen, dass diese Form der pers&ouml;nlichen Lernkontrolle zur regelm&auml;ssigen &Uuml;berarbeitung des Vorlesungsstoffes animiert – und Spass macht!",
@@ -132,7 +134,7 @@ $lang = array(
 		"randomQuestions" => "zuf&auml;llige Reihenfolge der Fragen",
 		"randomAnswers" => "zuf&auml;llige Reihenfolge der Antworten",
 		"quizPublic" => "Lernkontrolle &ouml;ffentlich (diese Lernkontrolle wird in den Listen aufgef&uuml;hrt)",
-		"quizResultShow" => "Auswertung anzeigen, optionen",
+		"quizResultShow" => "Auswertung anzeigen",
 		"showResultAtTheEndDetailed" => "Alle Fragen ausf&uuml;hrlich anzeigen",
 		"showResultAtTheEnd" => "Nur richtige Fragen anzeigen",
 		"showResultNever" => "Keine Fragen anzeigen",
@@ -335,6 +337,7 @@ $lang = array(
 		"assignQuizToGroupHeading" => "Gruppen zur Lernkontrolle zuordnen",
 		"assignQuizToGroupInfo1" => "Zugeordnete Gruppen",
 		"assignQuizToGroupInfo2" => "Verf&uuml;gbare Gruppen",
+		"participantManagement" => "Teilnehmermanagement",
 		"profileJoinGroupHeading" => "Gruppenmanagement",
 		"profileJoinGroupContent" => "Einer Gruppe beitreten",
 		"profileJoinGroupIn" => "Teilnehmer der Gruppe",
