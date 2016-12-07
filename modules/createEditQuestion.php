@@ -306,48 +306,10 @@
 						<div id="picturePreview">
 						<?php if($mode == "edit" && $questionFetch["picture_link"] != "")
 						{
-							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px; width:70%\" src=\"" . $questionFetch["picture_link"] . "\" id=\"questionImage\"></img>";
-							?>
-							<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-							    <div class="pswp__bg"></div>
-							    <div class="pswp__scroll-wrap">
-							
-							        <div class="pswp__container">
-							            <!-- don't modify these 3 pswp__item elements, data is added later on -->
-							            <div class="pswp__item"></div>
-							            <div class="pswp__item"></div>
-							            <div class="pswp__item"></div>
-							        </div>
-							
-							        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
-							        <div class="pswp__ui pswp__ui--hidden">
-							
-							            <div class="pswp__top-bar">
-							            
-							            <div class="pswp__counter"></div>
-							
-							                <button id="closePhoto">Schliessen</button>
-							                
-							                <div class="pswp__preloader">
-							                    <div class="pswp__preloader__icn">
-							                      <div class="pswp__preloader__cut">
-							                        <div class="pswp__preloader__donut"></div>
-							                      </div>
-							                    </div>
-							                </div>
-							            </div>
-							
-							            <div class="pswp__caption">
-							                <div class="pswp__caption__center"></div>
-							            </div>
-							
-							          </div>
-								</div>
-							</div>
-							<img style="margin-left:10px; height:18px; width:18px" src="assets/icon_delete.png" id="deleteQuestionLogo">
-							
-							<?php 
-						}?>	
+							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px; width:70%; margin-bottom: 10px; margin-top: -20px\" src=\"" . $questionFetch["picture_link"] . "\" id=\"questionImage\"></img>";
+						?>
+							<img style="margin-left:10px; margin-top:-40px; height:18px; width:18px" src="assets/icon_delete.png" id="deleteQuestionLogo">
+						<?php }?>
 						</div>
 					</div>
 				</form>
@@ -438,7 +400,29 @@
 		<!-- Answers -->
 		<div class="tab-pane fade form-horizontal" id="answers">
 		
+			<!-- Question-Image -->
 			<div class="form-group">
+				
+				<form id="imageForm">
+					<label for="answerQuestionLogo" class="col-md-2 col-sm-3 control-label">
+						<?php echo $lang["picture"];?>
+					</label>
+					<div class="col-md-10 col-sm-9" id="questionLogoWrapper">
+						<div id="answerPicturePreview">
+						<?php if($mode == "edit" && $questionFetch["picture_link"] != "")
+						{
+							echo "<br /><img style=\"float:left; max-width:300px; max-height:300px; width:70%; margin-bottom: 10px; margin-top: -20px;\" src=\"" . $questionFetch["picture_link"] . "\" id=\"answerQuestionImage\"></img>";
+						} else
+						{
+							echo "<p style='padding-top: 7px;'>" . $lang["noPicture"] . "</p>";
+						}
+						?>
+						</div>
+					</div>
+				</form>
+			</div>
+		
+			<div class="form-group" style="clear: left;">
 				<div class="col-md-2 col-sm-3 control-label">
 					<label> 
 		            	<?php echo $lang["showAs"];?> *
@@ -447,21 +431,21 @@
 				<div class="col-md-10 col-sm-9 radio-inline" id="questionType">
 					<label class="radio-inline"> <input type="radio"
 						name="questionType" id="questionTypeSingleChoice"
-						value="singelchoise" required
+						value="singlechoice" required
 						<?php if($mode == "create") { echo "checked"; }
 						else if($mode == "edit") {
 							if($questionFetch["type_id"] == 1)
 								echo " checked";
 						}
-						?> /> <?php echo $lang["singleChoise"];?>
+						?> /> <?php echo $lang["singleChoice"];?>
 					</label> 
 					<label class="radio-inline"> <input type="radio"
 						name="questionType" id="questionTypeMultipleChoice"
-						value="multiplechoise" <?php if($mode == "edit") {
+						value="multiplechoice" <?php if($mode == "edit") {
 							if($questionFetch["type_id"] == 2)
 								echo " checked";
 						}?>/>
-						<?php echo $lang["multipleChoise"];?>
+						<?php echo $lang["multipleChoice"];?>
 					</label>
 				</div>
 			</div>
@@ -527,6 +511,17 @@
 					</div>
 					<?php }?>
 				</div>
+				
+				
+				<!-- Error-Messages -->
+				<div class="form-group" style="clear: left;">
+					<div class="col-md-2 col-sm-3 control-label"></div>
+					<div class="col-md-10 col-sm-9">
+						<p id="failMsg" style="color: red;"></p>
+					</div>
+				</div>
+				
+				
 			</div>
 		</div>
 	</div>
@@ -546,8 +541,47 @@
 				value="<?php echo $lang["createNextQuestion"];?>" />
 		</div>
 	</div>
+	
+	
+	
+	
+	<!-- HTML for Fullscreen-Image-View -->
+	<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="pswp__bg"></div>
+    <div class="pswp__scroll-wrap">
 
-	<p id="failMsg" style="color: red; margin-top: 15px"></p>
+        <div class="pswp__container">
+            <!-- don't modify these 3 pswp__item elements, data is added later on -->
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+            
+            <div class="pswp__counter"></div>
+
+                <button id="closePhoto">Schliessen</button>
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+          </div>
+		</div>
+	</div>
 	
 </div>
 
@@ -564,6 +598,10 @@
 				"[name='isPrivate'], [name='questionType'], [name^='answerText_'], [name^='correctAnswer_']", updateQuestionData);
 
 		$(document).on("click", "#deleteQuestionLogo", updateQuestionData);
+
+		$("#answerQuestionImage").on("click", function () {
+			$("#questionImage").click();
+		});
 	});
 
 	function updateQuestionData(event)
@@ -658,22 +696,28 @@
 						console.log("OK");		            	
 		            	
 		            	var parent = $("#picturePreview");
+		            	var parent2 = $("#answerPicturePreview");
 		            	var downloadingImage = $("<img>");
 		            	var removeIcon = $("<img>");
 		            	
 		            	downloadingImage.load(function(){
-		            		parent.append(this);	
+			            	this.id = "questionImage";
+		            		parent.append(this.cloneNode());
+
+		            		this.id = "answerQuestionImage";
+		            		this.onclick = function() { $("#questionImage").click(); };
+		            		parent2.html("<br />");
+		            		parent2.append(this);
 		            	});
 
 		            	removeIcon.load(function(){
 		            		parent.append(this);	
 		            	});
 
-		            	downloadingImage.attr("style", "float:left; max-width: 300px; max-height: 300px; width: 70%");
-		            	downloadingImage.attr("id", "questionImage");
+		            	downloadingImage.attr("style", "float:left; max-width: 300px; max-height: 300px; width: 70%; margin-bottom: 10px; margin-top: -20px");
 		            	downloadingImage.attr("src", data.text);
 
-		            	removeIcon.attr("style", "margin-left: 10px; height: 18px; width: 18px");
+		            	removeIcon.attr("style", "margin-left: 10px; margin-top:-40px; height: 18px; width: 18px");
 		            	removeIcon.attr("id", "deleteQuestionLogo");
 		            	removeIcon.attr("src", "assets/icon_delete.png");
 
@@ -684,8 +728,10 @@
 					case "DELETED":
 						console.log("OK");
 						$("#questionImage").remove();
+						$("#answerQuestionImage").remove();
 						$("#deleteQuestionLogo").remove();
 		            	$("#picturePreview").append("<span style=\"color:green;\">Bild erfolgreich entfernt.</span>");
+		            	$("#answerPicturePreview").html("<div style='padding-top: 7px;'><p>Kein Bild vorhanden</p><div>");
 		            	$("#questionLogo").show();
 		            	break;
 					case "ANSWER_INSERTED":

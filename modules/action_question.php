@@ -332,7 +332,7 @@ function updateQuestionType($type, $questionId, $dbh)
 	}
 	
 	//update isCorrect -> Singlechoice (wrong == 0 points) / Multiplechoice (wrong == -1 point)
-	if($type == "singelchoise")
+	if($type == "singlechoice")
 	{
 		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId and is_correct = -1");
 		$stmt->bindParam(":questionId", $questionId);
@@ -351,7 +351,7 @@ function updateQuestionType($type, $questionId, $dbh)
 			}
 		}
 
-	} else if($type == "multiplechoise")
+	} else if($type == "multiplechoice")
 	{
 		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId and is_correct = 0");
 		$stmt->bindParam(":questionId", $questionId);
@@ -386,7 +386,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 	$questionType = $fetchQuestionType["type"];
 	
 	//calculate isCorrect-points
-	if($questionType == "singelchoise")
+	if($questionType == "singlechoice")
 	{
 		if($isCorrect == "true")
 		{
@@ -395,7 +395,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 		{
 			$isCorrect = 0;
 		}
-	} else if($questionType == "multiplechoise")
+	} else if($questionType == "multiplechoice")
 	{
 		if($isCorrect == "true")
 		{

@@ -70,7 +70,7 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["maxPoints"];?></label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select question.id, type_id, questionnaire.singlechoise_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
+									$stmt = $dbh->prepare("select question.id, type_id, questionnaire.singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
 									$stmt->bindParam(":quizId", $_GET["quizId"]);
 									$stmt->execute();
 									$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -78,7 +78,7 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 									for($i = 0; $i < count($fetchQuestions); $i++)
 									{
 										if($fetchQuestions[$i]["type_id"] == 1)
-											$totalPoints+= (1*$fetchQuestions[0]["singlechoise_multiplier"]);
+											$totalPoints+= (1*$fetchQuestions[0]["singlechoice_multiplier"]);
 										else if($fetchQuestions[$i]["type_id"] == 2)
 										{
 											$stmt = $dbh->prepare("select answer_id as count from answer_question where question_id = :question_id");

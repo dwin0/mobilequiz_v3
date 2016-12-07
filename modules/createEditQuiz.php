@@ -56,7 +56,7 @@
 			$language = "English";
 		}
 		
-		$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoise_multiplier, noParticipationPeriod, showTaskPaper)
+		$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoice_multiplier, noParticipationPeriod, showTaskPaper)
 					values (" . $_SESSION["id"] . ", NULL, '', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, '" . $language . "', NULL, NULL, '', ".time().", ".time().", NULL, NULL, NULL, NULL, NULL, NULL)");
 		
 		$stmt->execute();

@@ -9,7 +9,7 @@
 	include "modules/extraFunctions.php";
 	include_once 'errorCodeHandler.php';
 	
-	function getMultiplechoiseChar($val)
+	function getMultiplechoiceChar($val)
 	{
 		switch ($val)
 		{
@@ -35,7 +35,7 @@
 		exit;
 	}
 
-	$stmt = $dbh->prepare("select result_visible, result_visible_points, singlechoise_multiplier, public from questionnaire where id = :questionnaire_id");
+	$stmt = $dbh->prepare("select result_visible, result_visible_points, singlechoice_multiplier, public from questionnaire where id = :questionnaire_id");
 	$stmt->bindParam(":questionnaire_id", $quizId);
 	$stmt->execute();
 	$fetchQuestionnaire = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -268,19 +268,19 @@
 								$answerColor = "";
 								$answeredCorrect = false;
 								$punkte = 0;
-								if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+								if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 								{
 									for($j = 0; $j < count($fetchAnswers); $j++)
 									{
 										if($fetchAnswers[$j]["selected"] == 1)
 										{
-											$punkte = -1*$fetchQuestionnaire["singlechoise_multiplier"];
+											$punkte = -1*$fetchQuestionnaire["singlechoice_multiplier"];
 										}
 										if($fetchAnswers[$j]["is_correct"] == 1 && $fetchAnswers[$j]["selected"] == 1)
 										{
 											$answerColor = "#CCFF99";
 											$answeredCorrect = true;
-											$punkte = 1*$fetchQuestionnaire["singlechoise_multiplier"];
+											$punkte = 1*$fetchQuestionnaire["singlechoice_multiplier"];
 											break;
 										}
 										$answerColor = "#FFCCCC";
@@ -292,7 +292,7 @@
 									<tr style="background-color: <?php if($answerColor != ""){ echo $answerColor;} else { echo $fetchAnswers[$j]["is_correct"] == $fetchAnswers[$j]["selected"] ? '#CCFF99' : '#FFCCCC';}?>">
 										<td style="word-wrap: break-word;"><?php echo $fetchAnswers[$j]["text"];?></td>
 										<td style="text-align: center; font-size: 1.2em"><?php
-										if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+										if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 										{
 											if($fetchQuestionnaire["result_visible"] == 1)
 											{
@@ -304,16 +304,16 @@
 												else 
 													echo "?";
 											}
-										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 										{
 											if($fetchQuestionnaire["result_visible"] == 1)
 											{
-												echo getMultiplechoiseChar($fetchAnswers[$j]["is_correct"]);
+												echo getMultiplechoiceChar($fetchAnswers[$j]["is_correct"]);
 											} else if($fetchQuestionnaire["result_visible"] == 2)
 											{
 												if($fetchAnswers[$j]["is_correct"] == $fetchAnswers[$j]["selected"])
 												{
-													echo getMultiplechoiseChar($fetchAnswers[$j]["is_correct"]);
+													echo getMultiplechoiceChar($fetchAnswers[$j]["is_correct"]);
 												} else {
 													echo "?";
 												}
@@ -321,25 +321,25 @@
 										}
 										?></td>
 										<td style="text-align: center; font-size: 1.2em"><?php 
-										if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+										if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 										{
 											echo $fetchAnswers[$j]["selected"] == 1 && $fetchAnswers[$j]["selected"] != NULL ? '&#9673;' : '&Omicron;';
-										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 										{
 											if($fetchAnswers[$j]["selected"] != NULL)
-												echo getMultiplechoiseChar($fetchAnswers[$j]["selected"]);
+												echo getMultiplechoiceChar($fetchAnswers[$j]["selected"]);
 											else 
 												echo '&#8408;';
 										}
 										?></td>
 										<td style="text-align: center"><?php 
-										if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+										if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 										{
 											if($fetchAnswers[$j]["selected"] == 1)
 												echo $punkte;
 											else
 												echo "0";
-										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 										{
 											if($fetchAnswers[$j]["selected"] == 0)
 												echo "0";

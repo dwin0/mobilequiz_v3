@@ -124,7 +124,7 @@
 	Bei Multiple Choice Fragen muss jede Antwortm&ouml;glichkeit als korrekt,  nicht korrekt oder "keine Antwort" gekennzeichnet werden. Man erh&auml;lt dann so viele Plus- und Minuspunkte, wie man Antwortm&ouml;glichkeiten richtig und falsch gew&auml;hlt hat. 
 	<br />
 	<br />
-	Bei Single Choice Fragen kann nur eine Antwortm&ouml;glichkeit gew&auml;hlt werden. Man erh&auml;lt dann <i>(1 * Singlechoise Multiplizierer)</i> Plus- oder Minuspunkte. Der Singlechoise Multiplizierer ist dazu da, um Singlechoise Fragen gegen&uuml;ber den Multiplechoise Fragen nicht abzuwerten. Will man die Frage neutral beantworten, so ist die Antwortm&ouml;glichkeit "keine Antwort" zu w&auml;hlen. 
+	Bei Single Choice Fragen kann nur eine Antwortm&ouml;glichkeit gew&auml;hlt werden. Man erh&auml;lt dann <i>(1 * Singlechoice Multiplizierer)</i> Plus- oder Minuspunkte. Der Singlechoice Multiplizierer ist dazu da, um Singlechoice Fragen gegen&uuml;ber den Multiplechoice Fragen nicht abzuwerten. Will man die Frage neutral beantworten, so ist die Antwortm&ouml;glichkeit "keine Antwort" zu w&auml;hlen. 
 	<br />
 	<br />
 	<?php if(isset($_SESSION["quizSession"]) && $_SESSION["quizSession"] >= 0) {?>

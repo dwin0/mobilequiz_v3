@@ -6,7 +6,7 @@ include_once(__DIR__ . '/../config/config.php');
 include "modules/extraFunctions.php";
 require_once('helper/tcpdf_min/tcpdf_import.php');
 
-function getMultiplechoiseChar($val)
+function getMultiplechoiceChar($val)
 {
 	switch ($val)
 	{
@@ -160,7 +160,7 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 		$pdf->Cell($w,$l,date("d. F Y H:i:s", $fetchQuiz["endtime"]), 0, 1);
 	}
 	
-	$stmt = $dbh->prepare("select question.id, type_id, questionnaire.singlechoise_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
+	$stmt = $dbh->prepare("select question.id, type_id, questionnaire.singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
 	$stmt->bindParam(":quizId", $_GET["quizId"]);
 	$stmt->execute();
 	$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -168,7 +168,7 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 	for($i = 0; $i < count($fetchQuestions); $i++)
 	{
 	if($fetchQuestions[$i]["type_id"] == 1)
-		$totalPoints+= (1*$fetchQuestions[0]["singlechoise_multiplier"]);
+		$totalPoints+= (1*$fetchQuestions[0]["singlechoice_multiplier"]);
 		else if($fetchQuestions[$i]["type_id"] == 2)
 		{
 			$stmt = $dbh->prepare("select answer_id as count from answer_question where question_id = :question_id");
@@ -219,7 +219,7 @@ if($action == "getQuizTaskPaper")
 		
 		if($fetchQuestions[$i]["type_id"] == 2) {
 			$pdf->SetFont($fontname,'B',$fontSize-1);
-			$pdf->MultiCell($w,$l, "  ". getMultiplechoiseChar(-1) . "       " . getMultiplechoiseChar(0) . "      " . getMultiplechoiseChar(1). "      Antwortmöglichkeiten",  'LRT', 'L', 0, 0, '', '', true);
+			$pdf->MultiCell($w,$l, "  ". getMultiplechoiceChar(-1) . "       " . getMultiplechoiceChar(0) . "      " . getMultiplechoiceChar(1). "      Antwortmöglichkeiten",  'LRT', 'L', 0, 0, '', '', true);
 		}
 		$pdf->SetFont('helvetica','B',$fontSize);
 		
@@ -244,10 +244,10 @@ if($action == "getQuizTaskPaper")
 			//Answer Text (Col 2)
 			$w = 0;	
 			
-			if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+			if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 			{
 				$pdf->MultiCell($w,$l,"  O    " . $fetchAnswers[$j]["text"], $border . 'LR', 'L', 0, 1, '', '', true);
-			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 			{
 				$pdf->MultiCell($w,$l,"  ☐    ☐    ☐" . "      " . $fetchAnswers[$j]["text"], $border . 'LR', 'L', 0, 1, '', '', true);
 			}
@@ -378,21 +378,21 @@ if($action == "getQuizTaskPaper")
 		{
 			$correctChar = "";
 			$selectedChar = "";
-			if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+			if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 			{
 				$correctChar = $fetchAnswers[$j]["is_correct"] == 1 ? '◉ ' : 'Ο';
-			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 			{
-				$correctChar = getMultiplechoiseChar($fetchAnswers[$j]["is_correct"]);
+				$correctChar = getMultiplechoiceChar($fetchAnswers[$j]["is_correct"]);
 			}
 			
-			if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+			if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 			{
 				$selectedChar = $fetchAnswers[$j]["selected"] == 1 && $fetchAnswers[$j]["selected"] != NULL ? '◉' : 'Ο';
-			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+			} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 			{
 				if($fetchAnswers[$j]["selected"] != NULL)
-					$selectedChar = getMultiplechoiseChar($fetchAnswers[$j]["selected"]);
+					$selectedChar = getMultiplechoiceChar($fetchAnswers[$j]["selected"]);
 				else
 					$selectedChar = '-';
 			}

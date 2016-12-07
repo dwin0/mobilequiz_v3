@@ -591,7 +591,7 @@ function insertQuiz()
 			&& isset($_POST["amountQuestionMode"])
 			&& isset($_POST["maxParticipationsMode"])
 			&& isset($_POST["quizPassedMode"])
-			&& isset($_POST["singlechoiseMult"])
+			&& isset($_POST["singlechoiceMult"])
 			&& isset($_POST["noParticipationPeriod"]))
 	{
 		//check correct owner
@@ -644,15 +644,15 @@ function insertQuiz()
 				$stmt->execute();
 			} while($stmt->rowCount()>0);
 
-			$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoise_multiplier, noParticipationPeriod, showTaskPaper)
-					values (" . $_SESSION["id"] . ", :subject_id, :name, :starttime, :endtime, :qnaire_token, :random_questions, :random_answers, :limited_time, :result_visible, :result_visible_points, :language, :amount_of_questions, :public, :description, ".time().", ".time().", :priority, :amount_participations, :quiz_passed, :singlechoise_multiplier, :noParticipationPeriod, :showTaskPaper)");
+			$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoice_multiplier, noParticipationPeriod, showTaskPaper)
+					values (" . $_SESSION["id"] . ", :subject_id, :name, :starttime, :endtime, :qnaire_token, :random_questions, :random_answers, :limited_time, :result_visible, :result_visible_points, :language, :amount_of_questions, :public, :description, ".time().", ".time().", :priority, :amount_participations, :quiz_passed, :singlechoice_multiplier, :noParticipationPeriod, :showTaskPaper)");
 
 			$stmt->bindParam(":qnaire_token", $qnaire_token);
 
 		} else if($_POST["mode"] == "edit")
 		{
 			$stmt = $dbh->prepare("update questionnaire set subject_id = :subject_id, name = :name, starttime = :starttime, endtime = :endtime, random_questions = :random_questions, random_answers = :random_answers, limited_time = :limited_time, result_visible = :result_visible, result_visible_points = :result_visible_points,
-					language = :language, amount_of_questions = :amount_of_questions, public = :public, description = :description, last_modified = :last_modified, priority = :priority, amount_participations = :amount_participations, quiz_passed = :quiz_passed, singlechoise_multiplier = :singlechoise_multiplier, noParticipationPeriod = :noParticipationPeriod, showTaskPaper = :showTaskPaper where id = :quiz_id");
+					language = :language, amount_of_questions = :amount_of_questions, public = :public, description = :description, last_modified = :last_modified, priority = :priority, amount_participations = :amount_participations, quiz_passed = :quiz_passed, singlechoice_multiplier = :singlechoice_multiplier, noParticipationPeriod = :noParticipationPeriod, showTaskPaper = :showTaskPaper where id = :quiz_id");
 			$stmt->bindParam(":quiz_id", $_POST["quiz_id"]);
 			$stmt->bindParam(":last_modified", time());
 
@@ -798,7 +798,7 @@ function insertQuiz()
 								$stmt->bindParam(":priority", $_POST["quizPriority"]);
 								$stmt->bindParam(":amount_participations", $maxParticipations);
 								$stmt->bindParam(":quiz_passed", $quizPassed);
-								$stmt->bindParam(":singlechoise_multiplier", $_POST["singlechoiseMult"]);
+								$stmt->bindParam(":singlechoice_multiplier", $_POST["singlechoiceMult"]);
 								$stmt->bindParam(":noParticipationPeriod", $noParticipationPeriod);
 								$stmt->bindParam(":showTaskPaper", $showQuizTaskPaper);
 									

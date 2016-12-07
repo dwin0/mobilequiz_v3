@@ -398,7 +398,7 @@
 		<?php 
 		}
 		?>
-	<?php } // chart for question type 0 (singlechoise) if end ?>
+	<?php } // chart for question type 0 (singlechoice) if end ?>
 	
 		function showChart()
 		{
@@ -425,11 +425,11 @@
 						for(var i = 0; i < output[1].length; i++)
 						{
 							console.log("o: " + output[1][i]["id"]);
-							if(output[1][i]["question_type"] == 0) //singlechoise
+							if(output[1][i]["question_type"] == 0) //singlechoice
 							{
 								if(output[1][i]["correct"] == 1)
 									$('#answer_' + output[1][i]["id"]).css('background-color', 'rgba(0, 255, 0, 0.39);');
-							} else if(output[1][i]["question_type"] == 1) //multiplechoise
+							} else if(output[1][i]["question_type"] == 1) //multiplechoice
 							{
 								if(output[1][i]["correct"] == -1)
 									$('#answer_'+output[1][i]["id"]+'_-1').css('background-color', 'rgba(0, 255, 0, 0.39);');
@@ -552,7 +552,7 @@
 							?>
 							<div id="resultContainer" style="min-width: 310px; max-width: 800px; height: 400px; margin: 0 auto; <?php echo $displayMode;?>"></div>
 							<?php 
-							if($pollId["question_type"] == "1") //multiplechoise
+							if($pollId["question_type"] == "1") //multiplechoice
 							{
 							?>
 								<div id="resultContainer2" style="min-width: 310px; max-width: 800px; height: 400px; margin: 0 auto; <?php echo $displayMode;?>"></div>
@@ -563,7 +563,7 @@
 							<?php 
 						}
 						
-						if($pollId["question_type"] == "1") //multiplechoise
+						if($pollId["question_type"] == "1") //multiplechoice
 						{
 							echo '<table cellspacing="10"><tr><td style="width: 50px;">falsch</td><td style="width: 50px;">keine Antwort</td><td style="width: 50px;">richtig</td><td></td></tr>';
 						}
@@ -583,14 +583,14 @@
 							$disabled = "";
 							if(isset($_COOKIE['pollId' . $pollId["id"]]) || $fetchAnswersForPrint[0]["open"] == 0){
 								$disabled = "disabled";
-								if($pollId["question_type"] == "0") //multiplechoise
+								if($pollId["question_type"] == "0") //multiplechoice
 								{
 									if($fetchAnswersForPrint[$i]["id"] == $_COOKIE['pollId' . $pollId["id"]])
 									{
 										$yourAnswer = "<i> - Ihre Antwort</i>";
 										$checked = "checked";
 									}
-								} else if($pollId["question_type"] == "1") //multiplechoise
+								} else if($pollId["question_type"] == "1") //multiplechoice
 								{
 									$cookieData = json_decode($_COOKIE['pollId' . $pollId["id"]],true);
 									switch ($cookieData[$fetchAnswersForPrint[$i]["id"]])
@@ -607,12 +607,12 @@
 									}
 								}
 							} else {
-								if($pollId["question_type"] == "1") //multiplechoise
+								if($pollId["question_type"] == "1") //multiplechoice
 								{
 									$checked2 = "checked";	
 								}
 							}
-							if($pollId["question_type"] == "1") //multiplechoise
+							if($pollId["question_type"] == "1") //multiplechoice
 							{
 								echo '<tr>';
 								
@@ -626,7 +626,7 @@
 								
 								echo '</tr>';
 								
-							} else if($pollId["question_type"] == "0"){ //singlechoise
+							} else if($pollId["question_type"] == "0"){ //singlechoice
 								echo '<div id="answer_'.$fetchAnswersForPrint[$i]["id"].'">
         								<label class="radio-inline">
         									<input type="radio" style="float: left; margin-right: 5px;" name="voteAnswers" value="'.$fetchAnswersForPrint[$i]["id"].'" '.$disabled.' '.$checked.'>';
@@ -637,7 +637,7 @@
 							$totalVotes += ($fetchAnswersForPrint[$i]["yesVotes"] + $fetchAnswersForPrint[$i]["noVotes"] + $fetchAnswersForPrint[$i]["neutralVotes"]);
 						}
 						
-						if($pollId["question_type"] == "1") //multiplechoise
+						if($pollId["question_type"] == "1") //multiplechoice
 						{
 							echo '</table>';
 						}
@@ -766,8 +766,8 @@
 							?>
 						</div>
 						<div style="margin-top: 5px;">
-							<input type="radio" id="questionTypeSingle" name="questionType" value="single" onchange="switchType()"> Singlechoise
-							<input type="radio" id="questionTypeMultiple" name="questionType" value="multiple" checked="checked" onchange="switchType()"> Multiplechoise
+							<input type="radio" id="questionTypeSingle" name="questionType" value="single" onchange="switchType()"> Singlechoice
+							<input type="radio" id="questionTypeMultiple" name="questionType" value="multiple" checked="checked" onchange="switchType()"> Multiplechoice
 						</div>
 						<input style="margin-top: 10px;" type="submit" class="btn" id="btnSave" name="btnSave" value="<?php echo $lang["publish"];?>" />
 					</form>

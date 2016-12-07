@@ -1,7 +1,7 @@
 <?php
 include "modules/extraFunctions.php";
 
-function getMultiplechoiseChar($val)
+function getMultiplechoiceChar($val)
 {
 	switch ($val)
 	{
@@ -98,7 +98,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["maxPoints"];?></label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select question.id, type_id, singlechoise_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
+									$stmt = $dbh->prepare("select question.id, type_id, singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
 									$stmt->bindParam(":quizId", $_GET["qId"]);
 									$stmt->execute();
 									$fetchQuestionsForMaxPoints = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -106,7 +106,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 									for($i = 0; $i < count($fetchQuestionsForMaxPoints); $i++)
 									{
 										if($fetchQuestionsForMaxPoints[$i]["type_id"] == 1)
-											$totalPoints += (1 * $fetchQuestionsForMaxPoints[$i]["singlechoise_multiplier"]);
+											$totalPoints += (1 * $fetchQuestionsForMaxPoints[$i]["singlechoice_multiplier"]);
 										else if($fetchQuestionsForMaxPoints[$i]["type_id"] == 2)
 										{
 											$stmt = $dbh->prepare("select answer_id as count from answer_question where question_id = :question_id");
@@ -274,7 +274,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 							for($j = 0; $j < count($fetchAnswers); $j++)
 							{
 								?><tr style="background-color: <?php echo ($fetchAnswers[$j]["is_correct"] == $fetchAnswers[$j]["selected"]) ? "rgba(0, 255, 0, 0.39)" : "rgba(255, 0, 0, 0.36);" ;?>;"><?php
-								if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+								if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 								{
 									?>
 									<td style="text-align: center;"><?php echo ($fetchAnswers[$j]["is_correct"] == 1) ? '&#9673;' : '&Omicron;';?></td>
@@ -282,11 +282,11 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 									<td><?php echo $fetchAnswers[$j]["text"];?></td>
 									<?php
 								}
-								else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+								else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 								{
 									?>
 									<td style="text-align: center;"><?php echo ($fetchAnswers[$j]["is_correct"] == 1) ? '&#10003;' : '&#10007;';?></td>
-									<td style="text-align: center;"><?php echo getMultiplechoiseChar($fetchAnswers[$j]["selected"]);?></td>
+									<td style="text-align: center;"><?php echo getMultiplechoiceChar($fetchAnswers[$j]["selected"]);?></td>
 									<td><?php echo $fetchAnswers[$j]["text"];?></td>
 									<?php
 								}

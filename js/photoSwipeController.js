@@ -30,7 +30,7 @@ var closePhotoSwipe = function(event) {
 
 $(document).on('touchstart click', function(event){
 	  
-	  var element = event.originalEvent.target;
+	  var element = event.target;
 	  
 	  switch(element.id) {
 	  	case 'questionImage':

@@ -387,18 +387,18 @@
 			<!-- Single Choice Multiplier -->
 			<div class="form-group">
 				<div class="col-md-2 col-sm-3 control-label"> 
-					<label><?php echo $lang["singlechoiseMult"];?>*</label>
+					<label><?php echo $lang["singlechoiceMult"];?>*</label>
 				</div>
 				<div class="col-md-10 col-sm-9">
 					<?php 
-					$singlechoiseMult = 2;
+					$singlechoiceMult = 2;
 					if($mode == "edit")
 					{
-						$singlechoiseMult = $quizFetch["singlechoise_multiplier"];
+						$singlechoiceMult = $quizFetch["singlechoice_multiplier"];
 					}
 					?>
-					<input type="number" id="singlechoiseMult" name="singlechoiseMult" class="form-control" style="width: 90px; display: inline;" value="<?php 
-						echo $singlechoiseMult; ?>" required="required" /><img id="singlechoiseMultHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Um Singlechoisefragen gegen&uuml;ber Multiplechoisefragen nicht abzuwerten k&ouml;nnen diese mit einem Multiplizierer aufgewertet werden" width="18" height="18">
+					<input type="number" id="singlechoiceMult" name="singlechoiceMult" class="form-control" style="width: 90px; display: inline;" value="<?php 
+						echo $singlechoiceMult; ?>" required="required" /><img id="singlechoiceMultHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Um Singlechoicefragen gegen&uuml;ber Multiplechoicefragen nicht abzuwerten k&ouml;nnen diese mit einem Multiplizierer aufgewertet werden" width="18" height="18">
 				</div>
 			</div>
 			
@@ -527,7 +527,7 @@
 
 	
 	$(function() {
-		var tooltipElements = ['#singlechoiseMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp'];
+		var tooltipElements = ['#singlechoiceMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp'];
 
 		$.each(tooltipElements, function(i, string){
 			$(string).tipsy({gravity: 'n'});

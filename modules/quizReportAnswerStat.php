@@ -98,7 +98,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 								
 								for($k = 0; $k < count($fetchUserAnswers); $k++)
 								{
-									if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+									if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 									{
 										if($fetchUserAnswers[$k]["selected"] == 1)
 										{
@@ -112,7 +112,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 											break;
 										}
 									}
-									else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+									else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 									{
 										if($fetchUserAnswers[$k]["selected"] != NULL)
 										{
@@ -177,7 +177,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 							for($j = 0; $j < count($fetchAnswers); $j++)
 							{
 								?><tr><?php
-								if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+								if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 								{
 									?>
 									<td style="text-align: center;"><?php echo ($fetchAnswers[$j]["is_correct"] == 1) ? '&#9673;' : '&Omicron;';?></td>
@@ -185,7 +185,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 									<td><div class="bar" style="<?php echo $answerCountArray[$fetchAnswers[$j]["id"]][0] == 1 ? 'background-color: #CF9;' : 'background-color: #FCC;';?> width: <?php echo ($answerCountArray[$fetchAnswers[$j]["id"]][1]*100)/$amountTotal;?>%"><?php echo $answerCountArray[$fetchAnswers[$j]["id"]][1];?></div></td>
 									<?php
 								}
-								else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+								else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 								{
 									$amountOk = 0;
 									$amountNotOk = 0;
@@ -217,7 +217,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 								}
 								?></tr><?php
 							}
-							if($fetchQuestions[$i]["type_id"] == 1) //singlechoise
+							if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 							{
 							?>
 								<tr>
@@ -230,7 +230,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 						</tbody>
 					</table>
 					<?php 
-					if($fetchQuestions[$i]["type_id"] == 2) //multiplechoise
+					if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 					{?>
 					<script type="text/javascript">
 						document.getElementById('<?php echo "accuracy_" . $fetchQuestions[$i]["id"];?>').innerHTML = '<?php echo "(" . $lang["accuracy"] . " " . number_format(($totalAmountOk*100)/($totalAmountWithoutNull), 0) ." %)";?>';

@@ -338,7 +338,7 @@ function saveQuestion($questionId, $questionOrder, $answer) {
 		$stmt->bindParam(":question_id", $questionId);
 		$stmt->bindParam(":question_order", $questionOrder);
 		
-		if($fetchAnswers[$i]["type_id"] == 1) //question_type == 1 Singlechoise
+		if($fetchAnswers[$i]["type_id"] == 1) //question_type == 1 Singlechoice
 		{
 			if($answer != "noAnswer")
 			{
@@ -348,7 +348,7 @@ function saveQuestion($questionId, $questionOrder, $answer) {
 			} else {
 				$isSelected = NULL;
 			}
-		} else if($fetchAnswers[$i]["type_id"] == 2) //question_type == 2 Multiplechoise
+		} else if($fetchAnswers[$i]["type_id"] == 2) //question_type == 2 Multiplechoice
 		{
 			if(isset($_POST["answer_" . $fetchAnswers[$i]["id"]]))
 				$isSelected = $_POST["answer_" . $fetchAnswers[$i]["id"]];

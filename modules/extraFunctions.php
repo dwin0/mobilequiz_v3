@@ -4,7 +4,7 @@
 	{
 		$totalPoints = 0;
 		$userScore = 0;
-		$stmt = $dbh->prepare("select question.id, question.type_id, questionnaire.singlechoise_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
+		$stmt = $dbh->prepare("select question.id, question.type_id, questionnaire.singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
 		$stmt->bindParam(":quizId", $quizId);
 		$stmt->execute();
 		$questionFetch = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -18,13 +18,13 @@
 			$answerFetch = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 			$calc = array();
-			if($questionFetch[$i]["type_id"] == 1) //0 und 1 werte betrachten (Singlechoise)
+			if($questionFetch[$i]["type_id"] == 1) //0 und 1 werte betrachten (Singlechoice)
 			{
-				$calc = calcSinglechoise($answerFetch, $questionFetch[$i]["singlechoise_multiplier"]);
+				$calc = calcSinglechoice($answerFetch, $questionFetch[$i]["singlechoice_multiplier"]);
 				
-			} else if($questionFetch[$i]["type_id"] == 2) //0, 1 und -1 werte betrachten (multiplechoise)
+			} else if($questionFetch[$i]["type_id"] == 2) //0, 1 und -1 werte betrachten (multiplechoice)
 			{
-				$calc = calcMultipleChoise($answerFetch);
+				$calc = calcMultipleChoice($answerFetch);
 			}
 			$userScore += $calc[0];
 			$totalPoints += $calc[1];
@@ -33,7 +33,7 @@
 		return [$userScore, $totalPoints, number_format($percent, $floatingPoint)];
 	}
 
-	function calcSinglechoise($ar, $mult)
+	function calcSinglechoice($ar, $mult)
 	{
 		$score = 0;
 		$total = 0;
@@ -51,7 +51,7 @@
 		return [$score, $total];
 	}
 	
-	function calcMultipleChoise($ar)
+	function calcMultipleChoice($ar)
 	{
 		$score = 0;
 		$total = 0;

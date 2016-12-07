@@ -197,7 +197,7 @@ function sendVote()
 	}
 	
 	//insert vote
-	//check singlechoise or multiplechoise
+	//check singlechoice or multiplechoice
 	if($fetchPoll[0]["question_type"] == 0)
 	{
 		if(isset($_POST["voteAnswers"]))
@@ -214,7 +214,7 @@ function sendVote()
 			header("Location: ?p=poll&code=-7");
 			exit;
 		}
-	} else if($fetchPoll[0]["question_type"] == 1){ //multiplechoise
+	} else if($fetchPoll[0]["question_type"] == 1){ //multiplechoice
 		$cookieArray = array();
 		$userPoints = 0;
 		for($i = 0; $i < count($fetchPoll); $i++)
