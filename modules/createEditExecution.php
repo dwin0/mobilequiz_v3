@@ -195,7 +195,7 @@
 						value="1" <?php echo $noParticipationPeriod2 == 1 || $mode == "create" ? 'checked':'';?> /> <?php echo $lang["noParticipationPeriod3"];?>
 					</label>
 				</div>
-				<div class="col-md-7 col-sm-9">
+				<div class="col-md-5 col-sm-7">
 					<label for="noParticipationPeriod0" class="radio-inline"> 
 					<input type="radio" id="noParticipationPeriod0" name="noParticipationPeriod" onchange="setDatesEnabled()"
 						value="0" <?php echo $noParticipationPeriod2 == 0 ? 'checked':'';?> />
@@ -229,6 +229,10 @@
 						value="<?php echo date("H:i", $displayedTime);?>" class="form-control" required="required"/> (h:min)
 					</label>
 				</div>
+				<div class="col-md-2 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardParticipationPeriod" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Execution Time Limitation -->
@@ -236,7 +240,7 @@
 				<div class="col-md-2 col-sm-3 control-label">
 					<label><?php echo $lang["quizTimeLimitation"];?>*</label>
 				</div>
-				<div class="col-md-9 col-sm-8">
+				<div class="col-md-4 col-sm-6">
 					<?php 
 						$timeLimit = "00:00";
 						$noLimitChecked = true;
@@ -259,6 +263,10 @@
 							value="<?php echo $timeLimit;?>" onfocus="setChecked('radioQuizTimeLimit')"/> (min:s)
 					</label>
 				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardTimeLimitation" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Execution Amount Of Questions -->
@@ -266,7 +274,7 @@
 				<div class="col-md-2 col-sm-3 control-label">
 					<label><?php echo $lang["amountOfQuestions"];?>*</label>
 				</div>
-				<div class="col-md-10 col-sm-9">
+				<div class="col-md-4 col-sm-6">
 					<?php 
 						$questionAmount = "0";
 						$questionAmountChecked = true;
@@ -290,6 +298,10 @@
 						?>" required="required"  onfocus="setChecked('radioNoneQuestionMode')"/>
 					</label>
 				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardAmountOfQuestions" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Execution Amount of Participations -->
@@ -297,7 +309,7 @@
 				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["amountMaxParticipations"];?>*</label>
 				</div>
-				<div class="col-md-10 col-sm-9">
+				<div class="col-md-4 col-sm-6">
 					<?php 
 						$maxParticipations = "1";
 						$maxParticipationsChecked = true;
@@ -321,6 +333,10 @@
 						?>" min="1" required="required" onfocus="setChecked('maxParticipationsMode')"/>
 					</label>
 				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardAmountOfParticipations" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Execution Percent Needed To Pass -->
@@ -328,7 +344,7 @@
 				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["quizPassed"];?>*</label>
 				</div>
-				<div class="col-md-10 col-sm-9">
+				<div class="col-md-4 col-sm-6">
 					<?php 
 						$quizPassed = "80";
 						$quizPassedChecked = false;
@@ -355,6 +371,10 @@
 						?>" required="required"  onfocus="setChecked('quizPassedMode')"/>%
 					</label>
 				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardPercentToPass" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Execution Random Order -->
@@ -362,7 +382,7 @@
 				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["randomTitle"];?></label>
 				</div>
-				<div class="col-md-10 col-sm-9">
+				<div class="col-md-4 col-sm-6">
 					<div>
 						<div class="checkbox" style="margin-top: 0">
 							<label> <input type="checkbox" name="randomizeQuestions"
@@ -388,6 +408,10 @@
 						</div>
 					</div>
 				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardRandomOrder" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Single Choice Multiplier -->
@@ -399,7 +423,7 @@
 					</label>
 
 				</div>
-				<div class="col-md-10 col-sm-9">
+				<div class="col-md-4 col-sm-6">
 					<?php 
 					$singlechoiceMult = 2;
 					if($mode == "edit")
@@ -410,6 +434,10 @@
 					<input type="number" id="singlechoiceMult" name="singlechoiceMult" class="form-control" style="width: 90px; display: inline;"
 						value="<?php echo $singlechoiceMult; ?>" required="required" />
 				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardSingleChoiceMultiplier" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Publication -->
@@ -419,7 +447,7 @@
 						<?php echo $lang["publication"];?> *
 					</label>
 				</div>
-				<div class="col-md-10 col-sm-9" style="width: initial">
+				<div class="col-md-4 col-sm-6">
 					<label class="radio-inline"> <input type="radio" name="isPrivate" value="0" required 
 						<?php if($mode == "create") { echo "checked"; }
 							  else if($mode == "edit") {
@@ -432,6 +460,10 @@
 						}?>/><?php echo $lang["privateMoreInfo"];?>
 					</label>
 				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardPublication" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
 			</div>
 			
 			<!-- Execution Show Points / Result In Report -->		
@@ -439,7 +471,7 @@
 				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["quizResultShow"];?></label>
 				</div>
-				<div class="col-md-10 col-sm-9">
+				<div class="col-md-4 col-sm-6">
                 	<?php 
                     	
                     $resultChecked = 1;
@@ -482,6 +514,10 @@
 						</label>
 					</div>
     			</div>
+    			<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardShowResults" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
     		</div>
     		
     		<!-- Execution Show Taskpaper -->
@@ -491,7 +527,7 @@
 						<img id="showQuizTaskPaperHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Wenn eingeschalten, k&ouml;nnen die Aufgabenbl&auml;tter nur eingesehen werden, wenn mind. einmal dran teilgenommen wurde, ansonsten immer." width="18" height="18">
 					</label>
 				</div>
-				<div class="col-md-10 col-sm-9">
+				<div class="col-md-4 col-sm-6">
 					<?php 
 					$showQuizTaskPaper = 0;
 					if($mode == "edit")
@@ -507,6 +543,10 @@
                     	<input type="radio" name="showQuizTaskPaper" value="2" id="showQuizTaskPaper2" <?php echo $showQuizTaskPaper == 0 ? 'checked':'';?>/>
                     	<?php echo $lang["no"];?>
                     </label>	
+				</div>
+				<div class="col-md-6 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardShowTaskpaper" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
 				</div>
 			</div>
 				
