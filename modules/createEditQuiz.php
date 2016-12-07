@@ -430,431 +430,8 @@
 	        </div>
 	        
 		</div>
-
     </div>
 	
-	<script src="js/spin.min.js"></script>
-	<script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
-	<script type="text/javascript">
-
-		$(document).ready(function() {
-			
-			$(document).on("change", "#quizText, #description, #language, #newLanguage, #topic, #newTopic", updateQuizData);
-	
-			$('#addUser').on('mouseover', function(){
-				this.style.cursor='pointer';
-		    });
-			
-		});
-	
-		function openExcelDialog()
-	    {
-	        $('#btnImportQuestionsFromExcel').click();
-	    }
-	    
-		function openDirectoryDialog()
-	    {
-	        $('#btnImportQuestionsFromDirectory').click();
-	    }
-	
-		function showNewLanguageInput()
-		{
-			if($('#language').val() == "newLanguage")
-			{
-				$( "#newLanguage" ).show("slow", false);
-			}else {
-				$( "#newLanguage" ).hide("slow", false);
-			}
-		}
-	
-		function showNewTopicInput()
-		{
-			if($('#topic').val() == "newTopic")
-			{
-				$( "#newTopic" ).show("slow", false);
-			} else {
-				$( "#newTopic" ).hide("slow", false);
-			}
-		}
-	
-		function addCreator()
-		{
-			var userEmail = $('#autocompleteUsers').val();
-			console.log(userEmail);
-
-			var form = new FormData();
-			form.append("userEmail", userEmail);
-			form.append("questionnaireId", <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>);
-
-			console.log("test");
-			
-			$.ajax({
-				url: '?p=actionHandler&action=addAssignation',
-				type: 'POST',
-				data: form,
-				dataType: 'json',
-				contentType: false,
-				processData: false,
-				cache: false,
-				success: function(response) 
-				{
-					if(response["status"] == "OK")
-					{
-						console.log("ok");
-						$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
-						var rowData = [userEmail, '<img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(' + response["userId"] + ')">'];
-						var rowIndex = $('#assignTbl').dataTable().fnAddData(rowData);
-						var row = $('#assignTbl').dataTable().fnGetNodes(rowIndex);
-						$(row).attr("id", "assignation_"+response["userId"]);
-						$('#autocompleteUsers').val('');
-					}
-					else if(response["status"] == "error")
-					{
-						$('#ajaxAnswer').html('<span style="color: red;">' + response["text"] + '</span>');
-					}
-				},
-				error: function() 
-				{
-					$('#ajaxAnswer').html("<span style='color: red;'>Ajax couldn't send data.</span>");
-				}	      
-			});
-		}
-	
-		function delAssigned(userId)
-		{
-			console.log("del: " + userId);
-	
-			$.ajax({
-				url: 'modules/actionHandler.php',
-				type: "get",
-				data: "action=delAssignation&userId="+userId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
-				success: function(output) 
-				{
-					if(output == "ok1")
-					{
-						$('#ajaxAnswer').html('<span style="color: green;">Berechtigung aberkannt.</span>');
-						$('#assignTbl').DataTable().row($('#assignation_'+userId)).remove().draw();
-						$('.tipsy').remove();
-					}
-					if(output == "failed")
-					{
-						$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-					}
-				},
-				error: function(output) 
-				{
-					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-				}	      
-			});
-		}
-	
-		function delQuestion(qId)
-		{
-			console.log("del: " + qId);
-			$.ajax({
-				url: 'modules/actionHandler.php',
-				type: "get",
-				data: "action=delQuestionFromQuiz&questionId="+qId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
-				success: function(output) 
-				{
-					if(output == "ok")
-					{
-						$('#tblListOfQuestions').DataTable().row($('#question_'+qId)).remove().draw();
-						$('.tipsy').remove();
-					}
-					if(output == "failed")
-					{
-						$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-					}
-				},
-				error: function(output) 
-				{
-					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
-				}
-			});
-		}
-	
-		function formCheck()
-		{
-			$('#btnSave').prop('disabled', true);
-			$('#btnBackToOverview').prop('disabled', true);
-			var opts = {position: 'fixed', color: '#fff', length: 56, radius: 70, width: 22};
-			var spinner = new Spinner(opts).spin();
-			var over = '<div id="overlay"></div>';
-			$(over).appendTo('body');
-			$('body').append(spinner.el);
-			return true;
-		}
-	
-		var updateData = function(e, ui)
-		{
-			var qOrder = [];
-			$('#sortable').find('.qId').each (function(col, td) {
-				qOrder.push($(td).html());
-			});   
-			console.log(JSON.stringify(qOrder));
-			$.ajax({
-				url: 'modules/actionHandler.php',
-				type: "get",
-				data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>+"&qOrder="+JSON.stringify(qOrder),
-				success: function(output) 
-				{
-					console.log(output);
-				}
-			});
-		}
-
-
-		function updateQuizData(event)
-		{
-			$maxCharactersQuiz = 30;
-			$maxCharactersTopic = 30;
-			$maxCharactersQuizDesc = 120;
-			
-			if(this.value == this.oldvalue) return;
-
-			var target = event.target.id;
-			if(target == "") {
-				target = event.target.name;
-			}
-
-			var url = '?p=actionHandler&action=updateQuiz';
-			var field;
-			var data = new FormData();
-
-			switch(target) {
-				case "quizText":
-					field = "quizText";
-				    data.append("quizText", event.target.value);
-				    data.append("maxChar", $maxCharactersQuiz);
-					break;
-				case "description":
-					field = "description";
-					data.append("description", event.target.value);
-					data.append("maxChar", $maxCharactersQuizDesc);
-					break;
-				case "language":
-				case "newLanguage":
-					field = "language";
-					data.append("language", event.target.value);
-					break;
-				case "topic":
-				case "newTopic":
-					field = "topic";
-					data.append("topic", event.target.value);
-					break;
-			}
-
-			uploadChange(url, data, field);
-		}
-		
-
-		function uploadChange(url, data, field) 
-		{
-			data.append("quizId", $("[name='quiz_id']").val());
-			
-			$.ajax({
-		        url: url + '&field=' + field,
-		        type: 'POST',
-		        data: data,
-		        cache: false,
-		        dataType: 'json',
-		        processData: false,
-		        contentType: false,
-		        success: function(data)
-		        {
-					switch(data.status)
-					{
-						case "OK":
-							console.log("OK");
-							break;
-						case "error":
-							alert("Error: " + data.text);
-							break;
-					}
-		        },
-		        error: function()
-		        {
-		            console.log("Ajax couldn't send data");
-		            alert("Ajax couldn't send data");
-		        }
-		    });
-		}
-		
-	
-		$(function() {
-			var tooltipElements = ['#assignationHelp', '.delAssignedImg', '.delQuestionImg', '.editQuestion', '.questionTypeInfo'];
-	
-			$.each(tooltipElements, function(i, string){
-				$(string).tipsy({gravity: 'n'});
-			});
-	
-			
-		    $( "#sortable" ).sortable({
-			    stop: updateData}).disableSelection();
-	
-			
-			$("#btnImportQuestionsFromExcel").on("change",function(){
-
-				var file = $("#btnImportQuestionsFromExcel")[0].files[0];				
-			    $("#fileName").html(file.name);
-			    
-				var data = new FormData();
-				data.append("excelFile", file, file.name);
-
-				$.ajax({
-			        url: "",
-			        type: 'POST',
-			        data: data,
-			        cache: false,
-			        dataType: 'json',
-			        processData: false,
-			        contentType: false,
-			        success: function(data)
-			        {
-						switch(data.status)
-						{
-							case "OK":
-								console.log("OK");
-								break;
-							case "error":
-								alert("Error: " + data.text);
-								break;
-						}
-			        },
-			        error: function()
-			        {
-			            console.log("Ajax couldn't send data");
-			            alert("Ajax couldn't send data");
-			        }
-			    });
-
-
-
-			    
-			});
-	
-			document.getElementById("btnImportQuestionsFromDirectory").addEventListener("change",function(){			
-				var files = document.getElementById("btnImportQuestionsFromDirectory").files;
-	
-				var fileNames = "";
-				for(var i = 0; i < files.length; i++) {
-					fileNames += files[i].name;
-					if(i+1 < files.length) {
-						fileNames += ", ";
-					}
-				}
-				document.getElementById("fileNames").innerHTML = fileNames;
-			});
-	
-	
-			$("#btnAddNewQuestion").on("click", function() {
-	
-				if(formCheck())
-				{
-					var nextSite = "createEditQuestion";
-					var mode = "create";
-					var fromsite = "createEditQuiz";
-					var quizId = <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>;
-					window.location = "?p=" + nextSite + "&mode=" + mode + "&fromsite=" + fromsite + "&quizId=" + quizId;
-				}
-			});
-	
-			$("#btnAddExistingQuestion").on("click", function() {
-	
-				if(formCheck())
-				{
-					var nextSite = "addQuestions";
-					var quizId = <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>;
-					window.location = "?p=" + nextSite + "&quizId=" + quizId;
-				}
-			});
-			
-			var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
-			$( "#autocompleteUsers" ).autocomplete({
-			  source: sourceData
-			});
-	
-			$('#tblListOfQuestions').DataTable({
-	            'bSort': true,
-	            'bPaginate': false,
-	            'bInfo': false,
-	            'bLengthChange': true,
-	            'aaSorting': [[1, 'asc']],
-	            'aoColumns': [
-					{'bSearchable': false, 'bSortable':false},
-	                {'bSearchable': false, 'bSortable':true},
-	                {'bSearchable': false, 'bSortable':false},
-	                {'bSortable':false},
-	                {'bSearchable': false, 'bSortable':false},
-	                {'bSearchable': false},
-	                {'bSearchable': false, 'bSortable':false}
-	            ],
-	            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
-	            "sDom": 'lfrtip',
-	            "oLanguage": {
-	                "sZeroRecords": "Es sind keine Fragen dieser Art vorhanden",
-	                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Fragen",
-	                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Fragen",
-	                "sInfoFiltered": "(von insgesamt _MAX_ Fragen)",
-	                "sSearch": ""
-	            }
-	        });
-	        $('.dataTables_filter input').attr("placeholder", 'Suchbegriff in Spalte "Fragetext (Beschreibung)" suchen');
-	        $('.dataTables_filter input').addClass("form-control");
-	        $('.dataTables_filter input').addClass("magnifyingGlass");
-	        $('.dataTables_filter input').attr("style", "min-width: 350px;");
-	
-	
-	        $('#tblListOfExecutions').DataTable({
-	            'bSort': true,
-	            'bPaginate': false,
-	            'bInfo': false,
-	            'bLengthChange': true,
-	            'aoColumns': [
-	                {'bSearchable': true, 'bSortable':true},
-	                {'bSearchable': false, 'bSortable':true},
-	                {'bSearchable': false, 'bSortable':false}
-	            ],
-	            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
-	            "sDom": 'lfrtip',
-	            "oLanguage": {
-	                "sZeroRecords": "Es sind keine Durchf&uuml;hrungen dieser Art vorhanden",
-	                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Durchf&uuml;hrungen",
-	                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Durchf&uuml;hrungen",
-	                "sInfoFiltered": "(von insgesamt _MAX_ Durchf&uuml;hrungen)",
-	                "sSearch": ""
-	            }
-	        });
-	        $('.dataTables_filter input').addClass("form-control");
-	        $('.dataTables_filter input').addClass("magnifyingGlass");
-	        $('.dataTables_filter input').attr("style", "min-width: 350px;");
-	
-	        
-	        $('#assignTbl').DataTable({
-	            'bSort': true,
-	            'bPaginate': false,
-	            'bLengthChange': false,
-	            'bInfo': false,
-	            'aoColumns': [
-					{'bSearchable': false, 'bSortable': false},
-					{'bSearchable': false, 'bSortable': false}
-	            ],
-	            "sDom": 'lfrtip',
-	            "oLanguage": {
-	                "sZeroRecords": "Es sind keine Berechtigungen vergeben worden",
-	                "sSearch": ""
-	            }
-	        });
-	        $('.dataTables_filter input').addClass("form-control");
-	        $('.dataTables_filter input').addClass("magnifyingGlass");
-	        $('.dataTables_filter input').attr("style", "min-width: 350px;");
-		
-		});
-
-		$('#createEditQuizTab').tabCollapse();
-	</script>
-
 
 	<div style="float: left; margin-top: 10px;">
 		<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
@@ -867,3 +444,464 @@
 	</div>
 
 </div>
+
+
+
+<script src="js/spin.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
+<script type="text/javascript">
+
+	$(document).ready(function() {
+		
+		$(document).on("change", "#quizText, #description, #language, #newLanguage, #topic, #newTopic", updateQuizData);
+
+		$('#addUser').on('mouseover', function(){
+			this.style.cursor='pointer';
+	    });
+		
+	});
+
+	function openExcelDialog()
+    {
+        $('#btnImportQuestionsFromExcel').click();
+    }
+    
+	function openDirectoryDialog()
+    {
+        $('#btnImportQuestionsFromDirectory').click();
+    }
+
+	function showNewLanguageInput()
+	{
+		if($('#language').val() == "newLanguage")
+		{
+			$( "#newLanguage" ).show("slow", false);
+		}else {
+			$( "#newLanguage" ).hide("slow", false);
+		}
+	}
+
+	function showNewTopicInput()
+	{
+		if($('#topic').val() == "newTopic")
+		{
+			$( "#newTopic" ).show("slow", false);
+		} else {
+			$( "#newTopic" ).hide("slow", false);
+		}
+	}
+
+	function addCreator()
+	{
+		var userEmail = $('#autocompleteUsers').val();
+		var form = new FormData();
+		form.append("userEmail", userEmail);
+		form.append("questionnaireId", <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>);
+		
+		$.ajax({
+			url: '?p=actionHandler&action=addAssignation',
+			type: 'POST',
+			data: form,
+			dataType: 'json',
+			contentType: false,
+			processData: false,
+			cache: false,
+			success: function(response) 
+			{
+				if(response["status"] == "OK")
+				{
+					console.log("OK");
+					$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
+					var rowData = [userEmail, '<img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(' + response["userId"] + ')">'];
+					var rowIndex = $('#assignTbl').dataTable().fnAddData(rowData);
+					var row = $('#assignTbl').dataTable().fnGetNodes(rowIndex);
+					$(row).attr("id", "assignation_"+response["userId"]);
+					$('#autocompleteUsers').val('');
+				}
+				else if(response["status"] == "error")
+				{
+					$('#ajaxAnswer').html('<span style="color: red;">' + response["text"] + '</span>');
+				}
+			},
+			error: function() 
+			{
+				$('#ajaxAnswer').html("<span style='color: red;'>Ajax couldn't send data.</span>");
+			}	      
+		});
+	}
+
+	function delAssigned(userId)
+	{
+		console.log("del: " + userId);
+
+		$.ajax({
+			url: 'modules/actionHandler.php',
+			type: "get",
+			data: "action=delAssignation&userId="+userId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
+			success: function(output) 
+			{
+				if(output == "ok1")
+				{
+					$('#ajaxAnswer').html('<span style="color: green;">Berechtigung aberkannt.</span>');
+					$('#assignTbl').DataTable().row($('#assignation_'+userId)).remove().draw();
+					$('.tipsy').remove();
+				}
+				if(output == "failed")
+				{
+					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+				}
+			},
+			error: function(output) 
+			{
+				$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+			}	      
+		});
+	}
+
+	function delQuestion(qId)
+	{
+		console.log("del: " + qId);
+		$.ajax({
+			url: 'modules/actionHandler.php',
+			type: "get",
+			data: "action=delQuestionFromQuiz&questionId="+qId+"&questionnaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>,
+			success: function(output) 
+			{
+				if(output == "ok")
+				{
+					$('#tblListOfQuestions').DataTable().row($('#question_'+qId)).remove().draw();
+					$('.tipsy').remove();
+				}
+				if(output == "failed")
+				{
+					$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+				}
+			},
+			error: function(output) 
+			{
+				$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
+			}
+		});
+	}
+
+	function formCheck()
+	{
+		$('#btnSave').prop('disabled', true);
+		$('#btnBackToOverview').prop('disabled', true);
+		var opts = {position: 'fixed', color: '#fff', length: 56, radius: 70, width: 22};
+		var spinner = new Spinner(opts).spin();
+		var over = '<div id="overlay"></div>';
+		$(over).appendTo('body');
+		$('body').append(spinner.el);
+		return true;
+	}
+
+	var updateData = function(e, ui)
+	{
+		var qOrder = [];
+		$('#sortable').find('.qId').each (function(col, td) {
+			qOrder.push($(td).html());
+		});   
+		console.log(JSON.stringify(qOrder));
+		$.ajax({
+			url: 'modules/actionHandler.php',
+			type: "get",
+			data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>+"&qOrder="+JSON.stringify(qOrder),
+			success: function(output) 
+			{
+				console.log(output);
+			}
+		});
+	}
+
+
+	function updateQuizData(event)
+	{
+		$maxCharactersQuiz = 30;
+		$maxCharactersTopic = 30;
+		$maxCharactersQuizDesc = 120;
+		
+		if(this.value == this.oldvalue) return;
+
+		var target = event.target.id;
+		if(target == "") {
+			target = event.target.name;
+		}
+
+		var url = '?p=actionHandler&action=updateQuiz';
+		var field;
+		var data = new FormData();
+
+		switch(target) {
+			case "quizText":
+				field = "quizText";
+			    data.append("quizText", event.target.value);
+			    data.append("maxChar", $maxCharactersQuiz);
+				break;
+			case "description":
+				field = "description";
+				data.append("description", event.target.value);
+				data.append("maxChar", $maxCharactersQuizDesc);
+				break;
+			case "language":
+			case "newLanguage":
+				field = "language";
+				data.append("language", event.target.value);
+				break;
+			case "topic":
+			case "newTopic":
+				field = "topic";
+				data.append("topic", event.target.value);
+				break;
+		}
+
+		uploadChange(url, data, field);
+	}
+	
+
+	function uploadChange(url, data, field) 
+	{
+		data.append("quizId", $("[name='quiz_id']").val());
+		
+		$.ajax({
+	        url: url + '&field=' + field,
+	        type: 'POST',
+	        data: data,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false,
+	        contentType: false,
+	        success: function(data)
+	        {
+				switch(data.status)
+				{
+					case "OK":
+						console.log("OK");
+						break;
+					case "error":
+						alert("Error: " + data.text);
+						break;
+				}
+	        },
+	        error: function()
+	        {
+	            console.log("Ajax couldn't send data");
+	            alert("Ajax couldn't send data");
+	        }
+	    });
+	}
+
+
+	function sendExcelData(uploadData)
+	{
+		$.ajax({
+	        url: "?p=actionHandler&action=uploadExcel",
+	        type: 'POST',
+	        data: uploadData,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false,
+	        contentType: false,
+	        success: function(data)
+	        {
+				switch(data.status)
+				{
+					case "OK":
+						console.log("OK");
+
+						if(data.text != null)
+						{
+							alert(data.text);
+						}
+
+						for(var i = 0; i < data.counter; i++)
+						{
+							var rowData = [
+								data["questionInfo_" + i]["id"],
+								data["questionInfo_" + i]["nextId"],
+								data["questionInfo_" + i]["upDownIcon"],
+								data["questionInfo_" + i]["questionText"],
+								data["questionInfo_" + i]["totalAnswers"],
+								data["questionInfo_" + i]["results"],
+								data["questionInfo_" + i]["icons"]
+								];
+							var rowIndex = $('#tblListOfQuestions').dataTable().fnAddData(rowData);
+							var row = $('#tblListOfQuestions').dataTable().fnGetNodes(rowIndex);
+							$(row).attr("id", "question_" + data["questionInfo_" + i]["id"]);
+						}
+
+						$('#tblListOfQuestions > tbody > tr >td:first-child').attr("class", "qId").css("display", "none");
+
+						$("#btnImportQuestionsFromExcel").val(null);
+						$("#btnImportQuestionsFromDirectory").val(null);
+
+						break;
+					case "error":
+						alert("Error: " + data.text);
+						break;
+				}
+	        },
+	        error: function()
+	        {
+	            console.log("Ajax couldn't send data");
+	            alert("Ajax couldn't send data");
+	        }
+	    });
+	}
+	
+
+	$(function() {
+		var tooltipElements = ['#assignationHelp', '.delAssignedImg', '.delQuestionImg', '.editQuestion', '.questionTypeInfo'];
+
+		$.each(tooltipElements, function(i, string){
+			$(string).tipsy({gravity: 'n'});
+		});
+
+		
+	    $( "#sortable" ).sortable({
+		    stop: updateData}).disableSelection();
+
+		
+		$("#btnImportQuestionsFromExcel").on("change",function(){
+
+			var file = $("#btnImportQuestionsFromExcel")[0].files[0];				
+		    $("#fileName").html(file.name);
+		    
+			var data = new FormData();
+			data.append("quizId", $("[name='quiz_id']").val());
+			data.append("excelFile", file, file.name);
+			data.append("uploadType", "withoutImages");
+
+			sendExcelData(data);
+		});
+		
+
+		$("#btnImportQuestionsFromDirectory").on("change", function() {
+
+			var data = new FormData();
+			data.append("quizId", $("[name='quiz_id']").val());
+			data.append("uploadType", "withImages");
+			
+			var files = $("#btnImportQuestionsFromDirectory")[0].files;
+
+			var fileNames = "";
+			for(var i = 0; i < files.length; i++) {
+
+				data.append("file_" + i, files[i]);
+				fileNames += files[i].name;
+				if(i+1 < files.length) {
+					fileNames += ", ";
+				}
+			}
+			
+			$("#fileNames").html(fileNames);
+			sendExcelData(data);
+		});
+
+
+		$("#btnAddNewQuestion").on("click", function() {
+
+			if(formCheck())
+			{
+				var nextSite = "createEditQuestion";
+				var mode = "create";
+				var fromsite = "createEditQuiz";
+				var quizId = <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>;
+				window.location = "?p=" + nextSite + "&mode=" + mode + "&fromsite=" + fromsite + "&quizId=" + quizId;
+			}
+		});
+
+		$("#btnAddExistingQuestion").on("click", function() {
+
+			if(formCheck())
+			{
+				var nextSite = "addQuestions";
+				var quizId = <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>;
+				window.location = "?p=" + nextSite + "&quizId=" + quizId;
+			}
+		});
+		
+		var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
+		$( "#autocompleteUsers" ).autocomplete({
+		  source: sourceData
+		});
+
+		$('#tblListOfQuestions').DataTable({
+            'bSort': true,
+            'bPaginate': false,
+            'bInfo': false,
+            'bLengthChange': true,
+            'aaSorting': [[1, 'asc']],
+            'aoColumns': [
+				{'bSearchable': false, 'bSortable':false},
+                {'bSearchable': false, 'bSortable':true},
+                {'bSearchable': false, 'bSortable':false},
+                {'bSortable':false},
+                {'bSearchable': false, 'bSortable':false},
+                {'bSearchable': false},
+                {'bSearchable': false, 'bSortable':false}
+            ],
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
+            "sDom": 'lfrtip',
+            "oLanguage": {
+                "sZeroRecords": "Es sind keine Fragen dieser Art vorhanden",
+                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Fragen",
+                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Fragen",
+                "sInfoFiltered": "(von insgesamt _MAX_ Fragen)",
+                "sSearch": ""
+            }
+        });
+        $('.dataTables_filter input').attr("placeholder", 'Suchbegriff in Spalte "Fragetext (Beschreibung)" suchen');
+        $('.dataTables_filter input').addClass("form-control");
+        $('.dataTables_filter input').addClass("magnifyingGlass");
+        $('.dataTables_filter input').attr("style", "min-width: 350px;");
+
+
+        $('#tblListOfExecutions').DataTable({
+            'bSort': true,
+            'bPaginate': false,
+            'bInfo': false,
+            'bLengthChange': true,
+            'aoColumns': [
+                {'bSearchable': true, 'bSortable':true},
+                {'bSearchable': false, 'bSortable':true},
+                {'bSearchable': false, 'bSortable':false}
+            ],
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Alle"]],
+            "sDom": 'lfrtip',
+            "oLanguage": {
+                "sZeroRecords": "Es sind keine Durchf&uuml;hrungen dieser Art vorhanden",
+                "sInfo": "Zeige von _START_ bis _END_ von insgesamt _TOTAL_ Durchf&uuml;hrungen",
+                "sInfoEmpty": "Zeige von 0 bis 0 von insgesamt 0 Durchf&uuml;hrungen",
+                "sInfoFiltered": "(von insgesamt _MAX_ Durchf&uuml;hrungen)",
+                "sSearch": ""
+            }
+        });
+        $('.dataTables_filter input').addClass("form-control");
+        $('.dataTables_filter input').addClass("magnifyingGlass");
+        $('.dataTables_filter input').attr("style", "min-width: 350px;");
+
+        
+        $('#assignTbl').DataTable({
+            'bSort': true,
+            'bPaginate': false,
+            'bLengthChange': false,
+            'bInfo': false,
+            'aoColumns': [
+				{'bSearchable': false, 'bSortable': false},
+				{'bSearchable': false, 'bSortable': false}
+            ],
+            "sDom": 'lfrtip',
+            "oLanguage": {
+                "sZeroRecords": "Es sind keine Berechtigungen vergeben worden",
+                "sSearch": ""
+            }
+        });
+        $('.dataTables_filter input').addClass("form-control");
+        $('.dataTables_filter input').addClass("magnifyingGlass");
+        $('.dataTables_filter input').attr("style", "min-width: 350px;");
+	
+	});
+
+	$('#createEditQuizTab').tabCollapse();
+</script>

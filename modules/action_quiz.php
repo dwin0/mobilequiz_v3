@@ -115,29 +115,34 @@ function updateQuizDescription($description, $maxChar, $quizId, $dbh)
 
 function uploadExcel()
 {
-	$multipleFiles = $_FILES['btnImportQuestionsFromDirectory'];
-	if($multipleFiles["name"][0] != "")
+	global $dbh;
+	
+	$response_array["status"] = "OK";
+	
+	if($_POST["uploadType"] == "withImages")
 	{
 		$excelTemplate = array();
 		$uploadedImages = array();
 	
-		for($i = 0; $i < count($multipleFiles["name"]); $i++)
+		for($i = 0; $i < count($_FILES); $i++)
 		{
-			if(strtolower(pathinfo($multipleFiles["name"][$i], PATHINFO_EXTENSION)) == "xlsx")
+			$file = $_FILES["file_" . $i];
+			
+			if(strtolower(pathinfo($file["name"], PATHINFO_EXTENSION)) == "xlsx")
 			{
-				$excelTemplate["name"] = $multipleFiles["name"][$i];
-				$excelTemplate["type"] = $multipleFiles["type"][$i];
-				$excelTemplate["tmp_name"] = $multipleFiles["tmp_name"][$i];
-				$excelTemplate["error"] = $multipleFiles["error"][$i];
-				$excelTemplate["size"] = $multipleFiles["size"][$i];
+				$excelTemplate["name"] = $file["name"];
+				$excelTemplate["type"] = $file["type"];
+				$excelTemplate["tmp_name"] = $file["tmp_name"];
+				$excelTemplate["error"] = $file["error"];
+				$excelTemplate["size"] = $file["size"];
 			} else
 			{
 				$image = array();
-				$image["name"] = $multipleFiles["name"][$i];
-				$image["type"] = $multipleFiles["type"][$i];
-				$image["tmp_name"] = $multipleFiles["tmp_name"][$i];
-				$image["error"] = $multipleFiles["error"][$i];
-				$image["size"] = $multipleFiles["size"][$i];
+				$image["name"] = $file["name"];
+				$image["type"] = $file["type"];
+				$image["tmp_name"] = $file["tmp_name"];
+				$image["error"] = $file["error"];
+				$image["size"] = $file["size"];
 				array_push($uploadedImages, $image);
 			}
 		}
@@ -145,260 +150,380 @@ function uploadExcel()
 		foreach($uploadedImages as $image)
 		{
 			if ($image["error"] > 0) {
-				header("Location: ?p=quiz&code=-28");
+				$response_array["status"] = "error";
+				$response_array["text"] = $lang["errorWhileUploading"];
+				echo json_encode($response_array);
 				exit;
 			}
 		}
 	
 		if(!isset($excelTemplate))
 		{
-			header("Location: ?p=quiz&code=-29");
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["noExcelFile"];
+			echo json_encode($response_array);
 			exit;
 		}
 			
-	} elseif (isset($_FILES["btnImportQuestionsFromExcel"]) && $_FILES["btnImportQuestionsFromExcel"]["name"] != "")
+	} elseif (isset($_FILES["excelFile"]) && $_FILES["excelFile"]["name"] != "")
 	{
-		if(strtolower(pathinfo($_FILES["btnImportQuestionsFromExcel"]["name"], PATHINFO_EXTENSION)) == "xlsx")
+		if(strtolower(pathinfo($_FILES["excelFile"]["name"], PATHINFO_EXTENSION)) == "xlsx")
 		{
-			$excelTemplate["name"] = $_FILES["btnImportQuestionsFromExcel"]["name"];
-			$excelTemplate["type"] = $_FILES["btnImportQuestionsFromExcel"]["type"];
-			$excelTemplate["tmp_name"] = $_FILES["btnImportQuestionsFromExcel"]["tmp_name"];
-			$excelTemplate["error"] = $_FILES["btnImportQuestionsFromExcel"]["error"];
-			$excelTemplate["size"] = $_FILES["btnImportQuestionsFromExcel"]["size"];
+			$excelTemplate["name"] = $_FILES["excelFile"]["name"];
+			$excelTemplate["type"] = $_FILES["excelFile"]["type"];
+			$excelTemplate["tmp_name"] = $_FILES["excelFile"]["tmp_name"];
+			$excelTemplate["error"] = $_FILES["excelFile"]["error"];
+			$excelTemplate["size"] = $_FILES["excelFile"]["size"];
 		}
 	
 		if(!isset($excelTemplate))
 		{
-			header("Location: ?p=quiz&code=-29");
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["noExcelFile"];
+			echo json_encode($response_array);
 			exit;
 		}
 	}
 	
-		
-	//questions with Excel upload
-	if(isset($excelTemplate))
+	//error while uploading
+	if ($excelTemplate["error"] > 0) {
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["errorWhileUploading"];
+		echo json_encode($response_array);
+		exit;
+	}
+
+	include_once 'importExcel.php';
+
+	$excelContent = importExcel($excelTemplate);
+	$questions = createQuestionArray($excelContent);
+
+	//Excel contains no questions
+	if(count($questions) == 0)
 	{
-		//error while uploading
-		if ($excelTemplate["error"] > 0) {
-			header("Location: ?p=quiz&code=-28");
+		$response_array["status"] = "error";
+		$response_array["text"] = "Keine Fragen in Excel-Datei vorhanden.";
+		echo json_encode($response_array);
+		exit;
+	}
+
+	$htmlQuestionCounter = 0;
+	
+	foreach($questions as $question)
+	{
+		if($question->getNumberOfAnswers() < 2)
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Frage mit nur 1 Antwortm&ouml;glichkeit vorhanden. Bei jeder Frage m&uuml;ssen mindestens 2 vorhanden sein.";
+			echo json_encode($response_array);
+			exit;
+			
+		} else if($question->getNumberOfCorrectAnswers() == 0)
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "Frage ohne 1 korrekte Antwort vorhanden. Mindestens 1 Antwortm&ouml;glichkeit pro Frage muss richtig sein.";
+			echo json_encode($response_array);
 			exit;
 		}
-	
-		include_once 'importExcel.php';
-	
-		$excelContent = importExcel($excelTemplate);
-		$questions = createQuestionArray($excelContent);
-	
-		//Excel contains no questions
-		if(count($questions) == 0)
+	}
+
+
+	$invalidQuestions = array();
+	$imageCounter = 1;
+
+	foreach($questions as $question)
+	{		
+		//check if questiontext AND all answers are already there
+		//if yes use this id instead of insert the same question
+		$stmt = $dbh->prepare("select question.id as qId, question.text as qText from question where question.text = :text");
+		$stmt->bindParam(":text", $question->getText());
+		$stmt->execute();
+			
+		$numOfEqualQuestions = $stmt->rowCount();
+		$allIn = false;
+			
+		if($numOfEqualQuestions > 0) //Question already exists
 		{
-			header("Location: ?p=quiz&code=-39");
-			exit;
-		}
-	
-		foreach($questions as $question)
-		{
-			if($question->getNumberOfAnswers() < 2)
-			{
-				header("Location: ?p=quiz&code=-44");
-				exit;
-			} else if($question->getNumberOfCorrectAnswers() == 0)
-			{
-				header("Location: ?p=quiz&code=-45");
-				exit;
-			}
-		}
-	
-	
-		if($_POST["addOrReplaceQuestions"] == 0 && $_POST["mode"] == "edit") //replace questions
-		{
-			//unlink all existing questions
-			$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_POST["quiz_id"]);
-			$stmt->execute();
-		}
-	
-	
-		$invalidQuestions = array();
-		$imageCounter = 1;
-	
-		foreach($questions as $question)
-		{
-			//check if questiontext AND all answers are already there
-			//if yes use this id instead of insert the same question
-			$stmt = $dbh->prepare("select question.id as qId, question.text as qText from question where question.text = :text");
+			$stmt = $dbh->prepare("select question.id as qId, question.text as qText, answer.id as aId, answer.text as aText, is_correct from question inner join answer_question on answer_question.question_id = question.id inner join answer on answer.id = answer_question.answer_id where question.text = :text");
 			$stmt->bindParam(":text", $question->getText());
 			$stmt->execute();
-				
-			$numOfEqualQuestions = $stmt->rowCount();
-			$allIn = false;
-				
-			if($numOfEqualQuestions > 0) //Question already exists
+
+			$allInCount = 0;
+			$fetchCheckQuestion = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+			//compare all DB-Answers to all Excel-Answers
+			for($i = 0; $i < count($fetchCheckQuestion); $i++) //DB-Answers
 			{
-				$stmt = $dbh->prepare("select question.id as qId, question.text as qText, answer.id as aId, answer.text as aText, is_correct from question inner join answer_question on answer_question.question_id = question.id inner join answer on answer.id = answer_question.answer_id where question.text = :text");
-				$stmt->bindParam(":text", $question->getText());
-				$stmt->execute();
-	
-				$allInCount = 0;
-				$fetchCheckQuestion = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	
-				//compare all DB-Answers to all Excel-Answers
-				for($i = 0; $i < count($fetchCheckQuestion); $i++) //DB-Answers
+				for($j = 0; $j < $question->getNumberOfAnswers(); $j++) //Excel-Answers
 				{
-					for($j = 0; $j < $question->getNumberOfAnswers(); $j++) //Excel-Answers
+					$dbQuestionText = $fetchCheckQuestion[$i]["aText"];
+					$excelQuestionText = $question->getAnswers()[$j]->getText();
+					if($dbQuestionText == $excelQuestionText)
 					{
-						$dbQuestionText = $fetchCheckQuestion[$i]["aText"];
-						$excelQuestionText = $question->getAnswers()[$j]->getText();
-						if($dbQuestionText == $excelQuestionText)
-						{
-							$allInCount++;
-						}
+						$allInCount++;
+						$response_array["text"] = "Mindestens 1 Frage ist schon vorhanden und wurde nicht neu erstellt.";
 					}
-						
-					if($allInCount == $question->getNumberOfAnswers())
-					{
-						$allIn = true;
-					}
-				}
-			}
-				
-			if(!$allIn)
-			{
-				//Singlechoice with != 1 correct Answers
-				if(!$question->isValid())
-				{
-					array_push($invalidQuestions, htmlspecialchars($question->getText()));
 				}
 					
-				$language = "Deutsch";
-				if($_SESSION["language"] == "en")
+				if($allInCount == $question->getNumberOfAnswers())
 				{
-					$language = "English";
+					$allIn = true;
 				}
-	
-				$imageName = $question->getImage();
-				$uploadedImagePath = null;
-				if(isset($imageName))
+			}
+		}
+			
+		if(!$allIn)
+		{
+			//Singlechoice with != 1 correct Answers
+			if(!$question->isValid())
+			{
+				array_push($invalidQuestions, htmlspecialchars($question->getText()));
+			}
+				
+			$language = "Deutsch";
+			if($_SESSION["language"] == "en")
+			{
+				$language = "English";
+			}
+
+			$imageName = $question->getImage();
+			$uploadedImagePath = null;
+			if(isset($imageName))
+			{
+				foreach($uploadedImages as $uploadedImage)
 				{
-					foreach($uploadedImages as $uploadedImage)
+					if($uploadedImage["name"] == $imageName)
 					{
-						if($uploadedImage["name"] == $imageName)
+						//Check if file is image
+						if(!getimagesize($uploadedImage["tmp_name"]))
 						{
-							//Check if file is image
-							if(!getimagesize($uploadedImage["tmp_name"]))
-							{
-								header("Location: ?p=quiz&code=-43");
-								exit;
-							}
-							$uploadedQuestionImage = $uploadedImage;
-								
+							$response_array["status"] = "error";
+							$response_array["text"] = "Nicht unterst&uuml;tzes Bildformat verwendet.";
+							echo json_encode($response_array);
+							exit;
 						}
+						$uploadedQuestionImage = $uploadedImage;
+							
 					}
-						
-					if(!isset($uploadedQuestionImage))
-					{
-						header("Location: ?p=quiz&code=-41");
-						exit;
-					}
-	
-					$uploadedImageFileType = strtolower(pathinfo($uploadedQuestionImage["name"], PATHINFO_EXTENSION));
-					$uploadedImagePath = "uploadedImages/" . "question_" . date("d_m_y_H_i_s", time()) . "__" . $imageCounter . "__" . $_SESSION["id"] . "." . $uploadedImageFileType;
-					if(!move_uploaded_file($uploadedQuestionImage["tmp_name"], $uploadedImagePath))
-					{
-						header("Location: ?p=quiz&code=-42");
-						exit;
-					}
-						
-					$imageCounter++;
-						
 				}
-	
-	
-				//insert Question
-				$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link) values (:text, :owner_id, :type_id, :subject_id, :language, ".time().", :public, ".time().", :picLink)");
-				$stmt->bindParam(":text", $question->getText());
-				$stmt->bindParam(":owner_id", $_SESSION["id"]);
-				$stmt->bindParam(":type_id", $question->getTypeCode());
-				$stmt->bindValue(":subject_id", NULL);
-				$stmt->bindValue(":language", $language);
-				$stmt->bindValue(":public", 0);
-				$stmt->bindValue(":picLink", $uploadedImagePath);
-				if(!$stmt->execute())
+					
+				if(!isset($uploadedQuestionImage))
 				{
-					header("Location: ?p=quiz&code=-31");
+					$response_array["status"] = "error";
+					$response_array["text"] = "Fragebild konnte nicht zugewiesen werden. Bitte verwenden Sie 'Fragen mit Bildern aus Excel importieren' 
+						und w&auml;hlen Sie den Ordner aus, welcher das Template und die Bilder enth&auml;lt.";
+					echo json_encode($response_array);
 					exit;
 				}
-	
-				$insertedQuestionId = $dbh->lastInsertId();
-	
-				//insert all Answers
-				foreach($question->getAnswers() as $answer)
+
+				$uploadedImageFileType = strtolower(pathinfo($uploadedQuestionImage["name"], PATHINFO_EXTENSION));
+				$uploadedImagePath = "uploadedImages/" . "question_" . date("d_m_y_H_i_s", time()) . "__" . $imageCounter . "__" . $_SESSION["id"] . "." . $uploadedImageFileType;
+				if(!move_uploaded_file($uploadedQuestionImage["tmp_name"], $uploadedImagePath))
 				{
-					$stmt = $dbh->prepare("insert into answer (text) values (:text)");
-					$stmt->bindParam(":text", $answer->getText());
-					if(!$stmt->execute())
-					{
-						header("Location: ?p=quiz&code=-32");
-						exit;
-					}
-						
-					$insertedAnswerId = $dbh->lastInsertId();
-					$answerNumber = 0;
-						
-					if($question->getTypeCode() == 1) //Singlechoice
-					{
-						if($answer->isCorrect())
-						{
-							$isCorrect = 1;
-						} else {
-							$isCorrect = 0;
-						}
-					} else { //Multiplechoice
-						if($answer->isCorrect())
-						{
-							$isCorrect = 1;
-						} else {
-							$isCorrect = -1;
-						}
-					}
-						
-					$stmt = $dbh->prepare("insert into answer_question values (:answer_id, :question_id, :is_correct, :order)");
-					$stmt->bindParam(":answer_id", $insertedAnswerId);
-					$stmt->bindParam(":question_id", $insertedQuestionId);
-					$stmt->bindParam(":is_correct", $isCorrect);
-					$stmt->bindValue(":order", $answerNumber);
-	
-					if(!$stmt->execute())
-					{
-						header("Location: ?p=quiz&code=-33");
-						exit;
-					}
-					$answerNumber++;
+					$response_array["status"] = "error";
+					$response_array["text"] = "Bild konnte nicht abgespeichert werden.";
+					echo json_encode($response_array);
+					exit;
 				}
-			} else
-			{
-				$insertedQuestionId = $fetchCheckQuestion[0]["qId"];
+					
+				$imageCounter++;
+					
 			}
-				
-			$orderCounter = 0;
-			$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id, `order`) values (:questionnaire_id, :question_id, :order)");
-			$stmt->bindParam(":questionnaire_id", $insertedQuizId);
-			$stmt->bindParam(":question_id", $insertedQuestionId);
-			$stmt->bindParam(":order", $orderCounter);
-				
+
+
+			//insert Question
+			$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link) values (:text, :owner_id, :type_id, :subject_id, :language, ".time().", :public, ".time().", :picLink)");
+			$stmt->bindParam(":text", $question->getText());
+			$stmt->bindParam(":owner_id", $_SESSION["id"]);
+			$stmt->bindParam(":type_id", $question->getTypeCode());
+			$stmt->bindValue(":subject_id", NULL);
+			$stmt->bindValue(":language", $language);
+			$stmt->bindValue(":public", 0);
+			$stmt->bindValue(":picLink", $uploadedImagePath);
 			if(!$stmt->execute())
 			{
-				header("Location: ?p=quiz&code=-34"); //TODO: Bestehende Question-ID aus Quiz holen und diese nicht mehr in DB einfügen
+				$response_array["status"] = "error";
+				$response_array["text"] = $lang["ExcelInsertError"] . " (Code: -31)";
+				echo json_encode($response_array);
 				exit;
 			}
-			$orderCounter++;
-				
+
+			$insertedQuestionId = $dbh->lastInsertId();
+
+			//insert all Answers
+			foreach($question->getAnswers() as $answer)
+			{
+				$stmt = $dbh->prepare("insert into answer (text) values (:text)");
+				$stmt->bindParam(":text", $answer->getText());
+				if(!$stmt->execute())
+				{
+					$response_array["status"] = "error";
+					$response_array["text"] = $lang["ExcelInsertError"] . " (Code: -32)";
+					echo json_encode($response_array);
+					exit;
+				}
+					
+				$insertedAnswerId = $dbh->lastInsertId();
+				$answerNumber = 0;
+					
+				if($question->getTypeCode() == 1) //Singlechoice
+				{
+					if($answer->isCorrect())
+					{
+						$isCorrect = 1;
+					} else {
+						$isCorrect = 0;
+					}
+				} else { //Multiplechoice
+					if($answer->isCorrect())
+					{
+						$isCorrect = 1;
+					} else {
+						$isCorrect = -1;
+					}
+				}
+					
+				$stmt = $dbh->prepare("insert into answer_question values (:answer_id, :question_id, :is_correct, :order)");
+				$stmt->bindParam(":answer_id", $insertedAnswerId);
+				$stmt->bindParam(":question_id", $insertedQuestionId);
+				$stmt->bindParam(":is_correct", $isCorrect);
+				$stmt->bindValue(":order", $answerNumber);
+
+				if(!$stmt->execute())
+				{
+					$response_array["status"] = "error";
+					$response_array["text"] = $lang["ExcelInsertError"] . " (Code: -33)";
+					echo json_encode($response_array);
+					exit;
+				}
+				$answerNumber++;
+			}
+		} else
+		{
+			$insertedQuestionId = $fetchCheckQuestion[0]["qId"];
 		}
+		
+		$stmt = $dbh->prepare("select question_id from qunaire_qu where questionnaire_id = :qunaireId");
+		$stmt->bindParam(":qunaireId", $_POST["quizId"]);
+		$stmt->execute();
+		$fetchExistingQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		$questionAlreadyAssigned = false;
+		
+		for($i = 0; $i < count($fetchExistingQuestions); $i++)
+		{
+			if($insertedQuestionId == $fetchExistingQuestions[$i]["question_id"])
+			{
+				$questionAlreadyAssigned = true;
+			}
+		}
+		
+		if($questionAlreadyAssigned)
+		{
+			$response_array["text"] = "Einige Fragen sind schon im Quiz enthalten.";				
+			continue;
+		}
+			
+		$orderCounter = 0;
+		$stmt = $dbh->prepare("insert into qunaire_qu (questionnaire_id, question_id, `order`) values (:questionnaire_id, :question_id, :order)");
+		$stmt->bindParam(":questionnaire_id", $_POST["quizId"]);
+		$stmt->bindParam(":question_id", $insertedQuestionId);
+		$stmt->bindParam(":order", $orderCounter);
+			
+		if(!$stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["ExcelQunaireError"] . " Frage konnte nicht zum Quiz hinzugefügt werden.";
+			echo json_encode($response_array);
+			exit;
+		}
+		
+		$response_array["questionInfo_$htmlQuestionCounter"] = getQuestionInfos($insertedQuestionId, $_POST["quizId"]);
+		$htmlQuestionCounter++;
+		
+		$orderCounter++;
 	}
+	
+	$response_array["counter"] = $htmlQuestionCounter;
+	echo json_encode($response_array);
+	exit;
 }
 
 
 
+function getQuestionInfos($questionId, $quizId)
+{
+	global $dbh;
+	
+	$stmt = $dbh->prepare("select count(question_id) as total from qunaire_qu where questionnaire_id = :qId");
+	$stmt->bindParam(":qId", $quizId);
+ 	$stmt->execute();
+ 	$fetchTotal = $stmt->fetch(PDO::FETCH_ASSOC);
+ 	$nextId = $fetchTotal["total"];
+	
+	$stmt = $dbh->prepare("select * from question where id = :qId");
+	$stmt->bindParam(":qId", $questionId);
+	$stmt->execute();
+	$fetchQuestion = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	$id = $fetchQuestion["id"];
+	$text = $fetchQuestion["text"];
+	
+	$qType = "singlechoice";
+	if($fetchQuestion["type_id"] == 2)
+	{
+		$qType = "multiplechoice";
+	}
+	
+	
+	$stmt = $dbh->prepare("select count(answer_id) as totalAnswers from answer_question where question_id = :qId");
+	$stmt->bindParam(":qId", $questionId);
+	$stmt->execute();
+	$fetchTotalAnswers = $stmt->fetch(PDO::FETCH_ASSOC);
+	$totalAnswers = $fetchTotalAnswers["totalAnswers"];
+	
+	
+	$stmt = $dbh->prepare("select * from an_qu_user inner join answer_question on answer_question.answer_id = an_qu_user.answer_id where an_qu_user.question_id = :qId");
+	$stmt->bindParam(":qId", $questionId);
+	$stmt->execute();
+	$fetchAnQuUser = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$correctCounter = 0;
+	$totalCounter = 0;
+	for($j = 0; $j < count($fetchAnQuUser); $j++)
+	{
+		if($fetchAnQuUser[$j]["is_correct"] == 1 && $fetchAnQuUser[$j]["selected"] == 1)
+		{
+			$correctCounter++;
+		} else if($fetchAnQuUser[$j]["is_correct"] == -1 && $fetchAnQuUser[$j]["selected"] == -1)
+		{
+			$correctCounter++;
+		}
+		if($fetchAnQuUser[$j]["is_correct"] != 0)
+		{
+			$totalCounter++;
+		}
+	}
+	if($totalCounter != 0)
+	{
+		$results = "(".$correctCounter."/".$totalCounter.") " . number_format(($correctCounter*100)/$totalCounter, 1) . "%";
+	} else
+	{
+		$results = "-";
+	}
+	
+	$infos["id"] = $id;
+	$infos["nextId"] = $nextId;
+	$infos["upDownIcon"] = "<img alt='up' src='assets/icon_downUp.png' width='18' height='18' style='cursor: move;'>";
+	$infos["questionText"] = "<img width='15' height='15' class='questionTypeInfo' original-title='$qType' style='margin-right: 5px; margin-bottom: 3px;' src='assets/icon_$qType.png'>$text";
+	$infos["totalAnswers"] = $totalAnswers;
+	$infos["results"] = $results;
+	$infos["icons"] = "<a href='?p=createEditQuestion&mode=edit&fromsite=createEditQuiz&quizId=$quizId&id=$id' class='editQuestion' original-title='Frage bearbeiten'>
+		        		<img id='editQuestion' src='assets/icon_edit.png' height='18px' width='18px'>
+		        	</a>&nbsp;
+		            <img id='delQuestionImg' style='cursor: pointer;' class='deleteQuestion delQuestionImg' src='assets/icon_delete.png' original-title='Frage aus dieser Lernkontrolle l&ouml;schen' height='18px' width='18px' onclick='delQuestion($id)'><br />";
+	
+	return $infos;
+}
 
 
 
@@ -952,7 +1077,7 @@ function insertQuiz()
 											
 											if(!$stmt->execute())
 											{
-												header("Location: ?p=quiz&code=-34"); //TODO: Bestehende Question-ID aus Quiz holen und diese nicht mehr in DB einfügen
+												header("Location: ?p=quiz&code=-34"); 
 												exit;
 											}
 											$orderCounter++;

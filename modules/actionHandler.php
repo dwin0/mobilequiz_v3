@@ -51,6 +51,8 @@
 		case "delAssignation":
 			deleteAssignation();
 			break;
+		case "uploadExcel":
+			uploadExcel();
 		case "moveQuestion":
 			moveQuestion();
 			break;
