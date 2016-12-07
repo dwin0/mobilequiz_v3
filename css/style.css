@@ -89,6 +89,31 @@
 }
 
 /*
+TABLES FOR PARTICIPANT, GROUP AND USER AUTHORIZATION MANAGEMENT
+*/
+
+fieldset.table-border {
+    border: 1px solid #ddd;
+    padding: 0 1.4em 1.4em 1.4em;
+    margin: 0 0 1.5em 0;
+}
+
+legend.table-border {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: left;
+    width:inherit;
+    padding:0 10px;
+    border-bottom:none;
+    
+}
+
+/*
+END TABLES FOR PARTICIPANT, GROUP AND USER AUTHORIZATION MANAGEMENT
+*/
+
+
+/*
 CREATE EDIT QUIZ PAGE
 */
 

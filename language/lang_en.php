@@ -1,5 +1,7 @@
 <?php
 $lang = array(
+		"yes" => "Yes",
+		"no" => "No",
 		"welcomeHeadingHome" => "Welcome to MobileQuiz.ch v3",
 		"upperTextHome" => "MobileQuiz.ch helps you to deepen your knowledge of various Application Areas and Lectures. The Questions on MobileQuiz.ch should be answered after the lecture. You are allowed to use the script or dicuss Questions with other students.
 							<br /><br />We hope that this personal tool motivates you to review the learning material more frequently – and that you have fun doing it!",
@@ -133,7 +135,7 @@ $lang = array(
 		"randomQuestions" => "Randomized question order",
 		"randomAnswers" => "Randomized answer order",
 		"quizPublic" => "Quiz is not public (this quiz will not be listed)",
-		"quizResultShow" => "Report results, options",
+		"quizResultShow" => "Report results",
 		"showResultAtTheEndDetailed" => "Show all questions detailed",
 		"showResultAtTheEnd" => "Show only correct questions",
 		"showResultNever" => "Don't show any question",
@@ -334,6 +336,7 @@ $lang = array(
 		"assignQuizToGroupHeading" => "Assign groups to quiz",
 		"assignQuizToGroupInfo1" => "Assigned groups",
 		"assignQuizToGroupInfo2" => "Available groups",
+		"participantManagement" => "Participant management",
 		"profileJoinGroupHeading" => "Group administration",
 		"profileJoinGroupContent" => "Join a group",
 		"profileJoinGroupIn" => "Member of the group",
