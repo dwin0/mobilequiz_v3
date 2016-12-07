@@ -30,6 +30,7 @@ $lang = array(
 		"buttonRegister" => "Register",
 		"btnSend" => "Send",
 		"buttonRecoverPw" => "Recover Password",
+		"buttonSetBack" => "Reset",
 		"registerHeadline" => "Registration on MobileQuiz.ch",
 		"reistrationText" => "Following information is required for the registration process",
 		"password" => "Password",
