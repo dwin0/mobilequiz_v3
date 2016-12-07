@@ -3,7 +3,6 @@
 ?>
 
 
-<script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <div class="container theme-showcase">
 	<div class="page-header">
@@ -12,19 +11,19 @@
 
 	<p><?php echo $lang["requiredFields"];?></p>
 	
-	<ul id="myTab" class="nav nav-tabs">
+	<ul id="createEditExecutionTab" class="nav nav-tabs">
         <li class="active"><a href="#execution" data-toggle="tab">Durchf&uuml;hrung</a></li>
     </ul>
     
     
     
-    <div id="createEditQuizTabContent" class="tab-content" >
+    <div id="createEditExecutionTabContent" class="tab-content" >
         <div class="tab-pane fade in active form-horizontal panel-body" id="execution">
    	 		
    	 		<!-- Execution Name -->
    	 		<div class="form-group">
 				<label for="executionName" class="col-md-2 col-sm-3 control-label">
-					<?php echo $lang["executionCreateName"];?> *
+					<?php echo $lang["executionName"];?> *
 				</label>
 				<div class="col-md-10 col-sm-9">
 					<input id="executionName" name="executionName" class="form-control" type="text"
@@ -39,11 +38,146 @@
 				</div>
 			</div>
    	 		
-   	 		<div class="row">
-				<div class="col-md-2 col-sm-2">
-					<label><?php echo $lang["noParticipationPeriod2"];?> *</label>
+   	 		<!-- Execution Priority -->
+   	 		<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label">
+					<label><?php echo $lang["quizPriority"];?>*</label>
 				</div>
-				<div class="col-md-2 col-sm-2 radio-inline">
+				<div class="col-md-10 col-sm-9">
+					<?php 
+					$resultChecked = 0;
+					if($mode == "edit")
+						$resultChecked = $quizFetch["priority"];
+					?>
+					<select name="quizPriority" class="form-control" style="width: 195px; display: inline;" required="required">
+						<option value="0" <?php echo $resultChecked == 0 ? 'selected' : '';?>><?php echo $lang["prioLearningHelp"];?></option>
+						<option value="1" <?php echo $resultChecked == 1 ? 'selected' : '';?>><?php echo $lang["prioExamRequirement"];?></option>
+						<option value="2" <?php echo $resultChecked == 2 ? 'selected' : '';?>><?php echo $lang["prioExam"];?></option>
+					</select>
+				</div>
+			</div>
+			
+			<!-- Execution Group Management -->
+			<div class="form-group assignationMngmt">
+				<div> 
+					<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignGroupToExecution"];?>
+					<img id="assignGroupHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Gruppen eingetragen werden, welche dieser 
+					Durchf&uuml;hrung zugewiesen werden sollen. Nur wer zugewiesen ist, kann am Quiz teilnehmen." width="18" height="18"></label>
+				</div>
+				<div class="col-md-10 col-sm-9">
+					<input type="text" id="autocompleteGroups"><img id="addGroup" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="">
+				</div>
+			</div>
+			<div class="from-group">
+				<div class="col-md-10 col-sm-9" id="ajaxAnswerGroup"></div>
+			</div>
+			<div class="table-responsive">
+				<!-- TODO: Logik -->
+				<table class="assignGroupTbl" id="assignGroupTbl">
+		            <thead>
+		                <tr>
+		                    <th><?php echo $lang["groupName"];?></th>
+		                    <th><?php echo $lang["quizTableActions"];?></th>
+		                </tr>
+		            </thead>
+		            <tbody>
+		            	<!-- TODO: Logik -->
+		            </tbody>
+	        	</table>
+        	</div>
+        	
+        	<!-- Execution Participant Management -->
+        	<div class="form-group assignationMngmt">
+				<div> 
+					<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignParticipantToExecution"];?>
+					<img id="assignParticipantHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen einzelne Teilnehmer eingetragen werden, 
+					welche dieser Durchf&uuml;hrung zugewiesen werden sollen. Nur wer zugewiesen ist, kann am Quiz teilnehmen." width="18" height="18"></label>
+				</div>
+				<div class="col-md-10 col-sm-9">
+					<input type="text" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="">
+				</div>
+			</div>
+			<div class="from-group">
+				<div class="col-md-10 col-sm-9" id="ajaxAnswerParticipant"></div>
+			</div>
+			<div class="table-responsive">
+				<!-- TODO: Logik -->
+				<table class="assignUserTbl" id="assignUserTbl">
+		            <thead>
+		                <tr>
+		                    <th><?php echo $lang["participant"];?></th>
+		                    <th><?php echo $lang["quizTableActions"];?></th>
+		                </tr>
+		            </thead>
+		            <tbody>
+		            	<!-- TODO: Logik -->
+		            </tbody>
+	        	</table>
+        	</div>
+			
+			<!-- alter Code
+			<div class="panel-body" id="assignQuizToGroup" style="padding: 0px;">
+				<div class="alert alert-success alert-dismissable" id="groupAddSuccess" style="border-radius: 0 0 4px 4px;">
+				    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
+				    <strong>Erfolgreich! </strong>
+				    Gruppe zugeordnet.
+				</div>
+				<div class="alert alert-danger alert-dismissable" id="groupAddError" style="border-radius: 0 0 4px 4px;">
+				    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
+				    <strong>Fehler! </strong>
+				    Es ist ein Fehler aufgetreten.
+				</div>
+				<div class="form-horizontal">
+					<div class="col-md-3 col-sm-3" style="margin: 20px 0px 20px 0px;"> 
+						<label><?php echo $lang["assignQuizToGroupInfo1"];?></label>
+						<div style="min-height: 75px; max-height: 200px; overflow-y: scroll;">
+							<ul id="assignGroupToQuizSortable1" class="assignGroupToQuizCconnectedSortable">
+								<?php 
+								$stmt = $dbh->prepare("select assign_group_qunaire.*, `group`.name, (select count(*) from user where group_id = `group`.id) as memberCount from assign_group_qunaire inner join `group` on `group`.id = assign_group_qunaire.group_id where questionnaire_id = :qId");
+								$stmt->bindParam(":qId", $_GET["id"]);
+								$stmt->execute();
+								$fetchAssignedGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+								
+								for($i = 0; $i < count($fetchAssignedGroups); $i++)
+								{
+								?>
+									<li class="ui-state-default groupName" original-title="<?php echo $fetchAssignedGroups[$i]["name"];?>" id="<?php echo $fetchAssignedGroups[$i]["group_id"];?>"><?php echo strlen($fetchAssignedGroups[$i]["name"]) > 19 ? substr($fetchAssignedGroups[$i]["name"], 0, 19) . "..." : $fetchAssignedGroups[$i]["name"]; echo " (" . $fetchAssignedGroups[$i]["memberCount"] . ")";?></li>
+								<?php }?>
+							</ul>
+						</div>
+					</div>
+					<div class="col-md-1 col-sm-1" style="margin-top: 25px; text-align: center;"> 
+						<img style="margin-left: 8px;" alt="drag and drop" src="assets/arrow-leftRight.png" width="56" height="32">
+						<span style="font-size: 10px;">Drag &amp; Drop</span>
+					</div>
+					<div class="col-md-3 col-sm-3" style="margin: 20px 0px 20px 0px;"> 
+						<label><?php echo $lang["assignQuizToGroupInfo2"];?></label>
+						<div style="min-height: 75px; max-height: 200px; overflow-y: scroll;">
+							<ul id="assignGroupToQuizSortable2" class="assignGroupToQuizCconnectedSortable">
+								<?php 
+								$stmt = $dbh->prepare("select *, (select count(*) from user where group_id = `group`.id) as memberCount  from `group` where id not in (select group_id from assign_group_qunaire where questionnaire_id = :qId)");
+								$stmt->bindParam(":qId", $_GET["id"]);
+								$stmt->execute();
+								$fetchGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+								
+								for($i = 0; $i < count($fetchGroups); $i++)
+								{
+								?>
+									<li class="ui-state-default groupName" original-title="<?php echo $fetchGroups[$i]["name"];?>" id="<?php echo $fetchGroups[$i]["id"];?>"><?php echo strlen($fetchGroups[$i]["name"]) > 19 ? substr($fetchGroups[$i]["name"], 0, 19) . "..." : $fetchGroups[$i]["name"]; echo " (" . $fetchGroups[$i]["memberCount"] . ")"?></li>
+								<?php }?>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			-->
+			
+			<!-- Execution Participation Period -->
+   	 		<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label">
+					<label><?php echo $lang["executionPeriod"];?> *</label>
+				</div>
+				<div class="col-md-2 col-sm-6">
 					<?php 
 					if($mode == "edit")
 					{
@@ -55,7 +189,7 @@
 						value="1" <?php echo $noParticipationPeriod2 == 1 || $mode == "create" ? 'checked':'';?> /> <?php echo $lang["noParticipationPeriod3"];?>
 					</label>
 				</div>
-				<div class="col-md-8 col-sm-8">
+				<div class="col-md-7 col-sm-9">
 					<label for="noParticipationPeriod0" class="radio-inline"> 
 					<input type="radio" id="noParticipationPeriod0" name="noParticipationPeriod" onchange="setDatesEnabled()"
 						value="0" <?php echo $noParticipationPeriod2 == 0 ? 'checked':'';?> />
@@ -70,8 +204,7 @@
 						}
 						echo date("d.m.Y", $displayedTime);
 						?>" class="form-control" required="required"/>
-					<input type="time" id="startTime" name="startTime" onchange="setConfirm(true, 'starttime')"
-						style="width: 90px; display: inline;"
+					<input type="time" id="startTime" name="startTime" style="width: 90px; display: inline;"
 						value="<?php echo date("H:i", $displayedTime); ?>" class="form-control" required="required"/> (h:min)
 					<br />
 					<?php echo $lang["quizEndDate"];?>
@@ -86,18 +219,18 @@
 						echo date("d.m.Y", $displayedTime);
 						?>"
 						class="form-control" required="required"/> 
-					<input type="time" id="endTime" onchange="setConfirm(true, 'endTime')"
-						name="endTime" style="width: 90px; display: inline;"
+					<input type="time" id="endTime" name="endTime" style="width: 90px; display: inline;"
 						value="<?php echo date("H:i", $displayedTime);?>" class="form-control" required="required"/> (h:min)
 					</label>
 				</div>
 			</div>
 			
-			<div class="row">
-				<div class="col-md-2 col-sm-2">
+			<!-- Execution Time Limitation -->
+			<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label">
 					<label><?php echo $lang["quizTimeLimitation"];?>*</label>
 				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
+				<div class="col-md-9 col-sm-8">
 					<?php 
 						$timeLimit = "00:00";
 						$noLimitChecked = true;
@@ -111,21 +244,23 @@
 						}
 					?>
 					<label for="radioNoneTimeLimit" class="radio-inline"> 
-					<input type="radio" id="radioNoneTimeLimit" name="timeLimitMode" onchange="setConfirm(true, 'timelimit')"
+					<input type="radio" id="radioNoneTimeLimit" name="timeLimitMode"
 						value="0" <?php echo $noLimitChecked ? 'checked':'';?> /> <?php echo $lang["noLimitation"];?>
 	                </label>
 					<label for="radioQuizTimeLimit" class="radio-inline" style="margin-left: 22px;">
-						<input style="margin-top: 11px;" type="radio" id="radioQuizTimeLimit" onchange="setConfirm(true, 'timelimit2')" name="timeLimitMode" value="1" <?php echo $noLimitChecked ? '':'checked';?> /> 
-						<input type="time" id="quizTimeLimit" class="form-control" onchange="setConfirm(true)" name="quizTimeLimit" style="width: 90px; display: inline;" 
+						<input style="margin-top: 11px;" type="radio" id="radioQuizTimeLimit" name="timeLimitMode" value="1" <?php echo $noLimitChecked ? '':'checked';?> /> 
+						<input type="time" id="quizTimeLimit" class="form-control" name="quizTimeLimit" style="width: 90px; display: inline;" 
 							value="<?php echo $timeLimit;?>" onfocus="setChecked('radioQuizTimeLimit')"/> (min:s)
 					</label>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-md-2 col-sm-2">
+			
+			<!-- Execution Amount Of Questions -->
+			<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label">
 					<label><?php echo $lang["amountOfQuestions"];?>*</label>
 				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
+				<div class="col-md-10 col-sm-9">
 					<?php 
 						$questionAmount = "0";
 						$questionAmountChecked = true;
@@ -139,22 +274,24 @@
 						}
 					?>
 					<label for="radioNoneQuestionAmount" class="radio-inline"> 
-						<input type="radio" id="radioNoneQuestionAmount" name="amountQuestionMode" onchange="setConfirm(true, 'questionamount')"
+						<input type="radio" id="radioNoneQuestionAmount" name="amountQuestionMode"
 							value="0" <?php echo $questionAmountChecked ? 'checked':'';?> /> <?php echo $lang["noQuestionAmount"];?>
 	                </label>
 					<label for="radioNoneQuestionMode" class="radio-inline">
-						<input style="margin-top: 11px;" type="radio" id="radioNoneQuestionMode" onchange="setConfirm(true, 'questionamount2')" name="amountQuestionMode" value="1" <?php echo $questionAmountChecked ? '':'checked';?> />
-						<input type="number" id="amountOfQuestions" name="amountOfQuestions" onchange="setConfirm(true, 'questionamount3')" class="form-control" style="width: 90px; display: inline;" value="<?php 
+						<input style="margin-top: 11px;" type="radio" id="radioNoneQuestionMode" name="amountQuestionMode" value="1" <?php echo $questionAmountChecked ? '':'checked';?> />
+						<input type="number" id="amountOfQuestions" name="amountOfQuestions" class="form-control" style="width: 90px; display: inline;" value="<?php 
 							echo $questionAmount;
 						?>" required="required"  onfocus="setChecked('radioNoneQuestionMode')"/>
 					</label>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-md-2 col-sm-2"> 
+			
+			<!-- Execution Amount of Participations -->
+			<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["amountMaxParticipations"];?>*</label>
 				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
+				<div class="col-md-10 col-sm-9">
 					<?php 
 						$maxParticipations = "1";
 						$maxParticipationsChecked = true;
@@ -168,39 +305,24 @@
 						}
 					?>
 					<label for="radioNoneMaxParticipations" class="radio-inline"> 
-					<input type="radio" id="radioNoneMaxParticipations" name="maxParticipationsMode" onchange="setConfirm(true, 'maxpart')"
+					<input type="radio" id="radioNoneMaxParticipations" name="maxParticipationsMode"
 						value="0" <?php echo $maxParticipationsChecked ? 'checked':'';?> /> <?php echo $lang["maxParticipations"];?>
 	                </label>
 					<label for="maxParticipationsMode" class="radio-inline">
-						<input style="margin-top: 11px;" type="radio" id="maxParticipationsMode" onchange="setConfirm(true, 'maxpart')" name="maxParticipationsMode" value="1" <?php echo $maxParticipationsChecked ? '':'checked';?> />
-						<input type="number" id="maxParticipations" name="maxParticipations" onchange="setConfirm(true, 'maxpart')" class="form-control" style="width: 90px; display: inline;" value="<?php 
+						<input style="margin-top: 11px;" type="radio" id="maxParticipationsMode" name="maxParticipationsMode" value="1" <?php echo $maxParticipationsChecked ? '':'checked';?> />
+						<input type="number" id="maxParticipations" name="maxParticipations" class="form-control" style="width: 90px; display: inline;" value="<?php 
 							echo $maxParticipations;
 						?>" min="1" required="required" onfocus="setChecked('maxParticipationsMode')"/>
 					</label>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-md-2 col-sm-2">
-					<label><?php echo $lang["quizPriority"];?>*</label>
-				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
-					<?php 
-					$resultChecked = 0;
-					if($mode == "edit")
-						$resultChecked = $quizFetch["priority"];
-					?>
-					<select name="quizPriority" class="form-control" style="width: 195px; display: inline;" onchange="setConfirm(true, 'priority')" required="required">
-						<option value="0" <?php echo $resultChecked == 0 ? 'selected' : '';?>><?php echo $lang["prioLearningHelp"];?></option>
-						<option value="1" <?php echo $resultChecked == 1 ? 'selected' : '';?>><?php echo $lang["prioExamRequirement"];?></option>
-						<option value="2" <?php echo $resultChecked == 2 ? 'selected' : '';?>><?php echo $lang["prioExam"];?></option>
-					</select>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-2 col-sm-2"> 
+			
+			<!-- Execution Percent Needed To Pass -->
+			<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["quizPassed"];?>*</label>
 				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
+				<div class="col-md-10 col-sm-9">
 					<?php 
 						$quizPassed = "80";
 						$quizPassedChecked = false;
@@ -217,56 +339,24 @@
 						}
 					?>
 					<label for="radioNoneQuizPassed" class="radio-inline"> 
-					<input type="radio" id="radioNoneQuizPassed" name="quizPassedMode" onchange="setConfirm(true, 'passedmode')" 
+					<input type="radio" id="radioNoneQuizPassed" name="quizPassedMode"
 						value="0" <?php echo $quizPassedChecked ? 'checked':'';?> /> <?php echo $lang["noPassing"];?>
 	                </label>
 					<label for="quizPassedMode" class="radio-inline">
-						<input style="margin-top: 11px;" type="radio" id="quizPassedMode" onchange="setConfirm(true, 'passedmode2')" name="quizPassedMode" value="1" <?php echo $quizPassedChecked ? '':'checked';?> />
-						<input type="number" id="quizPassed" name="quizPassed" onchange="setConfirm(true, 'passedmode3')" class="form-control" style="width: 90px; display: inline;" value="<?php 
+						<input style="margin-top: 11px;" type="radio" id="quizPassedMode" name="quizPassedMode" value="1" <?php echo $quizPassedChecked ? '':'checked';?> />
+						<input type="number" id="quizPassed" name="quizPassed" class="form-control" style="width: 90px; display: inline;" value="<?php 
 							echo $quizPassed;
 						?>" required="required"  onfocus="setChecked('quizPassedMode')"/>%
 					</label>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-md-2 col-sm-2"> 
-					<label><?php echo $lang["singlechoiseMult"];?>*</label>
+			
+			<!-- Execution Random Order -->
+			<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label"> 
+					<label><?php echo $lang["randomTitle"];?></label>
 				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
-					<?php 
-					$singlechoiseMult = 2;
-					if($mode == "edit")
-					{
-						$singlechoiseMult = $quizFetch["singlechoise_multiplier"];
-					}
-					?>
-					<input type="number" id="singlechoiseMult" name="singlechoiseMult" onchange="setConfirm(true, 'singlechoise')" class="form-control" style="width: 90px; display: inline;" value="<?php 
-						echo $singlechoiseMult; ?>" required="required" /><img id="singlechoiseMultHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Um Singlechoisefragen gegen&uuml;ber Multiplechoisefragen nicht abzuwerten k&ouml;nnen diese mit einem Multiplizierer aufgewertet werden" width="18" height="18">
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-2 col-sm-2"> 
-					<label><?php echo $lang["showQuizTaskPaperSelection"];?>*</label>
-				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
-					<?php 
-					$showQuizTaskPaper = 0;
-					if($mode == "edit")
-					{
-						$showQuizTaskPaper = $quizFetch["showTaskPaper"];
-					}
-					?>
-					<label for="showQuizTaskPaper" style="float: left;">
-						<input type="checkbox" id="showQuizTaskPaper" name="showQuizTaskPaper" onchange="setConfirm(true, 'showQuizTaskPaper')" <?php if($showQuizTaskPaper == 1) echo "checked";?>/>
-					</label>
-					<img id="showQuizTaskPaperHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 10px; margin-top: 11px;" original-title="Wenn eingeschalten, k&ouml;nnen die Aufgabenbl&auml;tter nur eingesehen werden, wenn mind. einmal dran teilgenommen wurde, ansonsten immer." width="18" height="18">
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-2 col-sm-2"> 
-					<label><?php echo $lang["moreOptions"];?></label>
-				</div>
-				<div class="col-md-10 col-sm-10 radio-inline">
+				<div class="col-md-10 col-sm-9">
 					<div>
 						<div class="checkbox">
 							<label> <input type="checkbox" name="randomizeQuestions"
@@ -291,23 +381,54 @@
 		                    </label>
 						</div>
 					</div>
-					<div>
-						<div class="checkbox">
-							<label> <input type="checkbox" name="isPublic" value="1" 
-							<?php 
-							if($mode == "edit")
-							{
-								if($quizFetch["public"] == 1)
-									echo "checked";
-							} else {
-								echo "checked";
-							}
-							?> /><?php echo $lang["quizPublic"];?>
-		                    </label>
-						</div>
-					</div>
 				</div>
 			</div>
+			
+			<!-- Single Choice Multiplier -->
+			<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label"> 
+					<label><?php echo $lang["singlechoiseMult"];?>*</label>
+				</div>
+				<div class="col-md-10 col-sm-9">
+					<?php 
+					$singlechoiseMult = 2;
+					if($mode == "edit")
+					{
+						$singlechoiseMult = $quizFetch["singlechoise_multiplier"];
+					}
+					?>
+					<input type="number" id="singlechoiseMult" name="singlechoiseMult" class="form-control" style="width: 90px; display: inline;" value="<?php 
+						echo $singlechoiseMult; ?>" required="required" /><img id="singlechoiseMultHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Um Singlechoisefragen gegen&uuml;ber Multiplechoisefragen nicht abzuwerten k&ouml;nnen diese mit einem Multiplizierer aufgewertet werden" width="18" height="18">
+				</div>
+			</div>
+			
+			<!-- Publication -->
+			<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label">
+					<label> 
+						<?php echo $lang["publication"];?> *
+					</label>
+				</div>
+				<div class="col-md-10 col-sm-9" style="width: initial">
+					<label class="radio-inline"> <input type="radio" name="isPrivate"
+						value="0" required 
+						<?php if($mode == "create") { echo "checked"; }
+						else if($mode == "edit") {
+							if($quizFetch["public"] == 0)
+								echo " checked";
+						}?>/> <?php echo $lang["public"];?>
+					</label> 
+					<label class="radio-inline" style="white-space: pre;"> <input type="radio"
+						name="isPrivate" value="1"
+						<?php if($mode == "edit") {
+							if($quizFetch["public"] == 1)
+								echo " checked";
+						}?>/><?php echo $lang["privateMoreInfo"];?>
+					</label>
+				</div>
+			</div>
+			
+			<!--  -->		
 			<div class="row">
 				<div class="col-md-2 col-sm-2"> 
 					<label><?php echo $lang["quizResultShow"];?></label>
@@ -349,72 +470,38 @@
 						</div>
 					</div>
 				</div>
-       
-    
-    
-    	<div class="panel-body" id="assignQuizToGroup" style="padding: 0px;">
-			<div class="alert alert-success alert-dismissable" id="groupAddSuccess" style="border-radius: 0 0 4px 4px;">
-			    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
-			    <strong>Erfolgreich! </strong>
-			    Gruppe zugeordnet.
-			</div>
-			<div class="alert alert-danger alert-dismissable" id="groupAddError" style="border-radius: 0 0 4px 4px;">
-			    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
-			    <strong>Fehler! </strong>
-			    Es ist ein Fehler aufgetreten.
-			</div>
-			<div class="form-horizontal">
-				<div class="col-md-3 col-sm-3" style="margin: 20px 0px 20px 0px;"> 
-					<label><?php echo $lang["assignQuizToGroupInfo1"];?></label>
-					<div style="min-height: 75px; max-height: 200px; overflow-y: scroll;">
-						<ul id="assignGroupToQuizSortable1" class="assignGroupToQuizCconnectedSortable">
-							<?php 
-							$stmt = $dbh->prepare("select assign_group_qunaire.*, `group`.name, (select count(*) from user where group_id = `group`.id) as memberCount from assign_group_qunaire inner join `group` on `group`.id = assign_group_qunaire.group_id where questionnaire_id = :qId");
-							$stmt->bindParam(":qId", $_GET["id"]);
-							$stmt->execute();
-							$fetchAssignedGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
-							
-							for($i = 0; $i < count($fetchAssignedGroups); $i++)
-							{
-							?>
-								<li class="ui-state-default groupName" original-title="<?php echo $fetchAssignedGroups[$i]["name"];?>" id="<?php echo $fetchAssignedGroups[$i]["group_id"];?>"><?php echo strlen($fetchAssignedGroups[$i]["name"]) > 19 ? substr($fetchAssignedGroups[$i]["name"], 0, 19) . "..." : $fetchAssignedGroups[$i]["name"]; echo " (" . $fetchAssignedGroups[$i]["memberCount"] . ")";?></li>
-							<?php }?>
-						</ul>
+    			
+    			<div class="row">
+					<div class="col-md-2 col-sm-2"> 
+						<label><?php echo $lang["showQuizTaskPaperSelection"];?>*</label>
+					</div>
+					<div class="col-md-10 col-sm-10 radio-inline">
+						<?php 
+						$showQuizTaskPaper = 0;
+						if($mode == "edit")
+						{
+							$showQuizTaskPaper = $quizFetch["showTaskPaper"];
+						}
+						?>
+						<label for="showQuizTaskPaper" style="float: left;">
+							<input type="checkbox" id="showQuizTaskPaper" name="showQuizTaskPaper" <?php if($showQuizTaskPaper == 1) echo "checked";?>/>
+						</label>
+						<img id="showQuizTaskPaperHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 10px; margin-top: 11px;" original-title="Wenn eingeschalten, k&ouml;nnen die Aufgabenbl&auml;tter nur eingesehen werden, wenn mind. einmal dran teilgenommen wurde, ansonsten immer." width="18" height="18">
 					</div>
 				</div>
-				<div class="col-md-1 col-sm-1" style="margin-top: 25px; text-align: center;"> 
-					<img style="margin-left: 8px;" alt="drag and drop" src="assets/arrow-leftRight.png" width="56" height="32">
-					<span style="font-size: 10px;">Drag &amp; Drop</span>
-				</div>
-				<div class="col-md-3 col-sm-3" style="margin: 20px 0px 20px 0px;"> 
-					<label><?php echo $lang["assignQuizToGroupInfo2"];?></label>
-					<div style="min-height: 75px; max-height: 200px; overflow-y: scroll;">
-						<ul id="assignGroupToQuizSortable2" class="assignGroupToQuizCconnectedSortable">
-							<?php 
-							$stmt = $dbh->prepare("select *, (select count(*) from user where group_id = `group`.id) as memberCount  from `group` where id not in (select group_id from assign_group_qunaire where questionnaire_id = :qId)");
-							$stmt->bindParam(":qId", $_GET["id"]);
-							$stmt->execute();
-							$fetchGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
-							
-							for($i = 0; $i < count($fetchGroups); $i++)
-							{
-							?>
-								<li class="ui-state-default groupName" original-title="<?php echo $fetchGroups[$i]["name"];?>" id="<?php echo $fetchGroups[$i]["id"];?>"><?php echo strlen($fetchGroups[$i]["name"]) > 19 ? substr($fetchGroups[$i]["name"], 0, 19) . "..." : $fetchGroups[$i]["name"]; echo " (" . $fetchGroups[$i]["memberCount"] . ")"?></li>
-							<?php }?>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
-    
-    
-    </div>
+    	</div>
     </div>   
-    
-    
+	
+	<div style="float: left; margin-top: 10px;">
+		<input type="button" class="btn" id="btnBackToCreateEditQuiz" value="<?php echo $lang["btnBack"];?>" onclick="window.location='?p=quiz';"/> <!-- TODO: richtige location setzen -->
+	</div>
+	<div style="float: right; padding-left: 10px; margin-top: 10px;">
+		<input type="button" class="btn" id="btnSaveAndCreateNewExecution" value="<?php echo $lang["createNextExecution"];?>" />
+	</div>
+	
 </div>
 
-
+<script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
 <script type="text/javascript">
 
 	function setChecked(id)
@@ -440,7 +527,7 @@
 
 	
 	$(function() {
-		var tooltipElements = ['#singlechoiseMultHelp', '.groupName', '#showQuizTaskPaperHelp'];
+		var tooltipElements = ['#singlechoiseMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp'];
 
 		$.each(tooltipElements, function(i, string){
 			$(string).tipsy({gravity: 'n'});
@@ -507,7 +594,52 @@
 				});
 			}
 		});
+
+
+		$('#assignGroupTbl').DataTable({
+            'bSort': true,
+            'bPaginate': false,
+            'bLengthChange': false,
+            'bInfo': false,
+            'aoColumns': [
+				{'bSearchable': false, 'bSortable': false},
+				{'bSearchable': false, 'bSortable': false}
+            ],
+            "sDom": 'lfrtip',
+            "oLanguage": {
+                "sZeroRecords": "Es sind keine Gruppen zugewiesen worden",
+                "sSearch": ""
+            }
+        });
+        $('.dataTables_filter input').addClass("form-control");
+        $('.dataTables_filter input').addClass("magnifyingGlass");
+        $('.dataTables_filter input').attr("style", "min-width: 350px;");
+        $('.dataTables_filter').attr("style", "margin-top: 0");
+        $('.dataTables_wrapper').attr("style", "margin-bottom: 25px;");
+
+        $('#assignUserTbl').DataTable({
+            'bSort': true,
+            'bPaginate': false,
+            'bLengthChange': false,
+            'bInfo': false,
+            'aoColumns': [
+				{'bSearchable': false, 'bSortable': false},
+				{'bSearchable': false, 'bSortable': false}
+            ],
+            "sDom": 'lfrtip',
+            "oLanguage": {
+                "sZeroRecords": "Es sind keine Teilnehmer zugewiesen worden",
+                "sSearch": ""
+            }
+        });
+        $('.dataTables_filter input').addClass("form-control");
+        $('.dataTables_filter input').addClass("magnifyingGlass");
+        $('.dataTables_filter input').attr("style", "min-width: 350px;");
+        $('.dataTables_filter').attr("style", "margin-top: 0");
+        $('.dataTables_wrapper').attr("style", "margin-bottom: 25px;");
+
+		
 	});
 	
-	
+	$('#createEditExecutionTab').tabCollapse();
 </script>
