@@ -885,5 +885,6 @@
         $('.dataTables_filter').attr("style", "margin-top: 0");
         $('.dataTables_filter input').attr("style", "min-width: 350px;");
 
-	$('#createEditQuizTab').tabCollapse();
+		$('#createEditQuizTab').tabCollapse();
+	});
 </script>
