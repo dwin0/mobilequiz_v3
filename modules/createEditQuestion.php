@@ -602,6 +602,15 @@
 		$("#answerQuestionImage").on("click", function () {
 			$("#questionImage").click();
 		});
+
+		$(window).unload(function() {
+			var id = $("[name=question_id]").val();
+			if(window.location.href == "http://localhost/mobilequiz_v3/?p=createEditQuestion")
+			{
+				window.location.href  += "&mode=edit&id=" + id;
+			}
+		});
+
 	});
 
 	function updateQuestionData(event)
@@ -731,7 +740,7 @@
 						$("#answerQuestionImage").remove();
 						$("#deleteQuestionLogo").remove();
 		            	$("#picturePreview").append("<span style=\"color:green;\">Bild erfolgreich entfernt.</span>");
-		            	$("#answerPicturePreview").html("<div style='padding-top: 7px;'><p>Kein Bild vorhanden</p><div>");
+		            	$("#answerPicturePreview").html("<div style='padding-top: 7px;'><p><?php echo $lang["noPicture"]?></p><div>");
 		            	$("#questionLogo").show();
 		            	break;
 					case "ANSWER_INSERTED":
