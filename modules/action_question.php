@@ -7,9 +7,68 @@ function updateQuestion()
 	global $dbh;
 	$response_array["status"] = "OK";
 	
+	$field = $_GET["field"];
+	if(!isset($field) || (!isset($_POST[$field]) && (strpos($field, "QuestionImage") == false)))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = "Not all parameters received.";
+	}
+	
+	if($_POST["questionId"] == "") //new question
+	{
+		$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link)
+							values ('', " . $_SESSION["id"] . ", 1, NULL, '" . $language . "', " . time() . ", 0, " . time() . ", NULL);");
+		if(!$stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = "DB-Error: Question couldn't be created.";
+		} else
+		{
+			$newQuestion = true;
+			$questionId = $dbh->lastInsertId();
+			
+			
+			//Call from questionnaire-site -> add question to this questionnaire
+			if($_POST["fromsite"] == "createEditQuiz")
+			{
+				if($_POST["quizId"] == "")
+				{
+					$response_array["status"] = "error";
+					$response_array["text"] = "DB-Error: Question couldn't be created.";
+				} else
+				{
+					$stmt = $dbh->prepare("select count(question_id) as total from qunaire_qu where questionnaire_id = :qunaireId");
+					$stmt->bindParam(":qunaireId", $_POST["quizId"]);
+					$stmt->execute();
+						
+					$fetchAmoutOfQuestions = $stmt->fetch(PDO::FETCH_ASSOC);
+					$nextOrder = $fetchAmoutOfQuestions["total"]; //order starts with 0
+						
+					$stmt = $dbh->prepare("insert into qunaire_qu values (:qunaireId, :questionId, :order)");
+					$stmt->bindParam(":qunaireId", $_POST["quizId"]);
+					$stmt->bindParam(":questionId", $questionId);
+					$stmt->bindParam(":order", $nextOrder);
+						
+					if(!$stmt->execute())
+					{
+						$response_array["status"] = "error";
+						$response_array["text"] = "DB-Error: Question couldn't be linked to quiz.";
+					}
+					
+				}
+					
+			}
+		}
+		
+	} else 
+	{
+		$questionId = $_POST["questionId"];
+	}
+	
+	
 	//check if owner or admin
 	$stmt = $dbh->prepare("select owner_id from question where id = :question_id");
-	$stmt->bindParam(":question_id", $_POST["questionId"]);
+	$stmt->bindParam(":question_id", $questionId);
 	$stmt->execute();
 	$fetchQuestionOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
@@ -19,12 +78,6 @@ function updateQuestion()
 		$response_array["text"] = "You are not allowed to update this question.";
 	}
 	
-	$field = $_GET["field"];
-	if(!isset($_POST["questionId"]) || !isset($field) || (!isset($_POST[$field]) && (strpos($field, "QuestionImage") == false)))
-	{
-		$response_array["status"] = "error";
-		$response_array["text"] = "Not all parameters received.";
-	}
 	
 	if($response_array["status"] == "error")
 	{
@@ -32,43 +85,50 @@ function updateQuestion()
 		exit;
 	}
 	
+	
+	
 	switch($field)
 	{
 		case "questionText":
-			$response_array = updateQuestionText($_POST["questionText"], $_POST["questionId"], $dbh);
+			$response_array = updateQuestionText($_POST["questionText"], $questionId, $dbh);
 			break;
 		case "keywords":
-			$response_array = updateQuestionKeywords($_POST["keywords"], $_POST["questionId"], $dbh);
+			$response_array = updateQuestionKeywords($_POST["keywords"], $questionId, $dbh);
 			break;
 		case "language":
-			$response_array = updateLanguage($_POST["language"], "question", $_POST["questionId"], $dbh);
+			$response_array = updateLanguage($_POST["language"], "question", $questionId, $dbh);
 			break;
 		case "topic":
-			$response_array = updateTopic($_POST["topic"], "question", $_POST["questionId"], $dbh);
+			$response_array = updateTopic($_POST["topic"], "question", $questionId, $dbh);
 			break;
 		case "addQuestionImage":
-			$response_array = addPicture($_POST["questionId"], $dbh);
+			$response_array = addPicture($questionId, $dbh);
 			break;
 		case "deleteQuestionImage":
-			$response_array = deletePicture($_POST["questionId"], $dbh);
+			$response_array = deletePicture($questionId, $dbh);
 			break;
 		case "isPrivate":
-			$response_array = updateQuestionPublication($_POST["isPrivate"], $_POST["questionId"], $dbh); //TODO: ev. auslagern (durchführung)
+			$response_array = updateQuestionPublication($_POST["isPrivate"], $questionId, $dbh);
 			break;
 		case "questionType":
-			$response_array = updateQuestionType($_POST["questionType"], $_POST["questionId"], $dbh);
+			$response_array = updateQuestionType($_POST["questionType"], $questionId, $dbh);
 			break;
 		case "answerText":
-			$response_array = updateQuestionAnswers($_POST["answerId"], $_POST["answerNumber"], $_POST["answerText"], $_POST["isCorrect"], $_POST["questionId"], $dbh);
+			$response_array = updateQuestionAnswers($_POST["answerId"], $_POST["answerNumber"], $_POST["answerText"], $_POST["isCorrect"], $questionId, $dbh);
 			break;
 	}
 	
 	$stmt = $dbh->prepare("update question set last_modified = ".time()." where id = :question_id");
-	$stmt->bindParam(":question_id", $_POST["questionId"]);
+	$stmt->bindParam(":question_id", $questionId);
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
 		$response_array["text"] = "Couldn't update database";
+	}
+	
+	if($newQuestion)
+	{
+		$response_array["newQuestionId"] = $questionId;
 	}
 	
 	echo json_encode($response_array);
@@ -339,23 +399,6 @@ function updateQuestionType($type, $questionId, $dbh)
 		$stmt->bindParam(":questionId", $questionId);
 		$stmt->execute();
 		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		
-// 		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId and is_correct = -1"); TODO: remove
-// 		$stmt->bindParam(":questionId", $questionId);
-// 		$stmt->execute();
-// 		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		
-// 		for($i = 0; $i < count($fetchAnswers); $i++)
-// 		{
-// 			$stmt = $dbh->prepare("update answer_question set is_correct = 0 where answer_id = :answerId");
-// 			$stmt->bindParam(":answerId", $fetchAnswers[$i]["answer_id"]);
-// 			if(! $stmt->execute())
-// 			{
-// 				$response_array["status"] = "error";
-// 				$response_array["text"] = "Couldn't update database";
-// 				return $response_array;
-// 			}
-// 		}
 
 	} else if($type == "multiplechoice")
 	{

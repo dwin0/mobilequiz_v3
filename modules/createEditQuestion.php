@@ -57,44 +57,6 @@
 			$language = "English";
 		}
 		
-		$stmt = $dbh->prepare("insert into question	(text, owner_id, type_id, subject_id, language, creation_date, public, last_modified, picture_link)
-							values ('', " . $_SESSION["id"] . ", 1, NULL, '" . $language . "', " . time() . ", 0, " . time() . ", NULL);");		
-		if(!$stmt->execute())
-		{
-			header("Location: ?p=home&code=-21");
-			exit;
-		}
-		
-		$newQuestionId = $dbh->lastInsertId();
-		
-		
-		//Call from questionnaire-site -> add question to this questionnaire
-		if(isset($_GET["fromsite"]) && $_GET["fromsite"] == "createEditQuiz")
-		{
-			if(!isset($_GET["quizId"]))
-			{
-				header("Location: ?p=quiz&code=-46");
-				exit;
-			}
-			
-			$stmt = $dbh->prepare("select count(question_id) as total from qunaire_qu where questionnaire_id = :qunaireId");
-			$stmt->bindParam(":qunaireId", $_GET["quizId"]);
-			$stmt->execute();
-			
-			$fetchAmoutOfQuestions = $stmt->fetch(PDO::FETCH_ASSOC);
-			$nextOrder = $fetchAmoutOfQuestions["total"]; //order starts with 0
-			
-			$stmt = $dbh->prepare("insert into qunaire_qu values (:qunaireId, :questionId, :order)");
-			$stmt->bindParam(":qunaireId", $_GET["quizId"]);
-			$stmt->bindParam(":questionId", $newQuestionId);
-			$stmt->bindParam(":order", $nextOrder);
-			
-			if(!$stmt->execute())
-			{
-				header("Location: ?p=quiz&code=-47");
-				exit;
-			}			
-		}
 	}
 	
 	const MAX_CHARACTERS_PER_QUESTION = 400;
@@ -542,7 +504,7 @@
 
 		<div style="text-align: right; margin-top: 10px;">
 			<input type="hidden" name="mode" value="<?php echo $mode;?>">
-			<input type="hidden" name="question_id" value="<?php echo ($mode == "edit") ? $questionFetch["id"] : $newQuestionId;?>">
+			<input type="hidden" name="question_id" value="<?php echo ($mode == "edit") ? $questionFetch["id"] : '';?>">
 			<input type="hidden" name="fromsite" value="<?php echo isset($_GET["fromsite"]) ? $_GET["fromsite"] : '';?>">
 			<input type="hidden" name="fromQuizId" value="<?php echo isset($_GET["quizId"]) ? $_GET["quizId"] : '';?>">
 			<input type="button" class="btn" id="btnSaveAndNext"
@@ -693,6 +655,8 @@
 	function uploadChange(url, data, field) 
 	{
 		data.append("questionId", $("[name='question_id']").val());
+		data.append("fromsite", $("[name='fromsite']").val());
+		data.append("quizId", $("[name='fromQuizId']").val());
 		
 		$.ajax({
 	        url: url + '&field=' + field,
@@ -783,6 +747,11 @@
 						alert("Error: " + data.text);
 						break;
 				}
+
+				if(data["newQuestionId"] != null)
+				{
+					$("[name='question_id']").val(data.newQuestionId);
+				}
 	        },
 	        error: function()
 	        {
@@ -798,6 +767,12 @@
 
 	function formCheck()
 	{
+
+		if($("#questionText").val() == "")
+		{
+			return true;
+		}
+		
 		var correctAnswersOk = false;
 		var answerTextOK = true;
 		var answerCount = 0;
