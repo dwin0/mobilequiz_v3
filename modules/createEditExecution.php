@@ -12,13 +12,16 @@
 	<p><?php echo $lang["requiredFields"];?></p>
 	
 	<ul id="createEditExecutionTab" class="nav nav-tabs">
-        <li class="active"><a href="#execution" data-toggle="tab">Durchf&uuml;hrung</a></li>
+        <li class="active"><a href="#generalInformation" data-toggle="tab">Allgemeine Informationen</a></li>
+        <li><a href="#participation" data-toggle="tab">Teilnehmer</a></li>
+        <li><a href="#settings" data-toggle="tab">Einstellungen</a></li>
+        <li><a href="#publication" data-toggle="tab">Publikation</a></li>
     </ul>
     
     
     
     <div id="createEditExecutionTabContent" class="tab-content" >
-        <div class="tab-pane fade in active form-horizontal panel-body" id="execution">
+        <div class="tab-pane fade in active form-horizontal panel-body" id="generalInformation">
    	 		
    	 		<!-- Execution Name -->
    	 		<div class="form-group">
@@ -57,7 +60,68 @@
 				</div>
 			</div>
 			
-			<!-- Execution Group Management -->
+			<!-- Execution Participation Period -->
+   	 		<div class="form-group">
+				<div class="col-md-2 col-sm-3 control-label">
+					<label><?php echo $lang["executionPeriod"];?> *</label>
+				</div>
+				<div class="col-md-10 col-sm-6">
+					<?php 
+					if($mode == "edit")
+					{
+						$noParticipationPeriod2 = $quizFetch["noParticipationPeriod"];
+					}
+					?>
+					<label for="noParticipationPeriod1" class="radio-inline"> 
+					<input type="radio" id="noParticipationPeriod1" name="noParticipationPeriod" onchange="setDatesEnabled()"
+						value="1" <?php echo $noParticipationPeriod2 == 1 || $mode == "create" ? 'checked':'';?> /> <?php echo $lang["noParticipationPeriod3"];?>
+					</label>
+				</div>
+				<div class="col-md-5 col-sm-7">
+					<label for="noParticipationPeriod0" class="radio-inline"> 
+					<input type="radio" id="noParticipationPeriod0" name="noParticipationPeriod" onchange="setDatesEnabled()"
+						value="0" <?php echo $noParticipationPeriod2 == 0 ? 'checked':'';?> />
+					<?php echo $lang["quizStartDate"];?>
+					<input type="text" id="startDate" name="startDate" 
+						style="width: 120px; display: inline;"
+						value="<?php 
+						$displayedTime = time();
+						if($mode == "edit")
+						{
+							$displayedTime = $quizFetch["starttime"];
+						}
+						echo date("d.m.Y", $displayedTime);
+						?>" class="form-control" required="required"/>
+					<input type="time" id="startTime" name="startTime" style="width: 90px; display: inline;"
+						value="<?php echo date("H:i", $displayedTime); ?>" class="form-control" required="required"/> (h:min)
+					<br />
+					<?php echo $lang["quizEndDate"];?>
+					<input type="text" id="endDate" name="endDate"
+						style="width: 120px; display: inline;"
+						value="<?php 
+						$displayedTime = strtotime('+1 Week');
+						if($mode == "edit")
+						{
+							$displayedTime = $quizFetch["endtime"];
+						}
+						echo date("d.m.Y", $displayedTime);
+						?>"
+						class="form-control" required="required"/> 
+					<input type="time" id="endTime" name="endTime" style="width: 90px; display: inline;"
+						value="<?php echo date("H:i", $displayedTime);?>" class="form-control" required="required"/> (h:min)
+					</label>
+				</div>
+				<div class="col-md-2 col-sm-2">
+					<!-- TODO: Logik -->
+					<input type="button" class="btn" id="resetToStandardParticipationPeriod" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+				</div>
+			</div>
+    	</div>
+    	
+    	
+    	<div class="tab-pane form-horizontal panel-body" id="participation">
+    		
+    		<!-- Execution Group Management -->
 			<fieldset class="table-border">
 				<legend class="table-border"><?php echo $lang["profileJoinGroupHeading"];?></legend>
 				<div class="form-group assignationMngmt">
@@ -177,66 +241,12 @@
 				</div>
 			</div>
 			-->
-			
-			<!-- Execution Participation Period -->
-   	 		<div class="form-group">
-				<div class="col-md-2 col-sm-3 control-label">
-					<label><?php echo $lang["executionPeriod"];?> *</label>
-				</div>
-				<div class="col-md-2 col-sm-6">
-					<?php 
-					if($mode == "edit")
-					{
-						$noParticipationPeriod2 = $quizFetch["noParticipationPeriod"];
-					}
-					?>
-					<label for="noParticipationPeriod1" class="radio-inline"> 
-					<input type="radio" id="noParticipationPeriod1" name="noParticipationPeriod" onchange="setDatesEnabled()"
-						value="1" <?php echo $noParticipationPeriod2 == 1 || $mode == "create" ? 'checked':'';?> /> <?php echo $lang["noParticipationPeriod3"];?>
-					</label>
-				</div>
-				<div class="col-md-5 col-sm-7">
-					<label for="noParticipationPeriod0" class="radio-inline"> 
-					<input type="radio" id="noParticipationPeriod0" name="noParticipationPeriod" onchange="setDatesEnabled()"
-						value="0" <?php echo $noParticipationPeriod2 == 0 ? 'checked':'';?> />
-					<?php echo $lang["quizStartDate"];?>
-					<input type="text" id="startDate" name="startDate" 
-						style="width: 120px; display: inline;"
-						value="<?php 
-						$displayedTime = time();
-						if($mode == "edit")
-						{
-							$displayedTime = $quizFetch["starttime"];
-						}
-						echo date("d.m.Y", $displayedTime);
-						?>" class="form-control" required="required"/>
-					<input type="time" id="startTime" name="startTime" style="width: 90px; display: inline;"
-						value="<?php echo date("H:i", $displayedTime); ?>" class="form-control" required="required"/> (h:min)
-					<br />
-					<?php echo $lang["quizEndDate"];?>
-					<input type="text" id="endDate" name="endDate"
-						style="width: 120px; display: inline;"
-						value="<?php 
-						$displayedTime = strtotime('+1 Week');
-						if($mode == "edit")
-						{
-							$displayedTime = $quizFetch["endtime"];
-						}
-						echo date("d.m.Y", $displayedTime);
-						?>"
-						class="form-control" required="required"/> 
-					<input type="time" id="endTime" name="endTime" style="width: 90px; display: inline;"
-						value="<?php echo date("H:i", $displayedTime);?>" class="form-control" required="required"/> (h:min)
-					</label>
-				</div>
-				<div class="col-md-2 col-sm-2">
-					<!-- TODO: Logik -->
-					<input type="button" class="btn" id="resetToStandardParticipationPeriod" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
-				</div>
-			</div>
-			
-			<!-- Execution Time Limitation -->
-			<div class="form-group">
+    	</div>
+    	
+    	
+    	<div class="tab-pane form-horizontal panel-body" id="settings">
+    		<!-- Execution Time Limitation -->
+			<div class="form-group" style="margin-bottom: 25px;">
 				<div class="col-md-2 col-sm-3 control-label">
 					<label><?php echo $lang["quizTimeLimitation"];?>*</label>
 				</div>
@@ -270,7 +280,7 @@
 			</div>
 			
 			<!-- Execution Amount Of Questions -->
-			<div class="form-group">
+			<div class="form-group" style="margin-bottom: 25px;">
 				<div class="col-md-2 col-sm-3 control-label">
 					<label><?php echo $lang["amountOfQuestions"];?>*</label>
 				</div>
@@ -305,7 +315,7 @@
 			</div>
 			
 			<!-- Execution Amount of Participations -->
-			<div class="form-group">
+			<div class="form-group" style="margin-bottom: 25px;">
 				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["amountMaxParticipations"];?>*</label>
 				</div>
@@ -340,7 +350,7 @@
 			</div>
 			
 			<!-- Execution Percent Needed To Pass -->
-			<div class="form-group">
+			<div class="form-group" style="margin-bottom: 25px;">
 				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["quizPassed"];?>*</label>
 				</div>
@@ -378,7 +388,7 @@
 			</div>
 			
 			<!-- Execution Random Order -->
-			<div class="form-group">
+			<div class="form-group" style="margin-bottom: 25px;">
 				<div class="col-md-2 col-sm-3 control-label"> 
 					<label><?php echo $lang["randomTitle"];?></label>
 				</div>
@@ -438,9 +448,13 @@
 					<!-- TODO: Logik -->
 					<input type="button" class="btn" id="resetToStandardSingleChoiceMultiplier" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
 				</div>
-			</div>
-			
-			<!-- Publication -->
+			</div>	
+    	</div>
+    	
+
+    	<div class="tab-pane form-horizontal panel-body" id="publication">
+    		
+    		<!-- Publication -->
 			<div class="form-group">
 				<div class="col-md-2 col-sm-3 control-label">
 					<label> 
@@ -549,7 +563,6 @@
 					<input type="button" class="btn" id="resetToStandardShowTaskpaper" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
 				</div>
 			</div>
-				
     	</div>
     </div>   
 	
