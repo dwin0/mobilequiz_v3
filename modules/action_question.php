@@ -11,7 +11,7 @@ function updateQuestion()
 	if(!isset($field) || (!isset($_POST[$field]) && (strpos($field, "QuestionImage") == false)))
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Not all parameters received.";
+		$response_array["text"] = $lang["parameterError"];
 	}
 	
 	if($_POST["questionId"] == "") //new question
@@ -21,7 +21,7 @@ function updateQuestion()
 		if(!$stmt->execute())
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "DB-Error: Question couldn't be created.";
+			$response_array["text"] = $lang["DB-Insert-Error-Question"];
 		} else
 		{
 			$newQuestion = true;
@@ -34,7 +34,7 @@ function updateQuestion()
 				if($_POST["quizId"] == "")
 				{
 					$response_array["status"] = "error";
-					$response_array["text"] = "DB-Error: Question couldn't be created.";
+					$response_array["text"] = $lang["parameterError"];
 				} else
 				{
 					$stmt = $dbh->prepare("select count(question_id) as total from qunaire_qu where questionnaire_id = :qunaireId");
@@ -52,7 +52,7 @@ function updateQuestion()
 					if(!$stmt->execute())
 					{
 						$response_array["status"] = "error";
-						$response_array["text"] = "DB-Error: Question couldn't be linked to quiz.";
+						$response_array["text"] = $lang["DB-Insert-Error-qunaire_qu"];
 					}
 					
 				}
@@ -75,7 +75,7 @@ function updateQuestion()
 	if(! $_SESSION["role"]["creator"] || ($fetchQuestionOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1))
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "You are not allowed to update this question.";
+		$response_array["text"] = $lang["authorization-error"];
 	}
 	
 	
@@ -123,7 +123,7 @@ function updateQuestion()
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database";
+		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 	
 	if($newQuestion)
@@ -147,7 +147,7 @@ function updateQuestionText($questionText, $questionId, $dbh)
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database";
+		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 	
 	return $response_array;
@@ -178,7 +178,7 @@ function updateQuestionKeywords($keywords, $questionId, $dbh)
 			if(!$stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Database-Error";
+				$response_array["text"] = $lang["DB-Insert-Error-keyword"];
 				return $response_array;
 			}
 			$assocKeywordFetch[$keywordArray[$i]] = $dbh->lastInsertId();
@@ -198,7 +198,7 @@ function updateQuestionKeywords($keywords, $questionId, $dbh)
 		if(!$stmt->execute())
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "Couldn't update database";
+			$response_array["text"] = $lang["DB-Update-Error"];
 		}
 	}
 	
@@ -221,7 +221,7 @@ function addPicture($questionId, $dbh)
 		if(!getimagesize($image["tmp_name"]))
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "File is not an image";
+			$response_array["text"] = $lang["notImageError"];
 			return $response_array;
 		}
 		
@@ -229,7 +229,7 @@ function addPicture($questionId, $dbh)
 		if(file_exists($targetFile))
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "File already exists";
+			$response_array["text"] = $lang["fileExistsError"];
 			return $response_array;
 		}
 		
@@ -238,7 +238,7 @@ function addPicture($questionId, $dbh)
 		if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" && $imageFileType != "bmp")
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "File-Format is not supportet";
+			$response_array["text"] = $lang["fileNotSupportetError"];
 			return $response_array;
 		}
 		
@@ -256,7 +256,7 @@ function addPicture($questionId, $dbh)
 		if(!$sucessfullyResized)
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "Image resize failed";
+			$response_array["text"] = $lang["imageResizeError"];
 			return $response_array;
 		}
 		
@@ -266,7 +266,7 @@ function addPicture($questionId, $dbh)
 			if(!move_uploaded_file($image["tmp_name"], $targetFile))
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Datatransfer failed";
+				$response_array["text"] = $lang["datatransferError"];
 			} else 
 			{
 				$stmt = $dbh->prepare("update question set picture_link = :picture_link where id = :question_id");
@@ -278,7 +278,7 @@ function addPicture($questionId, $dbh)
 				if(!$stmt->execute())
 				{
 					$response_array["status"] = "error";
-					$response_array["text"] = "DB-Update error";
+					$response_array["text"] = $lang["DB-Update-Error"];
 				}
 			}
 		}
@@ -337,7 +337,7 @@ function deletePicture($questionId, $dbh)
 	} else
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Database-Error";
+		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 	
 	return $response_array;
@@ -355,7 +355,7 @@ function updateQuestionPublication($publication, $questionId, $dbh)
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database";
+		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 
 	return $response_array;
@@ -376,7 +376,7 @@ function updateQuestionType($type, $questionId, $dbh)
 	if($fetchType == false)
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't find question-type";
+		$response_array["text"] = $lang["UnknownQuestionType"];
 		return $response_array;
 	}
 	
@@ -388,7 +388,7 @@ function updateQuestionType($type, $questionId, $dbh)
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database";
+		$response_array["text"] = $lang["DB-Update-Error"];
 		return $response_array;
 	}
 	
@@ -414,7 +414,7 @@ function updateQuestionType($type, $questionId, $dbh)
 			if(! $stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update database";
+				$response_array["text"] = $lang["DB-Update-Error"];
 				return $response_array;
 			}
 		}
@@ -468,7 +468,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 		if(! $stmt->execute())
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "Couldn't insert new answer";
+			$response_array["text"] = $lang["DB-Insert-Error-answer"];
 			return $response_array;
 		}
 		
@@ -497,7 +497,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 		if(! $stmt->execute())
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "Couldn't insert new answer_question";
+			$response_array["text"] = $lang["DB-Insert-Error-answer_question"];
 			return $response_array;
 		}
 		
@@ -523,7 +523,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			if(! $stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't delete empty answer_question";
+				$response_array["text"] = $lang["DB-Delete-Error-answer_question"];
 				return $response_array;
 			}
 			
@@ -534,7 +534,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			if(! $stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't delete empty answer";
+				$response_array["text"] = $lang["DB-Delete-Error-answer"];
 				return $response_array;
 			}
 			
@@ -559,7 +559,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 				if(! $stmt->execute())
 				{
 					$response_array["status"] = "error";
-					$response_array["text"] = "Couldn't update order";
+					$response_array["text"] = $lang["DB-Update-Error"];
 					return $response_array;
 				}
 			}
@@ -574,7 +574,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			if(! $stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update answer-table";
+				$response_array["text"] = $lang["DB-Update-Error"];
 				return $response_array;
 			}
 			
@@ -585,7 +585,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			if(! $stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update answer_question-table";
+				$response_array["text"] = $lang["DB-Update-Error"];
 				return $response_array;
 			}
 		}
@@ -612,7 +612,7 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			if(! $stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = "Singlechoice-Error: Couldn't update other answers to false";
+				$response_array["text"] = $lang["DB-Update-Error-Singlechoice"];
 				return $response_array;
 			}
 		}

@@ -19,7 +19,7 @@ function updateQuiz() {
 		if($fetchQuizOwnerPic["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1 && !amIAssignedToThisQuiz($dbh, $_POST["quiz_id"]))
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "You are not allowed to edit this quiz.";
+			$response_array["text"] = $lang["quiz-authorization-error"];
 		}
 	}
 		
@@ -27,7 +27,7 @@ function updateQuiz() {
 	if(!isset($_POST["quizId"]) || !isset($field) || !isset($_POST[$field]))
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Not all parameters received.";
+		$response_array["text"] = $lang["parameterError"];
 	}
 	
 	if($response_array["status"] == "error")
@@ -57,7 +57,7 @@ function updateQuiz() {
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database last modified";
+		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 	
 	
@@ -72,7 +72,7 @@ function updateQuizText($quizText, $maxChar, $quizId, $dbh)
 	
 	if(strlen($quizText) > $maxChar) {
 		$response_array["status"] = "error";
-		$response_array["text"] = "Name is to long (maximum 30 characters).";
+		$response_array["text"] = $lang["inputToLong"];
 		return $response_array;
 	}
 
@@ -83,7 +83,7 @@ function updateQuizText($quizText, $maxChar, $quizId, $dbh)
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database quizname";
+		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 	
 	return $response_array;
@@ -95,7 +95,7 @@ function updateQuizDescription($description, $maxChar, $quizId, $dbh)
 
 	if(strlen($description) > $maxChar) {
 		$response_array["status"] = "error";
-		$response_array["text"] = "Description is to long (maximum 30 characters).";
+		$response_array["text"] = $lang["inputToLong"];
 		return $response_array;
 	}
 
@@ -106,7 +106,7 @@ function updateQuizDescription($description, $maxChar, $quizId, $dbh)
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Couldn't update database description";
+		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 
 	return $response_array;
@@ -160,7 +160,7 @@ function uploadExcel()
 		if(!isset($excelTemplate))
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = $lang["noExcelFile"];
+			$response_array["text"] = $lang["noExcelFileError"];
 			echo json_encode($response_array);
 			exit;
 		}
@@ -179,7 +179,7 @@ function uploadExcel()
 		if(!isset($excelTemplate))
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = $lang["noExcelFile"];
+			$response_array["text"] = $lang["noExcelFileError"];
 			echo json_encode($response_array);
 			exit;
 		}
@@ -202,7 +202,7 @@ function uploadExcel()
 	if(count($questions) == 0)
 	{
 		$response_array["status"] = "error";
-		$response_array["text"] = "Keine Fragen in Excel-Datei vorhanden.";
+		$response_array["text"] = $lang["noQuestionsInExcelError"];
 		echo json_encode($response_array);
 		exit;
 	}
@@ -211,17 +211,10 @@ function uploadExcel()
 	
 	foreach($questions as $question)
 	{
-		if($question->getNumberOfAnswers() < 2)
+		if($question->getNumberOfCorrectAnswers() == 0)
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = "Frage mit nur 1 Antwortm&ouml;glichkeit vorhanden. Bei jeder Frage m&uuml;ssen mindestens 2 vorhanden sein.";
-			echo json_encode($response_array);
-			exit;
-			
-		} else if($question->getNumberOfCorrectAnswers() == 0)
-		{
-			$response_array["status"] = "error";
-			$response_array["text"] = "Frage ohne 1 korrekte Antwort vorhanden. Mindestens 1 Antwortm&ouml;glichkeit pro Frage muss richtig sein.";
+			$response_array["text"] = $lang["questionWithoutAnswerError"];
 			echo json_encode($response_array);
 			exit;
 		}
@@ -268,7 +261,7 @@ function uploadExcel()
 					if($dbQuestionText == $excelQuestionText)
 					{
 						$allInCount++;
-						$response_array["text"] = "Mindestens 1 Frage ist schon vorhanden und wurde nicht neu erstellt.";
+						$response_array["text"] = $lang["existingQuestionMessage"];
 					}
 				}
 					
@@ -305,7 +298,7 @@ function uploadExcel()
 						if(!getimagesize($uploadedImage["tmp_name"]))
 						{
 							$response_array["status"] = "error";
-							$response_array["text"] = "Nicht unterst&uuml;tzes Bildformat verwendet.";
+							$response_array["text"] = $lang["fileNotSupportetError"];
 							echo json_encode($response_array);
 							exit;
 						}
@@ -317,8 +310,7 @@ function uploadExcel()
 				if(!isset($uploadedQuestionImage))
 				{
 					$response_array["status"] = "error";
-					$response_array["text"] = "Fragebild konnte nicht zugewiesen werden. Bitte verwenden Sie 'Fragen mit Bildern aus Excel importieren' 
-						und w&auml;hlen Sie den Ordner aus, welcher das Template und die Bilder enth&auml;lt.";
+					$response_array["text"] = $lang["ExcelQuestionImageError"];
 					echo json_encode($response_array);
 					exit;
 				}
@@ -328,7 +320,7 @@ function uploadExcel()
 				if(!move_uploaded_file($uploadedQuestionImage["tmp_name"], $uploadedImagePath))
 				{
 					$response_array["status"] = "error";
-					$response_array["text"] = "Bild konnte nicht abgespeichert werden.";
+					$response_array["text"] = $lang["ImageNotSavedError"];
 					echo json_encode($response_array);
 					exit;
 				}
@@ -350,7 +342,7 @@ function uploadExcel()
 			if(!$stmt->execute())
 			{
 				$response_array["status"] = "error";
-				$response_array["text"] = $lang["ExcelInsertError"] . " (Code: -31)";
+				$response_array["text"] = $lang["DB-Insert-Error-question"];
 				echo json_encode($response_array);
 				exit;
 			}
@@ -366,7 +358,7 @@ function uploadExcel()
 				if(!$stmt->execute())
 				{
 					$response_array["status"] = "error";
-					$response_array["text"] = $lang["ExcelInsertError"] . " (Code: -32)";
+					$response_array["text"] = $lang["DB-Insert-Error-answer"];
 					echo json_encode($response_array);
 					exit;
 				}
@@ -399,7 +391,7 @@ function uploadExcel()
 				if(!$stmt->execute())
 				{
 					$response_array["status"] = "error";
-					$response_array["text"] = $lang["ExcelInsertError"] . " (Code: -33)";
+					$response_array["text"] = $lang["DB-Insert-Error-answer_question"];
 					echo json_encode($response_array);
 					exit;
 				}
@@ -427,7 +419,7 @@ function uploadExcel()
 		
 		if($questionAlreadyAssigned)
 		{
-			$response_array["text"] = "Einige Fragen sind schon im Quiz enthalten.";				
+			$response_array["text"] = $ang["QuestionAlreadyInQuiz"];
 			continue;
 		}
 			
@@ -440,7 +432,7 @@ function uploadExcel()
 		if(!$stmt->execute())
 		{
 			$response_array["status"] = "error";
-			$response_array["text"] = $lang["ExcelQunaireError"] . " Frage konnte nicht zum Quiz hinzugefügt werden.";
+			$response_array["text"] = $lang["DB-Insert-Error-qunaire_qu"];
 			echo json_encode($response_array);
 			exit;
 		}
@@ -574,7 +566,7 @@ function getQuestionInfos($questionId, $quizId)
 
 
 
-
+//TODO
 // insertQuiz ist alt!
 function insertQuiz()
 {

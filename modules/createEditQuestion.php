@@ -355,6 +355,14 @@
 				</div>
 			</div>
 			<?php }?>
+			
+			<!-- Error-Messages -->
+			<div class="form-group" style="clear: left;">
+				<div class="col-md-2 col-sm-3 control-label"></div>
+				<div class="col-md-10 col-sm-9">
+					<p name="failMsg" style="color: red;"></p>
+				</div>
+			</div>
 				
 		</div>
 		
@@ -487,7 +495,7 @@
 				<div class="form-group" style="clear: left;">
 					<div class="col-md-2 col-sm-3 control-label"></div>
 					<div class="col-md-10 col-sm-9">
-						<p id="failMsg" style="color: red;"></p>
+						<p name="failMsg" style="color: red;"></p>
 					</div>
 				</div>
 				
@@ -780,7 +788,7 @@
 		var answerTextOK = true;
 		var answerCount = 0;
 		
-		$("#failMsg").html("");
+		$("[name=failMsg]").html("");
 		$("#correctAnswerHeading").css("color","black");
 		
 		for(var i = 0; i < 5; i++)
@@ -806,7 +814,7 @@
 				correctAnswersOk = true;
 			} else
 			{
-				$("#failMsg").append("<?php echo $lang["singechoiceAnswerError"]?>");
+				$("[name=failMsg]").append("<?php echo $lang["singechoiceAnswerError"]?>");
 			}
 		}
 		
@@ -817,7 +825,7 @@
 				correctAnswersOk = true;
 			} else
 			{
-				$("#failMsg").append("<?php echo $lang["multiplechoiceAnswerError"]?>");
+				$("[name=failMsg]").append("<?php echo $lang["multiplechoiceAnswerError"]?>");
 			}
 		}
 		
@@ -828,7 +836,7 @@
 
 		if(!answerTextOK)
 		{
-			$("#failMsg").append("<br /><?php echo $lang["noAnswerTextError"]?>");
+			$("[name=failMsg]").append("<br /><?php echo $lang["noAnswerTextError"]?>");
 		}
 
 		return correctAnswersOk && answerTextOK;
