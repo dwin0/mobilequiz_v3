@@ -75,6 +75,7 @@ ob_end_clean();
 <link rel="stylesheet" type="text/css" href="css/tipsy.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap-datepicker3.min.css" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
+<link rel="stylesheet" type="text/css" href="css/snackbar.css" />
 
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/bootstrap.js"></script>

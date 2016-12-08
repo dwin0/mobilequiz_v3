@@ -7,6 +7,7 @@ $lang = array(
 							<br />Wir hoffen, dass diese Form der pers&ouml;nlichen Lernkontrolle zur regelm&auml;ssigen &Uuml;berarbeitung des Vorlesungsstoffes animiert – und Spass macht!",
 		"login" => "Anmelden",
 		"logout" => "Abmelden",
+		"saved" => "Gespeichert",
 		"your" => "Ihre",
 		"creator" => "Ersteller",
 		"yourEMail" => "Ihre E-Mail Adresse",

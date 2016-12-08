@@ -555,6 +555,8 @@
 	
 </div>
 
+<div id="snackbar">Some text some message..</div>
+
 
 
 
@@ -671,10 +673,10 @@
 				switch(data.status)
 				{
 					case "OK":
-						console.log("OK");
+						showSnackbar("<?php echo $lang["saved"]?>");
 						break;
 					case "ADDED":
-						console.log("OK");		            	
+						showSnackbar("<?php echo $lang["saved"]?>");	            	
 		            	
 		            	var parent = $("#picturePreview");
 		            	var parent2 = $("#answerPicturePreview");
@@ -707,7 +709,8 @@
 						
 		            	break;
 					case "DELETED":
-						console.log("OK");
+						showSnackbar("<?php echo $lang["saved"]?>");
+						
 						$("#questionImage").remove();
 						$("#answerQuestionImage").remove();
 						$("#deleteQuestionLogo").remove();
@@ -716,7 +719,7 @@
 		            	$("#questionLogo").show();
 		            	break;
 					case "ANSWER_INSERTED":
-						console.log("OK");
+						showSnackbar("<?php echo $lang["saved"]?>");
 						
 						var insertedId = data.answerId;
 						var answerNumber = data.answerNumber;						
@@ -725,13 +728,14 @@
 								
 						break;
 					case "ANSWER_DELETED":
-						console.log("OK");
+						showSnackbar("<?php echo $lang["saved"]?>");
 						
 						var answerNumber = data.answerNumber;
 						$("#answerId_" + answerNumber).attr("value", "");
 								
 						break;
 					case "TYPE_CHANGED":
+						showSnackbar("<?php echo $lang["saved"]?>");
 
 						if(data.text == "singlechoice")
 						{
@@ -755,7 +759,6 @@
 	        },
 	        error: function()
 	        {
-	            console.log("Ajax couldn't send data");
 	            alert("Ajax couldn't send data");
 	        }
 	    });
@@ -871,7 +874,7 @@
 	});
 
 	$("#btnSaveAndNext").on("click", function() {
-		
+
 		if(formCheck())
 		{
 			var nextSite = "createEditQuestion";
@@ -888,5 +891,12 @@
 			}
 		}
 	});
+
+	function showSnackbar(text) {
+		var snackbar = $("#snackbar");
+		snackbar.text(text);
+	    snackbar.addClass("show");
+	    setTimeout(function(){ snackbar.removeClass("show"); }, 3000);
+	}
 	
 </script>

@@ -7,6 +7,7 @@ $lang = array(
 							<br /><br />We hope that this personal tool motivates you to review the learning material more frequently – and that you have fun doing it!",
 		"login" => "Login",
 		"logout" => "Logout",
+		"saved" => "Saved",
 		"your" => "Your",
 		"creator" => "Creator",
 		"yourEMail" => "Your E-Mail Address",
