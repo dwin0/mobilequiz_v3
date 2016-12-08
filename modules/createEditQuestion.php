@@ -475,7 +475,7 @@
 					?>
 					<div class="row">
 						<div class="col-md-2 col-sm-3 col-xs-3 control-label">
-							<label id="<?php echo "answerText_" . $i;?>"> 
+							<label> 
 				            	<?php echo $lang["answertext"] . " " . ($i+1);
 				            	if($i < 2)
 				            		echo " *";
@@ -483,7 +483,7 @@
 							</label>
 						</div>
 						<div class="col-md-9 col-sm-7 col-xs-10">
-							<textarea name="<?php echo "answerText_" . $i;?>" wrap="soft" style="margin-bottom: 15px"
+							<textarea id="<?php echo "answerText_" . $i;?>" name="<?php echo "answerText_" . $i;?>" wrap="soft" style="margin-bottom: 15px"
 								class="form-control" <?php echo $i < 2 ? " required='required' " : ''?>
 								placeholder="<?php echo $lang["answertext"] . " " . ($i+1) . " (" . $lang["maximum"] . " " . MAX_CHARACTERS_PER_ANSWER . " " . $lang["characters"] . ")";?>" maxlength="<?php echo MAX_CHARACTERS_PER_ANSWER;?>"><?php 
 								if($mode == "edit")
@@ -495,8 +495,16 @@
 								<input type="hidden" id="answerId_<?php echo $i;?>" value="<?php echo $answerFetch[$i]["answer_id"];?>" />
 						</div>
 						<div class="col-md-1 col-sm-2 col-xs-1">
-							<input id="<?php echo "correctAnswer_" . $i;?>" type="checkbox" name="<?php echo "correctAnswer_" . $i;?>"
-								class="checkbox" value="1" 
+							<input id="<?php echo "correctAnswer_" . $i;?>"
+							type="<?php if($mode == "edit" && $questionFetch["type_id"] == 2)
+										{
+											echo "checkbox";
+										} else 
+										{
+											echo "radio";
+										}
+										?>"
+									name="correctAnswer" class="checkbox" value="1" 
 								<?php if($mode == "edit")
 								{
 									if($i < $stmt->rowCount())
@@ -595,7 +603,7 @@
 	$(document).ready(function() {
 		
 		$(document).on("change", "#questionText, #keywords, #language, #newLanguage, #topic, #newTopic, #questionLogo, " +
-				"[name='isPrivate'], [name='questionType'], [name^='answerText_'], [name^='correctAnswer_']", updateQuestionData);
+				"[name='isPrivate'], [name='questionType'], [name^='answerText_'], [name='correctAnswer']", updateQuestionData);
 
 		$(document).on("click", "#deleteQuestionLogo", updateQuestionData);
 
@@ -666,11 +674,11 @@
 				break;
 		}
 
-		if(event.target.name.startsWith("answerText_") || event.target.name.startsWith("correctAnswer_"))
+		if(event.target.id.startsWith("answerText_") || event.target.id.startsWith("correctAnswer_"))
 		{
-			var name = event.target.name;
-			var numberPos = name.indexOf("_") + 1;
-			var number = name.substring(numberPos, numberPos + 1);
+			var id = event.target.id;
+			var numberPos = id.indexOf("_") + 1;
+			var number = id.substring(numberPos, numberPos + 1);
 			
 			field = "answerText";
 			data.append("answerId", $("#answerId_" + number).val());
@@ -758,6 +766,18 @@
 						var answerNumber = data.answerNumber;
 						$("#answerId_" + answerNumber).attr("value", "");
 								
+						break;
+					case "TYPE_CHANGED":
+
+						if(data.text == "singlechoice")
+						{
+							$("[name='correctAnswer']").attr("type", "radio");
+							$("[name='correctAnswer']").attr("checked", null);
+						} else
+						{
+							$("[name='correctAnswer']").attr("type", "checkbox");
+						}
+						
 						break;
 					case "error":
 						alert("Error: " + data.text);

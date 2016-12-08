@@ -304,7 +304,8 @@ function updateQuestionPublication($publication, $questionId, $dbh)
 
 function updateQuestionType($type, $questionId, $dbh)
 {
-	$response_array["status"] = "OK";
+	$response_array["status"] = "TYPE_CHANGED";
+	$response_array["text"] = $type;
 
 	//get question-type
 	$stmt = $dbh->prepare("select id from question_type where type = :type");
@@ -334,22 +335,27 @@ function updateQuestionType($type, $questionId, $dbh)
 	//update isCorrect -> Singlechoice (wrong == 0 points) / Multiplechoice (wrong == -1 point)
 	if($type == "singlechoice")
 	{
-		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId and is_correct = -1");
+		$stmt = $dbh->prepare("update answer_question set is_correct = 0 where question_id = :questionId");
 		$stmt->bindParam(":questionId", $questionId);
 		$stmt->execute();
 		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		
-		for($i = 0; $i < count($fetchAnswers); $i++)
-		{
-			$stmt = $dbh->prepare("update answer_question set is_correct = 0 where answer_id = :answerId");
-			$stmt->bindParam(":answerId", $fetchAnswers[$i]["answer_id"]);
-			if(! $stmt->execute())
-			{
-				$response_array["status"] = "error";
-				$response_array["text"] = "Couldn't update database";
-				return $response_array;
-			}
-		}
+// 		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId and is_correct = -1"); TODO: remove
+// 		$stmt->bindParam(":questionId", $questionId);
+// 		$stmt->execute();
+// 		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+// 		for($i = 0; $i < count($fetchAnswers); $i++)
+// 		{
+// 			$stmt = $dbh->prepare("update answer_question set is_correct = 0 where answer_id = :answerId");
+// 			$stmt->bindParam(":answerId", $fetchAnswers[$i]["answer_id"]);
+// 			if(! $stmt->execute())
+// 			{
+// 				$response_array["status"] = "error";
+// 				$response_array["text"] = "Couldn't update database";
+// 				return $response_array;
+// 			}
+// 		}
 
 	} else if($type == "multiplechoice")
 	{
@@ -537,6 +543,33 @@ function updateQuestionAnswers($answerId, $answerNumber, $answerText, $isCorrect
 			{
 				$response_array["status"] = "error";
 				$response_array["text"] = "Couldn't update answer_question-table";
+				return $response_array;
+			}
+		}
+	}
+	
+	//set all other answers to false
+	if($questionType == "singlechoice" && $isCorrect == 1 && $answerText != "")
+	{
+		$stmt = $dbh->prepare("select answer_id from answer_question where question_id = :questionId");
+		$stmt->bindParam(":questionId", $questionId);
+		$stmt->execute();
+		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		for($i = 0; $i < count($fetchAnswers); $i++)
+		{
+			if($answerId == $fetchAnswers[$i]["answer_id"])
+			{
+				continue;
+			}
+			
+			$stmt = $dbh->prepare("update answer_question set is_correct = 0 where answer_id = :answerId");
+			$stmt->bindParam(":answerId", $fetchAnswers[$i]["answer_id"]);
+			
+			if(! $stmt->execute())
+			{
+				$response_array["status"] = "error";
+				$response_array["text"] = "Singlechoice-Error: Couldn't update other answers to false";
 				return $response_array;
 			}
 		}
