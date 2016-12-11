@@ -87,20 +87,39 @@
 	
 	function doThisQuizHaveAGroupRestrictionAndAmIInThisGroup($dbh, $quizId)
 	{
-		//TODO: hier noch anpassen, rest des Files stimmt schon
-		$stmt = $dbh->prepare("select id from assign_group_qunaire inner join user on user.group_id = assign_group_qunaire.group_id where questionnaire_id = :qId");
-		$stmt->bindParam(":qId", $quizId);
+		// ist einer Gruppe zugewiesen:
+		$stmt = $dbh->prepare("select user_id from user_group inner join qunaire_exec on qunaire_exec.questionnaire_id = " . $quizId .
+					" inner join execution on qunaire_exec.execution_id = execution.id inner join group_exec on execution.id = group_exec.execution_id 
+					 where questionnaire_id = " . $quizId . "AND user_group.group_id = group_exec.group_id");
 		$stmt->execute();
-		$groupUsersFetch = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		if($stmt->rowCount() > 0)
+		$groupExecFetch = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$rowCountGroupExecFetch = $stmt->rowCount();
+		
+		// ist separat dem Quiz zugewiesen:
+		$stmt = $dbh->prepare("select user_id from user_exec inner join qunaire_exec on qunaire_exec.questionnaire_id = " . $quizId .
+							" inner join execution on qunaire_exec.execution_id = execution.id where questionnaire_id = " .$quizId);
+		$stmt->execute();
+		$userExecFetch = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$rowCountUserExecFetch = $stmt->rowCount();
+		
+		if($rowCountGroupExecFetch > 0 || $rowCountUserExecFetch > 0)
 		{
-			for($i = 0; $i < count($groupUsersFetch); $i++)
+			for($i = 0; $i < count($groupExecFetch); $i++)
 			{
-				if($groupUsersFetch[$i]["id"] == $_SESSION["id"])
+				if($groupExecFetch[$i]["user_id"] == $_SESSION["id"])
 				{
 					return true;
 				}
 			}
+			
+			for($j = 0; $j < count($userExecFetch); $j++)
+			{
+				if($userExecFetch[$j]["user_id"] == $_SESSION["id"])
+				{
+					return true;
+				}
+			}
+			
 			return false;
 		}
 		else

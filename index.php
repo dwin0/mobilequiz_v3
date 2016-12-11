@@ -24,7 +24,7 @@ include_once 'language/lang_' . $_SESSION["language"] . '.php';
 
 if(isset($_GET["quiz"]))
 {
-	$stmt = $dbh->prepare("select id from questionnaire where qnaire_token = :qToken");
+	$stmt = $dbh->prepare("select questionnaire.id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id  where exec_token = :qToken");
 	$stmt->bindParam(":qToken", $_GET["quiz"]);
 	if(!$stmt->execute())
 	{

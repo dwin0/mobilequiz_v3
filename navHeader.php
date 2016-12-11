@@ -14,7 +14,6 @@
 	        	<li><a href="?p=quiz" id="quizNavi"><?php echo $lang["quizzes"];?></a></li>
 	        	<?php if($_SESSION["role"]["creator"] == 1) {?>
 		            <li><a href="?p=questions" id="questionNavi"><?php echo $lang["navHeaderQuestions"];?></a></li>
-		            <li><a href="?p=createEditExecution" id="executionNavi"><?php echo $lang["navHeaderExecution"];?></a></li>
 		            <li><a href="?p=topics" id="applicationAreaNavi"><?php echo $lang["navHeaderTopics"];?></a></li>
 	            <?php }?>
 	            <li><a href="?p=keywords" id="keywordsNavi"><?php echo $lang["navHeaderKeywords"];?></a></li>
