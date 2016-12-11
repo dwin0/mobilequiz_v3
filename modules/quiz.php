@@ -36,7 +36,7 @@
 	{
 		$selectedLanguage = $_POST["language"];
 	}
-	if(isset($_POST["topic"]))
+	if(isset($_POST["topic"])) //TODO: Chose interest-topic
 	{
 		$selectedTopic = $_POST["topic"];
 	}
@@ -333,10 +333,7 @@
 			                }
 			                
 			                $queryStr = "select questionnaire.id as qId, questionnaire.language, questionnaire.name as qName, questionnaire.description, subjects.name as sName, questionnaire.quiz_passed, starttime, endtime, owner_id, questionnaire.priority, questionnaire.public, questionnaire.noParticipationPeriod, questionnaire.result_visible from questionnaire left outer join subjects on questionnaire.subject_id = subjects.id inner join user on user.id = questionnaire.owner_id" . $whereStatement;
-			                $stmt = $dbh->prepare($queryStr);  
-			                
-			                $test = $stmt->queryString;
-			                
+			                $stmt = $dbh->prepare($queryStr);			                
 			                $stmt->execute();
 			                $fetchQuestionnaire = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			                
@@ -596,8 +593,6 @@
             }
         });
         $('.dataTables_filter').css("display", "none");
-        $('.dataTables_filter input').addClass("form-control");
-        $('.dataTables_filter input').addClass("magnifyingGlass");
 
 
         $("#searchbox").on("keyup search input paste cut", function() {
