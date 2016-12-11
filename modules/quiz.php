@@ -36,7 +36,22 @@
 	{
 		$selectedLanguage = $_POST["language"];
 	}
-	if(isset($_POST["topic"])) //TODO: Chose interest-topic
+	
+	if($_POST["alreadyThere"] != "1")
+	{
+		$stmt = $dbh->prepare("selects subject_id from group inner join user_group on group.id = user_group.group_id where user_group.user_id = :userId and group.subject_id is not null");
+		$stmt->bindParam(":userId", $_SESSION["id"]);
+		$stmt->execute();
+		$fetchUserInterestGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		
+		$numberOfUserInterests = count($fetchUserInterestGroups);
+		for($i = 0; $i < $numberOfUserInterests; $i++)
+		{
+			array_push($selectedTopic, $fetchUserInterestGroups[$i]["subject_id"]);
+		}
+	}
+	
+	if(isset($_POST["topic"]))
 	{
 		$selectedTopic = $_POST["topic"];
 	}
@@ -68,6 +83,7 @@
 			</div>
 		
 			<form id="quizFilter" class="form-horizontal" action="?p=quiz" method="POST" style="clear: both">
+				<input type="hidden" name="alreadyThere" value="1" />
 			
 				<fieldset class="table-border">
 					<legend class="table-border" style="margin-bottom: -1em"><?php echo $lang["filterOptions"];?></legend>
