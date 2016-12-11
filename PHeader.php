@@ -12,7 +12,7 @@
 		}
 	}
 	
-	$stmt = $dbh->prepare("select name, limited_time from questionnaire where id = :id");
+	$stmt = $dbh->prepare("select questionnaire.name, limited_time from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id where questionnaire.id = :id");
 	$stmt->bindParam(":id", $id);
 	$stmt->execute();
 	if($stmt->rowCount() <= 0)
@@ -22,7 +22,7 @@
 	}
 	$fetchQunaire = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-	$stmt = $dbh->prepare("select starttime from user_qunaire_session where id = :session_id");
+	$stmt = $dbh->prepare("select starttime from user_exec_session where id = :session_id");
 	$stmt->bindParam(":session_id", $_SESSION["idSession"]);
 	$stmt->execute();
 	$fetchSession = $stmt->fetch(PDO::FETCH_ASSOC);
