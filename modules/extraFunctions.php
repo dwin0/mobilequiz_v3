@@ -4,13 +4,17 @@
 	{
 		$totalPoints = 0;
 		$userScore = 0;
-		$stmt = $dbh->prepare("select question.id, question.type_id, questionnaire.singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
-		$stmt->bindParam(":quizId", $quizId);
+		$stmt = $dbh->prepare("select question.id, question.type_id, execution.singlechoice_multiplier 
+				from question inner join qunaire_qu on qunaire_qu.question_id = question.id 
+				inner join qunaire_exec on qunaire_exec.questionnaire_id = " . $quizId . " inner join execution on qunaire_exec.execution_id = execution.id 
+				where qunaire_qu.questionnaire_id = " . $quizId);
 		$stmt->execute();
 		$questionFetch = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		for($i = 0; $i < count($questionFetch); $i++)
 		{
-			$stmt = $dbh->prepare("select answer_question.question_id, answer_question.answer_id, answer_question.is_correct, (select selected from an_qu_user where answer_question.answer_id = an_qu_user.answer_id and session_id = :session_id) as selected from answer_question where answer_question.question_id = :question_id");
+			$stmt = $dbh->prepare("select answer_question.question_id, answer_question.answer_id, answer_question.is_correct, 
+					(select selected from an_qu_user where answer_question.answer_id = an_qu_user.answer_id and session_id = :session_id) 
+					as selected from answer_question where answer_question.question_id = :question_id");
 			$stmt->bindParam(":session_id", $sessionId);
 			$stmt->bindParam(":question_id", $questionFetch[$i]["id"]);
 			$stmt->execute();
@@ -83,6 +87,7 @@
 	
 	function doThisQuizHaveAGroupRestrictionAndAmIInThisGroup($dbh, $quizId)
 	{
+		//TODO: hier noch anpassen, rest des Files stimmt schon
 		$stmt = $dbh->prepare("select id from assign_group_qunaire inner join user on user.group_id = assign_group_qunaire.group_id where questionnaire_id = :qId");
 		$stmt->bindParam(":qId", $quizId);
 		$stmt->execute();

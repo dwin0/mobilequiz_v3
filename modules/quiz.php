@@ -98,20 +98,16 @@
 			                    $filterWhereAnd = "";
 			                    if($_SESSION["role"]["creator"] != 1)
 			                    {
-			                    	$filterWhere = " where public = 1";
-			                    	$filterWhereAnd = " and public = 1";
+			                    	$filterWhere = " where execution.public = 1";
+			                    	$filterWhereAnd = " and execution.public = 1";
 			                    }
-			                    
-			                	$stmt = $dbh->prepare("select id from questionnaire" . $filterWhere);
-			                	$stmt->execute();
-			                	$allQuestionnairessCount = $stmt->rowCount();
-			                	
-			                    $stmt = $dbh->prepare("select language from questionnaire ". $filterWhere ." group by language");
+			                    		                	
+			                    $stmt = $dbh->prepare("select language from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id ". $filterWhere ." group by language");
 			                    $stmt->execute();
 			                    $result = $stmt->fetchAll();
 			                    
 			                    for($i = 0; $i < count($result); $i++){
-									$stmt = $dbh->prepare("select id from questionnaire where language = '" . $result[$i]["language"] . "'" . $filterWhereAnd);
+									$stmt = $dbh->prepare("select questionnaire.id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id where questionnaire.language = '" . $result[$i]["language"] . "'" . $filterWhereAnd);
 									$stmt->execute();
 									$selected = (in_array($result[$i]["language"], $selectedLanguage)) ? 'selected="selected"' : '';
 									echo "<option value=\"" . $result[$i]["language"] . "\"" . $selected . ">" . $result[$i]["language"] . " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")</option>";
@@ -129,17 +125,19 @@
 			                <select id="topic" multiple class="form-control" name="topic[]" onchange="sendData()">
 			                    <?php 
 			                    
-			                    $stmt = $dbh->prepare("select subject_id from questionnaire ".$filterWhere." group by subject_id");
+			                    $stmt = $dbh->prepare("select subject_id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id".$filterWhere." group by subject_id");
 			                    $stmt->execute();
 			                    $result = $stmt->fetchAll();
 			                    
 			                    for($i = 0; $i < count($result); $i++){
 									if($result[$i]["subject_id"] == null)
 									{
-										$stmt = $dbh->prepare("select id from questionnaire where subject_id is null" . $filterWhereAnd);
+										$stmt = $dbh->prepare("select questionnaire.id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id where subject_id is null" . $filterWhereAnd);
 									}
 									else 
-										$stmt = $dbh->prepare("select id from questionnaire where subject_id = " . $result[$i]["subject_id"] . $filterWhereAnd);
+									{
+										$stmt = $dbh->prepare("select questionnaire.id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id where subject_id = " . $result[$i]["subject_id"] . $filterWhereAnd);
+									}
 									$stmt->execute();
 									$rowCount = $stmt->rowCount();
 									
@@ -165,7 +163,7 @@
 			                <select id="owner" multiple class="form-control" name="owner[]" onchange="sendData()">
 			                    <?php 
 			                    	
-				                    $stmt = $dbh->prepare("select owner_id from questionnaire ".$filterWhere." group by owner_id");
+				                    $stmt = $dbh->prepare("select owner_id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id ".$filterWhere." group by owner_id");
 				                    $stmt->execute();
 				                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			                    	
@@ -175,7 +173,7 @@
 										$stmt->execute();
 				                    	$fetchUser = $stmt->fetch(PDO::FETCH_ASSOC);
 				                    	
-				                    	$stmt = $dbh->prepare("select id from questionnaire where owner_id = :owner_id" . $filterWhereAnd);
+				                    	$stmt = $dbh->prepare("select questionnaire.id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id where owner_id = :owner_id" . $filterWhereAnd);
 				                    	$stmt->bindParam(":owner_id", $result[$i]["owner_id"]);
 				                    	$stmt-> execute();
 				                    	$ownerRowCount = $stmt->rowCount();
@@ -332,7 +330,11 @@
 			                	}
 			                }
 			                
-			                $queryStr = "select questionnaire.id as qId, questionnaire.language, questionnaire.name as qName, questionnaire.description, subjects.name as sName, questionnaire.quiz_passed, starttime, endtime, owner_id, questionnaire.priority, questionnaire.public, questionnaire.noParticipationPeriod, questionnaire.result_visible from questionnaire left outer join subjects on questionnaire.subject_id = subjects.id inner join user on user.id = questionnaire.owner_id" . $whereStatement;
+			                $queryStr = "select questionnaire.id as qId, questionnaire.language, questionnaire.name as qName, questionnaire.description, subjects.name as sName, 
+			                    		execution.quiz_passed, starttime, endtime, owner_id, execution.priority_id, execution.public, execution.noParticipationPeriod, 
+			                    		execution.result_visible from questionnaire left outer join subjects on questionnaire.subject_id = subjects.id 
+			                    		inner join user on user.id = questionnaire.owner_id inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
+			                    		inner join execution on qunaire_exec.execution_id = execution.id" . $whereStatement;
 			                $stmt = $dbh->prepare($queryStr);			                
 			                $stmt->execute();
 			                $fetchQuestionnaire = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -354,7 +356,7 @@
 			                        </td>
 			                        <td>
 			                        	<?php 
-			                        	switch($fetchQuestionnaire[$i]["priority"])
+			                        	switch($fetchQuestionnaire[$i]["priority_id"])
 			                        	{
 			                        		case "0":
 			                        			echo $lang["prioLearningHelp"];
@@ -378,9 +380,16 @@
 			                            	
 			                            } else
 			                            {
-			                            	$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id");
-			                            	$stmt->bindParam(":user_id", $_SESSION["id"]);
-			                            	$stmt->bindParam(":questionnaire_id", $fetchQuestionnaire[$i]["qId"]);
+			                            	//TODO: Stimmt Berechnung? Muss nochmals kurz nachvollzogen werden!
+			                            	$qId = $fetchQuestionnaire[$i]["qId"];
+			                            	$stmt = $dbh->prepare("select execution_id from qunaire_exec where questionnaire_id = " . $qId);
+			                            	$stmt->execute();
+			                            	$execution_id = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			                            	
+			                            	$sessionId = $_SESSION["id"];
+			                            	$execId = $execution_id[0]["execution_id"];
+			                            	$stmt = $dbh->prepare("select * from user_exec_session where user_id = " . $sessionId . " and execution_id = " . $execId);
+			                            	$test = $stmt->queryString;
 			                            	if(!$stmt->execute())
 			                            	{
 			                            		header("Location: index.php?p=quiz&code=-14");
@@ -388,7 +397,7 @@
 			                            	}
 			                            	$ownParticipationAmount = $stmt->rowCount();
 			                            	$fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
-			                            	 
+			                            	                          	
 			                            	$tmpPoints = null;
 			                            	$fetchPoints = [0,0,0];
 			                            	for ($j = 0; $j < count($fetchSession); $j++)
@@ -400,7 +409,7 @@
 			                            		}
 			                            	}
 			                            	 
-			                            	if($fetchPoints[2] >= $fetchQuestionnaire[$i]["quiz_passed"] && $fetchQuestionnaire[$i]["quiz_passed"] != 0)
+			                            	if($fetchPoints[2] >= $fetchQuestionnaire[$i]["quiz_passed"] && $ownParticipationAmount != 0)
 			                            	{
 			                            		$hint = $lang["quizFinished"];
 			                            	}
@@ -409,7 +418,7 @@
 			                            		$hint = $lang["quizNotFinished"];
 			                            	}
 			                            	 
-			                            	echo ($fetchQuestionnaire[$i]["result_visible"] != 3) ? $hint . "(" . $fetchPoints[2] . "%)" : $lang["notPublic"];
+			                            	echo ($fetchQuestionnaire[$i]["result_visible"] != 3) ? $hint . " (" . $fetchPoints[2] . "%)" : $lang["notPublic"];
 			                            }
 			                            
 			                            ?>
