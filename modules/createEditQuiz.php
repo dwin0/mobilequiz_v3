@@ -248,50 +248,49 @@
 			<?php }?>
 			
 			<!-- Assign New Responsible Member -->
-			<div class="form-group assignationMngmt">
-				<div> 
-					<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
+			<fieldset class="table-border">
+				<legend class="table-border"><?php echo $lang["additionalSettings"];?></legend>
+				<div class="form-group assignationMngmt">
+					<div> 
+						<label class="col-md-2 col-sm-3 control-label"><?php echo $lang["assignQuizToMember"];?><img id="assignationHelp" src="assets/icon_help.png" style="cursor: pointer; margin-left: 5px;" original-title="Hier k&ouml;nnen Benutzer eingetragen werden, welche die Berechtigungen bekommen dieses Quiz zu bearbeiten oder die Ergebnisse einzusehen" width="18" height="18"></label>
+					</div>
+					<div class="col-md-10 col-sm-9">
+						<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
+					</div>
 				</div>
-				<div class="col-md-10 col-sm-9">
-					<input type="email" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addCreator(<?php echo $quizFetch["id"];?>)">
+				<div class="from-group">
+					<div class="col-md-10 col-sm-9" id="ajaxAnswer"></div>
 				</div>
-			</div>
-			<div class="from-group">
-				<div class="col-md-10 col-sm-9" id="ajaxAnswer"></div>
-			</div>
-			<div class="table-responsive">
-				<?php 
-				$quizId = $newQuizId;
-				if($mode == "edit")
-				{
-					$quizId = $_GET["id"];
-				}
-				$stmt = $dbh->prepare("select user.email, user_id from qunaire_assigned_to inner join user on user.id = qunaire_assigned_to.user_id where questionnaire_id = :qId");
-				$stmt->bindParam(":qId", $quizId);
-				$stmt->execute();
-				$fetchAssigns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-				?>
-				<table class="assignTbl" id="assignTbl">
-		            <thead>
-		                <tr>
-		                    <th><?php echo $lang["email"];?></th>
-		                    <th><?php echo $lang["quizTableActions"];?></th>
-		                </tr>
-		            </thead>
-		            <tbody>
-		            	<?php for ($i = 0; $i < count($fetchAssigns); $i++) {?>
-		            	<tr id="<?php echo "assignation_" . $fetchAssigns[$i]["user_id"];?>">
-		            		<td><?php echo $fetchAssigns[$i]["email"];?></td>
-		            		<td><img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(<?php echo $fetchAssigns[$i]["user_id"];?>)"></td>
-		            	</tr>
-		            	<?php }?>
-		            </tbody>
-	        	</table>
-        	</div>
-
-				
-				
-				
+				<div class="table-responsive">
+					<?php 
+					$quizId = $newQuizId;
+					if($mode == "edit")
+					{
+						$quizId = $_GET["id"];
+					}
+					$stmt = $dbh->prepare("select user.email, user_id from qunaire_assigned_to inner join user on user.id = qunaire_assigned_to.user_id where questionnaire_id = :qId");
+					$stmt->bindParam(":qId", $quizId);
+					$stmt->execute();
+					$fetchAssigns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+					?>
+					<table class="assignTbl" id="assignTbl">
+			            <thead>
+			                <tr>
+			                    <th><?php echo $lang["email"];?></th>
+			                    <th><?php echo $lang["quizTableActions"];?></th>
+			                </tr>
+			            </thead>
+			            <tbody>
+			            	<?php for ($i = 0; $i < count($fetchAssigns); $i++) {?>
+			            	<tr id="<?php echo "assignation_" . $fetchAssigns[$i]["user_id"];?>">
+			            		<td><?php echo $fetchAssigns[$i]["email"];?></td>
+			            		<td><img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(<?php echo $fetchAssigns[$i]["user_id"];?>)"></td>
+			            	</tr>
+			            	<?php }?>
+			            </tbody>
+		        	</table>
+	        	</div>
+        	</fieldset>
 
         </div>
         
@@ -401,7 +400,7 @@
         
         <div class="tab-pane fade form-horizontal panel-body" id="execution">
 		
-			<input id="btnAddNewExecution" name="btnAddNewExecution" class="btn" type="button" value="<?php echo $lang["addNewExecution"];?>" /><br />
+			<input id="btnAddNewExecution" name="btnAddNewExecution" class="btn" type="button" value="<?php echo $lang["addNewExecution"];?>"/><br />
 			
 			<div class="table-responsive">
            		<table class="tblListOfExecutions" id="tblListOfExecutions">
@@ -425,7 +424,7 @@
 		<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
 	</div>
 	<input type="hidden" name="mode" value="<?php echo $mode;?>">
-	<input type="hidden" name="quiz_id" value="<?php echo ($mode == "edit") ? $quizFetch["id"] : $newQuizId;;?>">
+	<input type="hidden" name="quiz_id" value="<?php echo ($mode == "edit") ? $quizFetch["id"] : $newQuizId;?>">
 	<div style="float: right; padding-left: 10px; margin-top: 10px;">
 		<input type="hidden" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
 		<input type="submit" class="btn" id="btnSave" name="btnSave" value="<?php echo $lang["buttonSaveAndPublish"];?>" />
@@ -804,6 +803,10 @@
 			}
 		});
 
+		$("#btnAddNewExecution").on("click", function() {
+			window.location = "?p=createEditExecution&quizId=" + $("[name='quiz_id']").val() + "&mode=";
+		});
+		
 		var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
 		$( "#autocompleteUsers" ).autocomplete({
 		  source: sourceData
@@ -871,7 +874,7 @@
             'bLengthChange': false,
             'bInfo': false,
             'aoColumns': [
-				{'bSearchable': false, 'bSortable': false},
+				{'bSearchable': true, 'bSortable': true},
 				{'bSearchable': false, 'bSortable': false}
             ],
             "sDom": 'lfrtip',

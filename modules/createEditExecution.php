@@ -629,45 +629,47 @@
             autoclose: true,
             todayHighlight: true
         });
-		
-		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
-			connectWith: ".assignGroupToQuizCconnectedSortable"
-		}).disableSelection();
 
-		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
-			stop: function( event, ui ) {
-				console.log("changed");
-				var assignedGroups = [];
-				$( "#assignGroupToQuizSortable1 li").each(function(index, elem) {
-					assignedGroups.push($(elem).attr('id'));
-				});
-				console.log("assignedGroups: " + JSON.stringify(assignedGroups));
-				$.ajax({
-					url: 'modules/actionHandler.php',
-					type: "get",
-					data: "action=changeAssignedGroups&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&groups="+JSON.stringify(assignedGroups),
-					success: function(output) 
-					{
-						//alertify
-						if(output == "ok") {
+		// alter Code
+// 		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
+// 			connectWith: ".assignGroupToQuizCconnectedSortable"
+// 		}).disableSelection();
+
+// 		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
+// 			stop: function( event, ui ) {
+// 				console.log("changed");
+// 				var assignedGroups = [];
+// 				$( "#assignGroupToQuizSortable1 li").each(function(index, elem) {
+// 					assignedGroups.push($(elem).attr('id'));
+// 				});
+// 				console.log("assignedGroups: " + JSON.stringify(assignedGroups));
+// 				$.ajax({
+// 					url: 'modules/actionHandler.php',
+// 					type: "get",
+//					data: "action=changeAssignedGroups&questionaireId="+<?php // echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&groups="+JSON.stringify(assignedGroups),
+// 					success: function(output) 
+// 					{
+// 						//alertify
+// 						if(output == "ok") {
 							
-							console.log("success: " + output);
-			                $("#groupAddSuccess").slideDown(1000);   
-			                $("#groupAddSuccess").fadeTo(2000, 500).slideUp(1000);   
-						} else {
-							console.log("error: " + output);
-			                $("#groupAddError").slideDown(1000);   
-			                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
-						}
-					}, error: function(output)
-					{
-						console.log("error: " + output);
-		                $("#groupAddError").slideDown(1000);   
-		                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
-					}
-				});
-			}
-		});
+// 							console.log("success: " + output);
+// 			                $("#groupAddSuccess").slideDown(1000);   
+// 			                $("#groupAddSuccess").fadeTo(2000, 500).slideUp(1000);   
+// 						} else {
+// 							console.log("error: " + output);
+// 			                $("#groupAddError").slideDown(1000);   
+// 			                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
+// 						}
+// 					}, error: function(output)
+// 					{
+// 						console.log("error: " + output);
+// 		                $("#groupAddError").slideDown(1000);   
+// 		                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
+// 					}
+// 				});
+// 			}
+// 		});
+		
 
 
 		$('#assignGroupTbl').DataTable({
@@ -676,7 +678,7 @@
             'bLengthChange': false,
             'bInfo': false,
             'aoColumns': [
-				{'bSearchable': false, 'bSortable': false},
+				{'bSearchable': true, 'bSortable': true},
 				{'bSearchable': false, 'bSortable': false}
             ],
             "sDom": 'lfrtip',
@@ -697,7 +699,7 @@
             'bLengthChange': false,
             'bInfo': false,
             'aoColumns': [
-				{'bSearchable': false, 'bSortable': false},
+				{'bSearchable': true, 'bSortable': true},
 				{'bSearchable': false, 'bSortable': false}
             ],
             "sDom": 'lfrtip',
