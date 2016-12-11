@@ -140,7 +140,7 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 						
 						$text = str_replace("[0]", "<a href=\"?quiz=" . $fetchQuiz["qnaire_token"] . "\">" . $showedLink . "</a>", $text);
 						$text = str_replace("[1]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"])), $text);
-						$text = str_replace("[2]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]), $text));
+						$text = str_replace("[2]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"])), $text);
 						$text = str_replace("[3]", $fetchQuiz["firstname"] . " " . $fetchQuiz["lastname"], $text);
 						$text = str_replace("[4]", $fetchQuiz["email"], $text);
 						echo $text;

@@ -626,6 +626,7 @@ function insertQuiz()
 		//insert quiz
 		if($_POST["mode"] == "create")
 		{
+			// TODO: ob übernehmen wird für den link gebraucht
 			//qnaire_token für was genau wird dieses Token benötigt? Braucht es das wirklich?
 			$qnaire_token = NULL;
 
