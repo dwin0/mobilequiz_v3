@@ -81,6 +81,62 @@
 					</label>
 				</div>
 			</div>
+			
+			<?php if($_SESSION['role']['creator'] == 1) {?>
+		 	<fieldset class="table-border" style="margin-top: 2em; margin-bottom: 4em;">
+				<legend class="table-border" style="margin-bottom: -1em"><?php echo "Quiz ohne Durchf&uuml;hrungen";?></legend>
+			    <table id="quizWithoutExec">
+			    	<thead>
+			    		<tr>
+			    			<th>
+			                	<?php echo $lang["quizTableName"]?>
+			                </th>
+			                <th>
+			                	<?php echo $lang["quizTableTopic"]?>
+			                </th>
+			                <th>
+			                	<?php echo $lang["quizTableActions"]?>
+			                </th>
+			    		</tr>
+			    	</thead>
+				    <?php 
+				    $stmt = $dbh->prepare("select questionnaire.id, questionnaire.name, questionnaire.subject_id, owner_id from questionnaire left join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id where qunaire_exec.questionnaire_id is null");
+				    $stmt->execute();
+				    $fetchQunaireWithoutExec = $stmt->fetchAll(PDO::FETCH_ASSOC);
+				    $numberOfQunaires = count($fetchQunaireWithoutExec);
+				    
+				    for($i = 0; $i < $numberOfQunaires; $i++)
+				    {
+				    	if($fetchQunaireWithoutExec[$i]["owner_id"] == $_SESSION["id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $fetchQunaireWithoutExec[$i]["id"]))
+				    	{
+				    ?>
+			    	<tbody>
+			    		<tr>
+			    			<td>
+			    				<?php echo $fetchQunaireWithoutExec[$i]["name"];?>
+			    			</td>
+			    			<td>
+			    				<?php
+			    				$stmt = $dbh->prepare("select name from subjects where id = " . $fetchQunaireWithoutExec[$i]["subject_id"]);
+			    				$stmt->execute();
+			    				$fetchSubjectName = $stmt->fetch(PDO::FETCH_ASSOC);
+			    				
+			    				echo $fetchSubjectName["name"];?>
+			    			</td>
+			    			<td>
+			    				<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+									style="color: #373a3c; background-color: #fff; border-color: #ccc;"><?php echo $lang["action"];?></button>
+								<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -120px">
+									<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchQunaireWithoutExec[$i]["id"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuizAction"];?></a>
+									<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchQunaireWithoutExec[$i]["id"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delQuiz"];?></a>
+			    				</div>
+			    			</td>
+			    		</tr>
+			    	</tbody>
+				    <?php }}?>
+			    </table>
+			</fieldset>
+			<?php }?>
 		
 			<form id="quizFilter" class="form-horizontal" action="?p=quiz" method="POST" style="clear: both">
 				<input type="hidden" name="alreadyThere" value="1" />
@@ -202,7 +258,7 @@
 			            </div>
 			        </div>
 			    </fieldset>
-		        
+			    
 		        
 			    <div class="listOfQuizzes">
 			        <table class="tblListOfQuizzes" id="quizzes" style="width: 100%">
@@ -217,7 +273,7 @@
 			                    <th>
 			                        <?php echo $lang["executionType"]?>
 			                    </th>
-			                    <th>
+			                    <th style="max-width: 120px">
 				                    <?php
 				                    if($_SESSION['role']['creator'] == 1) {
 				                    	echo $lang["percentParticipations"];
@@ -347,32 +403,32 @@
 			                }
 			                
 			                $queryStr = "select questionnaire.id as qId, questionnaire.language, questionnaire.name as qName, questionnaire.description, subjects.name as sName, 
-			                    		execution.quiz_passed, starttime, endtime, owner_id, execution.priority_id, execution.public, execution.noParticipationPeriod, 
+			                    		execution.id as execId, execution.name as execName, execution.quiz_passed, starttime, endtime, owner_id, execution.priority_id, execution.public, execution.noParticipationPeriod, 
 			                    		execution.result_visible from questionnaire left outer join subjects on questionnaire.subject_id = subjects.id 
 			                    		inner join user on user.id = questionnaire.owner_id inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
 			                    		inner join execution on qunaire_exec.execution_id = execution.id" . $whereStatement;
 			                $stmt = $dbh->prepare($queryStr);			                
 			                $stmt->execute();
-			                $fetchQuestionnaire = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			                $fetchExecution = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			                
-			                for($i = 0; $i < count($fetchQuestionnaire); $i++) {
-								if($fetchQuestionnaire[$i]["public"] != 1 && $fetchQuestionnaire[$i]["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"]))
+			                for($i = 0; $i < count($fetchExecution); $i++) {
+								if($fetchExecution[$i]["public"] != 1 && $fetchExecution[$i]["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"]))
 									continue;
 							?>
-			                    <tr class="entry" style="height: 75px" id="<?php echo "quiz_" . $fetchQuestionnaire[$i]["qId"];?>">
-			                        <td title="<?php echo htmlspecialchars($fetchQuestionnaire[$i]["description"]);?>">
-			                        	<?php if($_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"])) {
-			                        		$eyePic = $fetchQuestionnaire[$i]["public"] != 1 ? 'closed' : 'open';
+			                    <tr class="entry" style="height: 75px" id="<?php echo "quiz_" . $fetchExecution[$i]["qId"];?>">
+			                        <td title="<?php echo htmlspecialchars($fetchExecution[$i]["description"]);?>">
+			                        	<?php if($_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"])) {
+			                        		$eyePic = $fetchExecution[$i]["public"] != 1 ? 'closed' : 'open';
 			                        		echo '<img alt="'.$eyePic.'" src="assets/icon_eye_' . $eyePic . '.png" width="13" height="10" class="eye_'.$eyePic.'" original-title="'.$lang["quiz_" . $eyePic].'">';}?>
-			                            <p style="display: inline-block; width: 120px; word-wrap: break-word;"><?php echo " " . substr(htmlspecialchars($fetchQuestionnaire[$i]["qName"]), 0, 30);?></p>
+			                            <p style="display: inline-block; width: 145px; word-wrap: break-word; vertical-align: middle;"><?php echo " " . substr(htmlspecialchars($fetchExecution[$i]["qName"]), 0, 30) . " - " . $fetchExecution[$i]["execName"];?></p>
 			                            <p id="arrowDown" style="float: right; margin-right: 1em; display: none">&#9660;</p>
 			                        </td>
 			                        <td>
-			                            <?php echo ($fetchQuestionnaire[$i]["sName"]==NULL) ? $lang["undefined"] : $fetchQuestionnaire[$i]["sName"];?>
+			                            <?php echo ($fetchExecution[$i]["sName"]==NULL) ? $lang["undefined"] : $fetchExecution[$i]["sName"];?>
 			                        </td>
 			                        <td>
 			                        	<?php 
-			                        	switch($fetchQuestionnaire[$i]["priority_id"])
+			                        	switch($fetchExecution[$i]["priority_id"])
 			                        	{
 			                        		case "0":
 			                        			echo $lang["prioLearningHelp"];
@@ -391,26 +447,41 @@
 			                            
 			                            if($_SESSION['role']['creator'] == 1) {
 			                            	
-			                            	//TODO: Anzahl Teilnahmen
+			                            	$stmt = $dbh->prepare("select count(distinct user_id) as total from user_exec_session where execution_id = :executionId");
+			                            	$stmt->bindParam("executionId", $fetchExecution[$i]["execId"]);
+			                            	$stmt->execute();
+			                            	$fetchTotalParticipations = $stmt->fetch(PDO::FETCH_ASSOC);
+			                            	$totalParticipations = $fetchTotalParticipations["total"];
 			                            	
+			                            	
+			                            	$stmt = $dbh->prepare("select count(user_id) as total from execution inner join user_exec on execution.id = user_exec.execution_id where execution.id = :executionId");
+			                            	$stmt->bindParam("executionId", $fetchExecution[$i]["execId"]);
+			                            	$stmt->execute();
+			                            	$fetchTotalAssignedUsers = $stmt->fetch(PDO::FETCH_ASSOC);
+			                            	$totalUsers = $fetchTotalAssignedUsers["total"];
+			                            	
+			                            	
+			                            	$stmt = $dbh->prepare("select count(user_id) as total from execution inner join group_exec on execution.id = group_exec.execution_id inner join `group` on group_exec.group_id = `group`.id inner join user_group on `group`.id = user_group.group_id where execution.id = :executionId");
+			                            	$stmt->bindParam("executionId", $fetchExecution[$i]["execId"]);
+			                            	$stmt->execute();
+			                            	$fetchTotalAssignedGroupUsers = $stmt->fetch(PDO::FETCH_ASSOC);
+			                            	$totalGroupUsers = $fetchTotalAssignedGroupUsersUsers["total"];
+			                            	
+			                            	$totalAssignedUser = $totalUsers + $totalGroupUsers;
+			                            	if($totalAssignedUser == 0)
+			                            	{
+			                            		echo "-";
+			                            	} else
+			                            	{
+			                            		echo ($totalParticipations / $totalAssignedUser);
+			                            	}
 			                            	
 			                            } else
-			                            {
-			                            	//TODO: Stimmt Berechnung? Muss nochmals kurz nachvollzogen werden!
-			                            	$qId = $fetchQuestionnaire[$i]["qId"];
-			                            	$stmt = $dbh->prepare("select execution_id from qunaire_exec where questionnaire_id = " . $qId);
-			                            	$stmt->execute();
-			                            	$execution_id = $stmt->fetchAll(PDO::FETCH_ASSOC);
-			                            	
+			                            {			                            	
 			                            	$sessionId = $_SESSION["id"];
-			                            	$execId = $execution_id[0]["execution_id"];
+			                            	$execId = $fetchExecution[$i]["execId"];
 			                            	$stmt = $dbh->prepare("select * from user_exec_session where user_id = " . $sessionId . " and execution_id = " . $execId);
-			                            	$test = $stmt->queryString;
-			                            	if(!$stmt->execute())
-			                            	{
-			                            		header("Location: index.php?p=quiz&code=-14");
-			                            		exit;
-			                            	}
+			                            	$stmt->execute();
 			                            	$ownParticipationAmount = $stmt->rowCount();
 			                            	$fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			                            	                          	
@@ -418,14 +489,14 @@
 			                            	$fetchPoints = [0,0,0];
 			                            	for ($j = 0; $j < count($fetchSession); $j++)
 			                            	{
-			                            		$tmpPoints = getPoints($dbh, $fetchQuestionnaire[$i]["qId"], $fetchSession[$j]["id"], 0);
+			                            		$tmpPoints = getPoints($dbh, $fetchExecution[$i]["qId"], $fetchSession[$j]["id"], 0);
 			                            		if($j == 0 || $tmpPoints[0] >= $fetchPoints[0])
 			                            		{
 			                            			$fetchPoints = $tmpPoints;
 			                            		}
 			                            	}
 			                            	 
-			                            	if($fetchPoints[2] >= $fetchQuestionnaire[$i]["quiz_passed"] && $ownParticipationAmount != 0)
+			                            	if($fetchPoints[2] >= $fetchExecution[$i]["quiz_passed"] && $ownParticipationAmount != 0)
 			                            	{
 			                            		$hint = $lang["quizFinished"];
 			                            	}
@@ -434,7 +505,7 @@
 			                            		$hint = $lang["quizNotFinished"];
 			                            	}
 			                            	 
-			                            	echo ($fetchQuestionnaire[$i]["result_visible"] != 3) ? $hint . " (" . $fetchPoints[2] . "%)" : $lang["notPublic"];
+			                            	echo ($fetchExecution[$i]["result_visible"] != 3) ? $hint . " (" . $fetchPoints[2] . "%)" : $lang["notPublic"];
 			                            }
 			                            
 			                            ?>
@@ -442,12 +513,12 @@
 			                        <td>
 			                            <?php 
 			                            $stmt = $dbh->prepare("select count(*) as count from qunaire_qu where questionnaire_id = :questionnaireId");
-			                            $stmt->bindParam(":questionnaireId", $fetchQuestionnaire[$i]["qId"]);
+			                            $stmt->bindParam(":questionnaireId", $fetchExecution[$i]["qId"]);
 			                            $stmt->execute();
 			                            $fetchQuestionCount = $stmt->fetch(PDO::FETCH_COLUMN, 0);
 			                            
-			                            $starttime = $fetchQuestionnaire[$i]["starttime"];
-			                            $endtime = $fetchQuestionnaire[$i]["endtime"];
+			                            $starttime = $fetchExecution[$i]["starttime"];
+			                            $endtime = $fetchExecution[$i]["endtime"];
 			                            $str = "";
 			                            $canParticipate = false;
 			                            $taskPaperAvailable = true;
@@ -461,10 +532,10 @@
 			                            }
 			                            if(time() > $endtime)
 			                            	$str = $lang["quizClosed"] . date("d.m.Y H:i", $endtime);
-			                            if($fetchQuestionnaire[$i]["noParticipationPeriod"] == 1)
+			                            if($fetchExecution[$i]["noParticipationPeriod"] == 1)
 			                            	$str = $lang["quizOpenForever"];
-			                            echo $str;
-			                            if($fetchQuestionnaire[$i]["noParticipationPeriod"] == 1)
+			                            echo "<p style='max-width: 150px'>$str</p>";
+			                            if($fetchExecution[$i]["noParticipationPeriod"] == 1)
 			                            {
 			                            	$canParticipate = true;
 			                            }
@@ -477,7 +548,7 @@
 			                            	$canParticipate = false;
 			                            	$taskPaperAvailable = false;
 			                            }
-			                            if($fetchQuestionnaire[$i]["result_visible"] == 3 && ($fetchQuestionnaire[$i]["showTaskPaper"] == 0 && $ownParticipationAmount <= 0) && $_SESSION['role']['admin'] == 0 || (time() < $starttime && $fetchQuestionnaire[$i]["noParticipationPeriod"] == 0))
+			                            if($fetchExecution[$i]["result_visible"] == 3 && ($fetchExecution[$i]["showTaskPaper"] == 0 && $ownParticipationAmount <= 0) && $_SESSION['role']['admin'] == 0 || (time() < $starttime && $fetchExecution[$i]["noParticipationPeriod"] == 0))
 			                            {
 			                            	$taskPaperAvailable = false;
 			                            }
@@ -490,28 +561,28 @@
 										style="color: #373a3c; background-color: #fff; border-color: #ccc;"><?php echo $lang["action"];?></button>
 										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -120px">
 			                        
-			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"])) {?>
+			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"])) {?>
 											
-										<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuizAction"];?></a>
-										<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchQuestionnaire[$i]["qId"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delQuiz"];?></a>
-										<a class="dropdown-item" href="?p=quizReport&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showQuizReport"];?></a>
+										<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchExecution[$i]["qId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuizAction"];?></a>
+										<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchExecution[$i]["qId"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delQuiz"];?></a>
+										<a class="dropdown-item" href="?p=quizReport&id=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showQuizReport"];?></a>
 				                        								
 			                        <?php }?>
 		                            	<?php if($canParticipate) {?>
-			                            	<a class="dropdown-item" href="Pindex.php?p=participationIntro&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-play-circle"></span> <?php echo $lang["participateQuiz"];?></a>
+			                            	<a class="dropdown-item" href="Pindex.php?p=participationIntro&quizId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-play-circle"></span> <?php echo $lang["participateQuiz"];?></a>
 			                            <?php } ?>
-			                            	<a class="dropdown-item" href="?p=showQuiz&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $lang["showQuizInfo"];?></a>
+			                            	<a class="dropdown-item" href="?p=showQuiz&quizId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $lang["showQuizInfo"];?></a>
 			                            <?php
-			                            if(($taskPaperAvailable && $ownParticipationAmount > 0) || $_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"]))
+			                            if(($taskPaperAvailable && $ownParticipationAmount > 0) || $_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"]))
 			                            {
 			                            ?>
-		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target='_blank'><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskpaper"];?></a>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $fetchExecution[$i]["execId"];?>" target='_blank'><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskpaper"];?></a>
 		                                <?php }
-		                                if(((time() > $endtime || $fetchQuestionnaire[$i]["result_visible"] == 1) && $fetchQuestionnaire[$i]["result_visible"] != 3) && $ownParticipationAmount > 0) {?>
-		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target="_blank"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskPaperWithSolution"];?></a>
+		                                if(((time() > $endtime || $fetchExecution[$i]["result_visible"] == 1) && $fetchExecution[$i]["result_visible"] != 3) && $ownParticipationAmount > 0) {?>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId=<?php echo $fetchExecution[$i]["execId"];?>" target="_blank"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskPaperWithSolution"];?></a>
 		                                <?php }
 		                                if($ownParticipationAmount > 0) {?>
-		                                	<a class="dropdown-item" href="<?php echo "Pindex.php?p=participationOutro&quizId=" . $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showOwnParticipations"];?></a>
+		                                	<a class="dropdown-item" href="<?php echo "Pindex.php?p=participationOutro&quizId=" . $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showOwnParticipations"];?></a>
 		                                <?php }?>
 		                                </div>
 			                        </td>
@@ -618,6 +689,29 @@
             }
         });
         $('.dataTables_filter').css("display", "none");
+
+        $('#quizWithoutExec').DataTable({
+            sort: true,
+            paginate: false,
+            lengthChange: false,
+            responsive: true,
+            columns: [
+                {responsivePriority: 1},
+                {responsivePriority: 3},
+				{searchable: false, sortable: false, responsivePriority: 2},
+            ],
+            dom: '<"toolbar">frtip',
+            language: {
+                zeroRecords: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTbaleZeroRecords"]);?>",
+                info: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableInfo"]);?>",
+                infoEmpty: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableEmpty"]);?>",
+                infoFiltered: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableInfoFiltered"]);?>",
+                search: ""
+            }
+        });
+        $('.dataTables_filter').css("display", "none");
+        $('.dataTables_wrapper').css("width", "100%");
+        
 
 
         $("#searchbox").on("keyup search input paste cut", function() {
