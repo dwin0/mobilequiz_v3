@@ -257,6 +257,24 @@ PARTICIPATION PAGE
 END PARTICIPATION PAGE
 */
 
+
+
+/*
+START QUIZ PAGE
+*/
+
+#quizFilter > fieldset > div {
+	float: left;
+	margin-right: 4em;
+	margin-top: 2em;
+}
+
+/*
+END QUIZ PAGE
+*/
+
+
+
 /*START PARTICIPATION INTRO PAGE*/
 
 .description > div > div {
@@ -282,6 +300,29 @@ END PARTICIPATION PAGE
 
 
 /*END PARTICIPATION_CONFIRM_END_QUIZ PAGE*/
+
+
+/*START QUIZ PAGE*/
+
+.dropdown-menu > a {
+	display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    color: #333;
+    white-space: nowrap;
+}
+
+.dropdown-menu > a:hover {
+	text-decoration: none;
+	background-color: #e8ebef;
+}
+
+
+/*END QUIZ PAGE*/
+
+
 
 /*START CREATE_EDIT_QUESTION PAGE*/
 	
@@ -359,6 +400,22 @@ END PARTICIPATION PAGE
 
 
 @media (max-width: 900px) {
+	
+/*START QUIZ PAGE*/
+
+#searchBoxDiv {
+	margin-right: auto !important;
+	margin-left: 0 !important;
+}
+
+#arrowDown {
+	display: initial !important;
+}
+
+
+/*END QUIZ PAGE*/
+	
+	
 
 /*PARTICIPATION PAGE*/
 	
@@ -417,7 +474,7 @@ END PARTICIPATION PAGE
 	.answers > ul > li > div > div {
 		display: table-header-group !important;
 	}
-	/*END PARTICIPATION PAGE*/
+	/*END PARTICIPATION PAGE*/	
 	
 	
 	/*START CREATE_EDIT_QUESTION PAGE*/

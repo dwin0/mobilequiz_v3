@@ -22,7 +22,488 @@
 		fwrite($fp, $text);
 		fclose($fp);
 	}
+
+	
+	$selectedState = "all";
+	$selectedLanguage = "all";
+	$selectedTopic = "all";
+	$selectedCreator = "all";
+	if(isset($_POST["state"]))
+	{
+		$selectedState = $_POST["state"];
+	}
+	if(isset($_POST["language"]))
+	{
+		$selectedLanguage = $_POST["language"];
+	}
+	if(isset($_POST["topic"]))
+	{
+		$selectedTopic = $_POST["topic"];
+	}
+	if(isset($_POST["owner"]))
+	{
+		$selectedCreator = $_POST["owner"];
+	}
 ?>
+<div class="container theme-showcase">
+	<div class="page-header">
+		<h1><?php echo $lang["quizzes"];?></h1>
+	</div>
+	<p id="topicActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
+	<div class="panel panel-default">
+		<div class="panel-body">
+		
+			<?php if($_SESSION['role']['creator'] == 1) {?>
+            <button id="btnAddQuiz" class="btn btn-success" type="button" style="width: 260px; height: 3em; float: left; margin-bottom: 1em; margin-top: 8px" onclick="window.location='?p=createEditQuiz';"><?php echo $lang["createQuiz"];?> <span class="glyphicon glyphicon-plus"></span></button>
+	        <?php }?>
+			
+			<div style="width: 100%; margin-bottom: 1em;">
+				<div id="searchBoxDiv" class="control-group" style="width: 260px; margin-left:auto; margin-right:0;">
+					<label class="control-label" for="searchbox">
+						<b><?php echo $lang["search"]; ?></b>
+						<input type="search" id="searchbox" class="form-control input-sm magnifyingGlassstyle" 
+						style="width: 260px" placeholder="<?php echo $lang["enterSearchTerm"];?>">
+					</label>
+				</div>
+			</div>
+		
+			<form id="quizFilter" class="form-horizontal" action="?p=quiz" method="POST" style="clear: both">
+			
+				<fieldset class="table-border">
+					<legend class="table-border" style="margin-bottom: -1em"><?php echo $lang["filterOptions"];?></legend>
+					
+					<!-- State FILTER -->
+			        <div class="control-group">
+			            <label class="control-label" for="state">
+			                <?php echo $lang["state"]?>
+			            </label>
+			            <div class="controls">
+			                <select id="state" multiple="multiple" class="form-control" name="state[]" onchange="sendData()">
+			                    <option value="participated" <?php echo (in_array("participated", $selectedState)) ? 'selected="selected"' : '';?>><?php echo $lang["participated"];?></option>
+			                    <option value="current" <?php echo (in_array("current", $selectedState)) ? 'selected="selected"' : '';?>><?php echo $lang["currend"];?></option>
+			                    <option value="finished" <?php echo (in_array("finished", $selectedState)) ? 'selected="selected"' : '';?>><?php echo $lang["finished"];?></option>
+			                </select>
+			            </div>
+			        </div>
+			
+					<!-- Language FILTER -->
+			        <div class="control-group">
+			            <label class="control-label" for="language">
+			                <?php echo $lang["quizLanguage"]?>
+			            </label>
+			            <div class="controls">
+			                <select id="language" multiple class="form-control" name="language[]" onchange="sendData()">
+			                    <?php 
+			                    $filterWhere = "";
+			                    $filterWhereAnd = "";
+			                    if($_SESSION["role"]["creator"] != 1)
+			                    {
+			                    	$filterWhere = " where public = 1";
+			                    	$filterWhereAnd = " and public = 1";
+			                    }
+			                    
+			                	$stmt = $dbh->prepare("select id from questionnaire" . $filterWhere);
+			                	$stmt->execute();
+			                	$allQuestionnairessCount = $stmt->rowCount();
+			                	
+			                    $stmt = $dbh->prepare("select language from questionnaire ". $filterWhere ." group by language");
+			                    $stmt->execute();
+			                    $result = $stmt->fetchAll();
+			                    
+			                    for($i = 0; $i < count($result); $i++){
+									$stmt = $dbh->prepare("select id from questionnaire where language = '" . $result[$i]["language"] . "'" . $filterWhereAnd);
+									$stmt->execute();
+									$selected = (in_array($result[$i]["language"], $selectedLanguage)) ? 'selected="selected"' : '';
+									echo "<option value=\"" . $result[$i]["language"] . "\"" . $selected . ">" . $result[$i]["language"] . " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")</option>";
+			                    } ?>
+			                </select>
+			            </div>
+			        </div>
+			        
+			        <!-- Topic FILTER -->
+			        <div class="control-group">
+			            <label class="control-label" for="topic">
+			                <?php echo $lang["quizTopics"]?>
+			            </label>
+			            <div class="controls">
+			                <select id="topic" multiple class="form-control" name="topic[]" onchange="sendData()">
+			                    <?php 
+			                    
+			                    $stmt = $dbh->prepare("select subject_id from questionnaire ".$filterWhere." group by subject_id");
+			                    $stmt->execute();
+			                    $result = $stmt->fetchAll();
+			                    
+			                    for($i = 0; $i < count($result); $i++){
+									if($result[$i]["subject_id"] == null)
+									{
+										$stmt = $dbh->prepare("select id from questionnaire where subject_id is null" . $filterWhereAnd);
+									}
+									else 
+										$stmt = $dbh->prepare("select id from questionnaire where subject_id = " . $result[$i]["subject_id"] . $filterWhereAnd);
+									$stmt->execute();
+									$rowCount = $stmt->rowCount();
+									
+									$stmt = $dbh->prepare("select name from subjects where id = " . $result[$i]["subject_id"]);
+									$stmt->execute();
+									$resultSubjectName = $stmt->fetchAll(PDO::FETCH_ASSOC);
+									$selected = (in_array($result[$i]["subject_id"], $selectedTopic)) ? 'selected="selected"' : '';
+									if($resultSubjectName[0]["name"] == null && $selectedTopic[0] == "null") {$selected = 'selected="selected"'; };
+									$subjectName = ($resultSubjectName[0]["name"] == null) ? $lang["undefined"] : $resultSubjectName[0]["name"];
+									$subjectId = ($result[$i]["subject_id"] == null) ? 'null' : $result[$i]["subject_id"];
+									echo "<option value=\"" . $subjectId . "\" " . $selected . ">" . $subjectName . " (" . $rowCount . " " . $lang["quizzes"] . ")</option>";
+			                    } ?>
+			                </select>
+			            </div>
+			        </div>
+			        
+			        <!-- Owner FILTER -->
+			        <div class="control-group">
+			            <label class="control-label" for="owner">
+			                <?php echo $lang["quizOwner"]?>
+			            </label>
+			            <div class="controls">
+			                <select id="owner" multiple class="form-control" name="owner[]" onchange="sendData()">
+			                    <?php 
+			                    	
+				                    $stmt = $dbh->prepare("select owner_id from questionnaire ".$filterWhere." group by owner_id");
+				                    $stmt->execute();
+				                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			                    	
+			                    	for($i = 0; $i < count($result); $i++){
+										
+										$stmt = $dbh->prepare("select firstname, lastname from user_data inner join user on user.id = user_data.user_id where user.id = " . $result[$i]["owner_id"]);
+										$stmt->execute();
+				                    	$fetchUser = $stmt->fetch(PDO::FETCH_ASSOC);
+				                    	
+				                    	$stmt = $dbh->prepare("select id from questionnaire where owner_id = :owner_id" . $filterWhereAnd);
+				                    	$stmt->bindParam(":owner_id", $result[$i]["owner_id"]);
+				                    	$stmt-> execute();
+				                    	$ownerRowCount = $stmt->rowCount();
+				                    	
+				                    	$selected = (in_array($result[$i]["owner_id"], $selectedCreator)) ? 'selected="selected"' : '';
+										
+										echo "<option value=\"" . $result[$i]["owner_id"] . "\" " . $selected . ">" . $fetchUser["firstname"] . " " . $fetchUser["lastname"] . " (" . $ownerRowCount . " " . $lang["quizzes"] . ")</option>";
+			                    } ?>
+			                </select>
+			            </div>
+			        </div>
+			    </fieldset>
+		        
+		        
+			    <div class="listOfQuizzes">
+			        <table class="tblListOfQuizzes" id="quizzes" style="width: 100%">
+			            <thead>
+			                <tr>
+			                    <th>
+			                        <?php echo $lang["quizTableName"]?>
+			                    </th>
+			                    <th>
+			                        <?php echo $lang["quizTableTopic"]?>
+			                    </th>
+			                    <th>
+			                        <?php echo $lang["executionType"]?>
+			                    </th>
+			                    <th>
+				                    <?php
+				                    if($_SESSION['role']['creator'] == 1) {
+				                    	echo $lang["percentParticipations"];
+							        } else 
+							        {
+							        	echo $lang["userQuizState"];
+							        }?>
+			                    </th>
+			                    <th>
+			                        <?php echo $lang["quizTableState"]?>
+			                    </th>
+			                    <th>
+			                        <?php echo $lang["quizTableActions"]?>
+			                    </th>
+			                </tr>
+			            </thead>
+			            <tbody>
+			                <?php 
+			                $whereStatement ="";
+			                if($selectedState != "all" || $selectedLanguage != "all" || $selectedTopic != "all" || $selectedCreator != "all")
+			                {
+			                	$notFirst = false;
+			                	$whereStatement = " where ";
+			                	$noParticipationTime = false;
+			                	if($selectedState != "all")
+			                	{
+			                		$numberOfSelected = count($selectedState);
+			                		$time = time();
+			                		$whereStatement .= "(";
+			                		
+			                		if(in_array('participated', $selectedState))
+			                		{
+			                			$whereStatement .= "(starttime > $time) ";
+			                			if($numberOfSelected > 1)
+			                			{
+			                				$numberOfSelected--;
+			                				$whereStatement .= "or ";
+			                			}
+			                		}
+			                		if(in_array('current', $selectedState))
+			                		{
+			                			$whereStatement .= "((starttime < $time and endtime > $time) or noParticipationPeriod = 1) ";
+			                			$noParticipationTime = true;
+			                			if($numberOfSelected > 1)
+			                			{
+			                				$numberOfSelected--;
+			                				$whereStatement .= "or ";
+			                			}
+			                		}
+			                		if(in_array('finished', $selectedState))
+			                		{
+			                			$whereStatement .= "(endtime < $time and noParticipationPeriod <> 1) ";
+			                			$noParticipationTime = true;
+			                		}
+			                		$notFirst = true;
+			                		
+			                		$whereStatement .= ") ";
+			                	}
+			                	if($selectedLanguage != "all")
+			                	{
+			                		if($notFirst)
+			                		{
+			                			$whereStatement .= " and ";
+			                		}
+			                		
+			                		$whereStatement .= "(language = '$selectedLanguage[0]' ";
+			                		
+			                		$numberOfSelectedLanguages = count($selectedLanguage);
+			                		for($i = 1; $i < $numberOfSelectedLanguages; $i++)
+			                		{
+			                			$whereStatement .= "or language = '$selectedLanguage[$i]' ";
+			                		}
+			                		
+			                		$whereStatement .= ") ";
+			                		
+			                		$notFirst = true;
+			                	}
+			                	if($selectedTopic != "all")
+			                	{
+			                		if($notFirst)
+			                		{
+			                			$whereStatement .= " and ";
+			                		}
+			                		
+			                		if($selectedTopic[0] == "null")
+			                		{
+			                			$whereStatement .= "(subject_id is null ";
+			                		} else 
+			                		{
+			                			$whereStatement .= "(subject_id = $selectedTopic[0] ";
+			                		}
+			                		
+			                		
+			                		$numberOfSelectetTopics = count($selectedTopic);
+			                		for($i = 1; $i < $numberOfSelectetTopics; $i++)
+			                		{
+			                			if($selectedTopic[$i] == "null")
+			                			{
+			                				$whereStatement .= "or subject_id is null ";
+			                			} else
+			                			{
+			                				$whereStatement .= "or subject_id = $selectedTopic[$i] ";
+			                			}
+			                		}
+			                		
+			                		$whereStatement .= ") ";
+			                		
+			                		$notFirst = true;
+			                	}
+			                	if($selectedCreator != "all")
+			                	{
+			                		if($notFirst)
+			                		{
+			                			$whereStatement .= " and ";
+			                		}
+			                			
+			                		$whereStatement .= "(owner_id = $selectedCreator[0] ";
+			                		
+			                		$numberOfSelectetCreators = count($selectedCreator);
+			                		for($i = 1; $i < $numberOfSelectetCreators; $i++)
+			                		{
+			                			$whereStatement .= "or owner_id = $selectedCreator[$i] ";
+			                		}
+			                		
+			                		$whereStatement .= ") ";
+			                	}
+			                }
+			                
+			                $queryStr = "select questionnaire.id as qId, questionnaire.language, questionnaire.name as qName, questionnaire.description, subjects.name as sName, questionnaire.quiz_passed, starttime, endtime, owner_id, questionnaire.priority, questionnaire.public, questionnaire.noParticipationPeriod, questionnaire.result_visible from questionnaire left outer join subjects on questionnaire.subject_id = subjects.id inner join user on user.id = questionnaire.owner_id" . $whereStatement;
+			                $stmt = $dbh->prepare($queryStr);  
+			                
+			                $test = $stmt->queryString;
+			                
+			                $stmt->execute();
+			                $fetchQuestionnaire = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			                
+			                for($i = 0; $i < count($fetchQuestionnaire); $i++) {
+								if($fetchQuestionnaire[$i]["public"] != 1 && $fetchQuestionnaire[$i]["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"]))
+									continue;
+							?>
+			                    <tr class="entry" style="height: 75px" id="<?php echo "quiz_" . $fetchQuestionnaire[$i]["qId"];?>">
+			                        <td title="<?php echo htmlspecialchars($fetchQuestionnaire[$i]["description"]);?>">
+			                        	<?php if($_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"])) {
+			                        		$eyePic = $fetchQuestionnaire[$i]["public"] != 1 ? 'closed' : 'open';
+			                        		echo '<img alt="'.$eyePic.'" src="assets/icon_eye_' . $eyePic . '.png" width="13" height="10" class="eye_'.$eyePic.'" original-title="'.$lang["quiz_" . $eyePic].'">';}?>
+			                            <p style="display: inline-block; width: 120px; word-wrap: break-word;"><?php echo " " . substr(htmlspecialchars($fetchQuestionnaire[$i]["qName"]), 0, 30);?></p>
+			                            <p id="arrowDown" style="float: right; margin-right: 1em; display: none">&#9660;</p>
+			                        </td>
+			                        <td>
+			                            <?php echo ($fetchQuestionnaire[$i]["sName"]==NULL) ? $lang["undefined"] : $fetchQuestionnaire[$i]["sName"];?>
+			                        </td>
+			                        <td>
+			                        	<?php 
+			                        	switch($fetchQuestionnaire[$i]["priority"])
+			                        	{
+			                        		case "0":
+			                        			echo $lang["prioLearningHelp"];
+			                        			break;
+			                        		case "1":
+			                        			echo $lang["prioExamRequirement"];
+			                        			break;
+			                        		case "2":
+			                        			echo $lang["prioExam"];
+			                        			break;
+			                        	}
+			                            ?>
+			                        </td>
+			                        <td style="white-space: nowrap;">
+			                            <?php 
+			                            
+			                            if($_SESSION['role']['creator'] == 1) {
+			                            	
+			                            	//TODO: Anzahl Teilnahmen
+			                            	
+			                            	
+			                            } else
+			                            {
+			                            	$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id");
+			                            	$stmt->bindParam(":user_id", $_SESSION["id"]);
+			                            	$stmt->bindParam(":questionnaire_id", $fetchQuestionnaire[$i]["qId"]);
+			                            	if(!$stmt->execute())
+			                            	{
+			                            		header("Location: index.php?p=quiz&code=-14");
+			                            		exit;
+			                            	}
+			                            	$ownParticipationAmount = $stmt->rowCount();
+			                            	$fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			                            	 
+			                            	$tmpPoints = null;
+			                            	$fetchPoints = [0,0,0];
+			                            	for ($j = 0; $j < count($fetchSession); $j++)
+			                            	{
+			                            		$tmpPoints = getPoints($dbh, $fetchQuestionnaire[$i]["qId"], $fetchSession[$j]["id"], 0);
+			                            		if($j == 0 || $tmpPoints[0] >= $fetchPoints[0])
+			                            		{
+			                            			$fetchPoints = $tmpPoints;
+			                            		}
+			                            	}
+			                            	 
+			                            	if($fetchPoints[2] >= $fetchQuestionnaire[$i]["quiz_passed"] && $fetchQuestionnaire[$i]["quiz_passed"] != 0)
+			                            	{
+			                            		$hint = $lang["quizFinished"];
+			                            	}
+			                            	else
+			                            	{
+			                            		$hint = $lang["quizNotFinished"];
+			                            	}
+			                            	 
+			                            	echo ($fetchQuestionnaire[$i]["result_visible"] != 3) ? $hint . "(" . $fetchPoints[2] . "%)" : $lang["notPublic"];
+			                            }
+			                            
+			                            ?>
+			                        </td>
+			                        <td>
+			                            <?php 
+			                            $stmt = $dbh->prepare("select count(*) as count from qunaire_qu where questionnaire_id = :questionnaireId");
+			                            $stmt->bindParam(":questionnaireId", $fetchQuestionnaire[$i]["qId"]);
+			                            $stmt->execute();
+			                            $fetchQuestionCount = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+			                            
+			                            $starttime = $fetchQuestionnaire[$i]["starttime"];
+			                            $endtime = $fetchQuestionnaire[$i]["endtime"];
+			                            $str = "";
+			                            $canParticipate = false;
+			                            $taskPaperAvailable = true;
+			                            
+			                            if(time() < $starttime)
+			                            	$str = $lang["quizStartsAt"] . date("d.m.Y H:i", $starttime);
+			                            if(time() >= $starttime && time() <= $endtime)
+			                            {
+			                            	$str = $lang["quizEndsAt"] . date("d.m.Y H:i", $endtime);
+			                            	$canParticipate = true;
+			                            }
+			                            if(time() > $endtime)
+			                            	$str = $lang["quizClosed"] . date("d.m.Y H:i", $endtime);
+			                            if($fetchQuestionnaire[$i]["noParticipationPeriod"] == 1)
+			                            	$str = $lang["quizOpenForever"];
+			                            echo $str;
+			                            if($fetchQuestionnaire[$i]["noParticipationPeriod"] == 1)
+			                            {
+			                            	$canParticipate = true;
+			                            }
+			                            if($_SESSION["role"]["manager"])
+			                            {
+			                            	$canParticipate = true;
+			                            }
+			                            if($fetchQuestionCount < 1)
+			                            {
+			                            	$canParticipate = false;
+			                            	$taskPaperAvailable = false;
+			                            }
+			                            if($fetchQuestionnaire[$i]["result_visible"] == 3 && ($fetchQuestionnaire[$i]["showTaskPaper"] == 0 && $ownParticipationAmount <= 0) && $_SESSION['role']['admin'] == 0 || (time() < $starttime && $fetchQuestionnaire[$i]["noParticipationPeriod"] == 0))
+			                            {
+			                            	$taskPaperAvailable = false;
+			                            }
+			                            ?>
+			                            
+			                        </td>
+			                        <td style="width: 130px;">
+			                        
+			                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+										style="color: #373a3c; background-color: #fff; border-color: #ccc;"><?php echo $lang["action"];?></button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -120px">
+			                        
+			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"])) {?>
+											
+										<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["editQuizAction"];?></a>
+										<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchQuestionnaire[$i]["qId"];?>)"><?php echo $lang["delQuiz"];?></a>
+										<a class="dropdown-item" href="?p=quizReport&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["showQuizReport"];?></a>
+				                        								
+			                        <?php }?>
+		                            	<?php if($canParticipate) {?>
+			                            	<a class="dropdown-item" href="Pindex.php?p=participationIntro&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["participateQuiz"];?></a>
+			                            <?php } ?>
+			                            	<a class="dropdown-item" href="?p=showQuiz&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["showQuizInfo"];?></a>
+			                            <?php
+			                            if(($taskPaperAvailable && $ownParticipationAmount > 0) || $_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"]))
+			                            {
+			                            ?>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target='_blank'><?php echo $lang["showTaskpaper"];?></a>
+		                                <?php }
+		                                if(((time() > $endtime || $fetchQuestionnaire[$i]["result_visible"] == 1) && $fetchQuestionnaire[$i]["result_visible"] != 3) && $ownParticipationAmount > 0) {?>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target="_blank"><?php echo $lang["showTaskPaperWithSolution"];?></a>
+		                                <?php }
+		                                if($ownParticipationAmount > 0) {?>
+		                                	<a class="dropdown-item" href="<?php echo "Pindex.php?p=participationOutro&quizId=" . $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["showOwnParticipations"];?></a>
+		                                <?php }?>
+		                                </div>
+			                        </td>
+			                    </tr>
+			                <?php }?>
+			            </tbody>
+			        </table>
+			    </div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
 <script type="text/javascript">
 
 	function delQuiz(id)
@@ -99,13 +580,8 @@
             responsive: true,
             columns: [
                 {responsivePriority: 1},
-                {responsivePriority: 7},
-                {responsivePriority: 8},
-                {searchable: false, responsivePriority: 6},
+                {responsivePriority: 6},
                 {searchable: false, responsivePriority: 5},
-                <?php if($_SESSION["role"]["creator"] == 1) {
-                	echo '{searchable: false, responsivePriority: 5},';
-				}?>
                 {searchable: false, responsivePriority: 4},
                 {searchable: false, responsivePriority: 3},
 				{searchable: false, sortable: false, responsivePriority: 2},
@@ -119,455 +595,42 @@
                 search: ""
             }
         });
-    	$('.dataTables_filter').prepend("<div style=\"text-align:right; width:100px;\"><b><?php echo $lang["search"];?>:</b></div>");
-        $('.dataTables_filter input').attr("placeholder", '<?php echo $lang["enterSearchTerm"];?>');
+        $('.dataTables_filter').css("display", "none");
         $('.dataTables_filter input').addClass("form-control");
         $('.dataTables_filter input').addClass("magnifyingGlass");
-        $('div.toolbar').html(document.getElementById('hiddenFilter').innerHTML);
+
+
+        $("#searchbox").on("keyup search input paste cut", function() {
+        	$('#quizzes').dataTable().fnFilter(this.value);
+        });
+    	
     });
     function sendData() {
         $('#quizFilter').submit();
     }
+
+
+    $(document).ready(function() {
+        $('#state, #language, #topic, #owner').multiselect({
+
+        	buttonText: function(options, select) {
+                if (options.length === 0) {
+                    return '<?php echo $lang["all"]?>';
+                }
+                 else {
+                     var labels = [];
+                     options.each(function() {
+                         if ($(this).attr('label') !== undefined) {
+                             labels.push($(this).attr('label'));
+                         }
+                         else {
+                             labels.push($(this).html());
+                         }
+                     });
+                     return labels.join(', ') + '';
+                 }
+            }
+        });
+    });
+    
 </script>
-<?php 
-	$selectedState = "current";
-	$selectedLanguage = "all";
-	$selectedTopic = "all";
-	$selectedCreator = "all";
-	if(isset($_POST["state"]))
-	{
-		$selectedState = $_POST["state"];
-	}
-	if(isset($_POST["language"]))
-	{
-		$selectedLanguage = $_POST["language"];
-	}
-	if(isset($_POST["topic"]))
-	{
-		$selectedTopic = $_POST["topic"];
-		if($selectedTopic == "null")
-			$selectedTopic = null;
-	}
-	if(isset($_POST["owner"]))
-	{
-		$selectedCreator = $_POST["owner"];
-	}
-?>
-<div class="container theme-showcase">
-	<div class="page-header">
-		<h1><?php echo $lang["quizzes"];?></h1>
-	</div>
-	<p id="topicActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
-	<?php //echo "a: " . $selectedTopic;?>
-	<div class="panel panel-default">
-		<div class="panel-body">
-			<form id="quizFilter" class="form-horizontal" action="?p=quiz" method="POST">
-			    <div id="hiddenFilter" style="display: none;">
-			        <div class="control-group">
-			            <label class="control-label" for="state">
-			                <?php echo $lang["state"]?>
-			            </label>
-			            <div class="controls">
-			                <select id="state" class="form-control" name="state" onchange="sendData()">
-			                    <option value="all" <?php echo ($selectedState == "all") ? 'selected="selected"' : '';?>><?php echo $lang["all"];?></option>
-			                    <option value="participated" <?php echo ($selectedState == "participated") ? 'selected="selected"' : '';?>><?php echo $lang["participated"];?></option>
-			                    <option value="current" <?php echo ($selectedState == "current") ? 'selected="selected"' : '';?>><?php echo $lang["currend"];?></option>
-			                    <option value="finished" <?php echo ($selectedState == "finished") ? 'selected="selected"' : '';?>><?php echo $lang["finished"];?></option>
-			                </select>
-			            </div>
-			        </div>
-			
-			        <div class="control-group">
-			            <label class="control-label" for="language">
-			                <?php echo $lang["quizLanguage"]?>
-			            </label>
-			            <div class="controls">
-			                <select id="language" class="form-control" name="language" onchange="sendData()">
-			                    <?php 
-			                    $filterWhere = "";
-			                    $filterWhereAnd = "";
-			                    if($_SESSION["role"]["creator"] != 1)
-			                    {
-			                    	$filterWhere = " where public = 1";
-			                    	$filterWhereAnd = " and public = 1";
-			                    }
-			                    
-			                	$stmt = $dbh->prepare("select id from questionnaire" . $filterWhere);
-			                	$stmt->execute();
-			                	$allQuestionnairessCount = $stmt->rowCount();
-			                	?>
-			                    <option value="all" <?php echo ($selectedLanguage == "all") ? 'selected="selected"' : '';?>><?php echo $lang["all"] . " (".$allQuestionnairessCount." " . $lang["quizzes"] . ")";?></option>
-			                    <?php 
-			                    $stmt = $dbh->prepare("select language from questionnaire ". $filterWhere ." group by language");
-			                    $stmt->execute();
-			                    $result = $stmt->fetchAll();
-			                    
-			                    for($i = 0; $i < count($result); $i++){
-									$stmt = $dbh->prepare("select id from questionnaire where language = '" . $result[$i]["language"] . "'" . $filterWhereAnd);
-									$stmt->execute();
-									$selected = ($selectedLanguage == $result[$i]["language"]) ? 'selected="selected"' : '';
-									echo "<option value=\"" . $result[$i]["language"] . "\"" . $selected . ">" . $result[$i]["language"] . " (" . $stmt->rowCount() . " " . $lang["quizzes"] . ")</option>";
-			                    } ?>
-			                </select>
-			            </div>
-			        </div>
-			        <div class="control-group">
-			            <label class="control-label" for="topic">
-			                <?php echo $lang["quizTopics"]?>
-			            </label>
-			            <div class="controls">
-			                <select id="topic" class="form-control" name="topic" onchange="sendData()">
-			                    <option value="all" <?php echo ($selectedTopic == "all") ? 'selected="selected"' : '';?>><?php echo $lang["all"] . " (".$allQuestionnairessCount." " . $lang["quizzes"] . ")";?></option>
-			                    <?php 
-			                    
-			                    $stmt = $dbh->prepare("select subject_id from questionnaire ".$filterWhere." group by subject_id");
-			                    $stmt->execute();
-			                    $result = $stmt->fetchAll();
-			                    
-			                    for($i = 0; $i < count($result); $i++){
-									if($result[$i]["subject_id"] == null)
-									{
-										$stmt = $dbh->prepare("select id from questionnaire where subject_id is null" . $filterWhereAnd);
-									}
-									else 
-										$stmt = $dbh->prepare("select id from questionnaire where subject_id = " . $result[$i]["subject_id"] . $filterWhereAnd);
-									$stmt->execute();
-									$rowCount = $stmt->rowCount();
-									
-									$stmt = $dbh->prepare("select name from subjects where id = " . $result[$i]["subject_id"]);
-									$stmt->execute();
-									$resultSubjectName = $stmt->fetchAll(PDO::FETCH_ASSOC);
-									$selected = ($selectedTopic == $result[$i]["subject_id"]) ? 'selected="selected"' : '';
-									$subjectName = ($resultSubjectName[0]["name"] == null) ? "Nicht zugeordnet" : $resultSubjectName[0]["name"];
-									$subjectId = ($result[$i]["subject_id"] == null) ? 'null' : $result[$i]["subject_id"];
-									echo "<option value=\"" . $subjectId . "\" " . $selected . ">" . $subjectName . " (" . $rowCount . " " . $lang["quizzes"] . ")</option>";
-			                    } ?>
-			                </select>
-			            </div>
-			        </div>
-			        <div class="control-group">
-			            <label class="control-label" for="owner">
-			                <?php echo $lang["quizOwner"]?>
-			            </label>
-			            <div class="controls">
-			                <select id="owner" class="form-control" name="owner" onchange="sendData()">
-			                    <option value="all" <?php echo ($selectedTopic == "all") ? 'selected="selected"' : '';?>><?php echo $lang["all"] . " (". $allQuestionnairessCount ." " . $lang["quizzes"] . ")";?></option>
-			                    <?php 
-			                    	
-				                    $stmt = $dbh->prepare("select owner_id from questionnaire ".$filterWhere." group by owner_id");
-				                    $stmt->execute();
-				                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-			                    	
-			                    	for($i = 0; $i < count($result); $i++){
-										
-										$stmt = $dbh->prepare("select firstname, lastname from user_data inner join user on user.id = user_data.user_id where user.id = " . $result[$i]["owner_id"]);
-										$stmt->execute();
-				                    	$fetchUser = $stmt->fetch(PDO::FETCH_ASSOC);
-				                    	
-				                    	$stmt = $dbh->prepare("select id from questionnaire where owner_id = :owner_id" . $filterWhereAnd);
-				                    	$stmt->bindParam(":owner_id", $result[$i]["owner_id"]);
-				                    	$stmt-> execute();
-				                    	$ownerRowCount = $stmt->rowCount();
-				                    	
-				                    	$selected = $selectedCreator == $result[$i]["owner_id"] ? 'selected="selected"' : '';
-										
-										echo "<option value=\"" . $result[$i]["owner_id"] . "\" " . $selected . ">" . $fetchUser["firstname"] . " " . $fetchUser["lastname"] . " (" . $ownerRowCount . " " . $lang["quizzes"] . ")</option>";
-			                    } ?>
-			                </select>
-			            </div>
-			        </div>
-			    </div>
-			    <div class="listOfQuizzes">
-			        <table class="tblListOfQuizzes" id="quizzes" style="width: 100%">
-			            <thead>
-			                <tr>
-			                    <th>
-			                        <?php echo $lang["quizTableName"]?>
-			                    </th>
-			                    <th>
-			                        <?php echo $lang["quizTableTopic"]?>
-			                    </th>
-			                    <th>
-			                        <?php echo $lang["quizTableCreator"]?>
-			                    </th>
-			                    <th>
-			                        <?php echo $lang["quizTableAmountQuestions"]?>
-			                    </th>
-			                    <th>
-			                        <?php echo $lang["quizTableParticipiations"]?>
-			                    </th>
-			                    <?php 
-			                    if($_SESSION["role"]["creator"] == 1) {
-			                    ?>
-			                    <th>
-			                        <?php echo $lang["amountParticipations"]?>
-			                    </th>
-			                    <?php }?>
-			                    <th>
-			                        <?php echo $lang["userQuizState"]?>
-			                    </th>
-			                    <th>
-			                        <?php echo $lang["quizTableState"]?>
-			                    </th>
-			                    <th>
-			                        <?php echo $lang["quizTableActions"]?>
-			                    </th>
-			                </tr>
-			            </thead>
-			            <tbody>
-			                <?php 
-			                $whereStatement ="";
-			                if($selectedState != "all" || $selectedLanguage != "all" || $selectedTopic != "all" || $selectedCreator != "all")
-			                {
-			                	$notFirst = false;
-			                	$whereStatement = " where ";
-			                	$noParticipationTime = false;
-			                	if($selectedState != "all")
-			                	{
-			                		if($selectedState == 'participated')
-			                		{
-			                			$whereStatement .= "starttime > :time ";
-			                		} else if($selectedState == 'current')
-			                		{
-			                			$whereStatement .= "((starttime < :time and endtime > :time) or noParticipationPeriod = :noParticipationPeriod) ";
-			                			$noParticipationTime = true;
-			                		} else if($selectedState == 'finished')
-			                		{
-			                			$whereStatement .= "endtime < :time and noParticipationPeriod <> :noParticipationPeriod ";
-			                			$noParticipationTime = true;
-			                		}
-			                		$notFirst = true;
-			                	}
-			                	if($selectedLanguage != "all")
-			                	{
-			                		if($notFirst)
-			                			$whereStatement .= " and ";
-			                		$whereStatement .= "language = :language ";
-			                		$notFirst = true;
-			                	}
-			                	if($selectedTopic != "all")
-			                	{
-			                		if($notFirst)
-			                			$whereStatement .= " and ";
-			                		if($selectedTopic == null)
-			                			$whereStatement .= "subject_id is null ";
-			                		else 
-			                			$whereStatement .= "subject_id = :subject_id ";
-			                		$notFirst = true;
-			                	}
-			                	if($selectedCreator != "all")
-			                	{
-			                		if($notFirst)
-			                			$whereStatement .= " and ";
-			                		$whereStatement .= "owner_id = :owner_id";
-			                	}
-			                }
-			                
-			                $queryStr = "select questionnaire.id as qId, questionnaire.name as qName, questionnaire.description, subjects.name as sName, questionnaire.quiz_passed, user_data.firstname, user_data.lastname, starttime, endtime, user.email as uEmail, owner_id, questionnaire.priority, questionnaire.public, questionnaire.noParticipationPeriod, questionnaire.result_visible from questionnaire left outer join subjects on questionnaire.subject_id = subjects.id inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id" . $whereStatement;
-			                $stmt = $dbh->prepare($queryStr);
-			                if($selectedState != "all"){$stmt->bindParam(":time", time());}
-			                if($noParticipationTime) {$stmt->bindValue(":noParticipationPeriod", 1);}
-			                if($selectedLanguage != "all"){$stmt->bindParam(":language", $selectedLanguage);}
-			                if($selectedTopic != "all" && $selectedTopic != null){$stmt->bindParam(":subject_id", $selectedTopic);}
-			                if($selectedCreator != "all"){$stmt->bindParam(":owner_id", $selectedCreator);}
-			                $stmt->execute();
-			                $fetchQuestionnaire = $stmt->fetchAll(PDO::FETCH_ASSOC);
-			                
-			                for($i = 0; $i < count($fetchQuestionnaire); $i++) {
-								if($fetchQuestionnaire[$i]["public"] != 1 && $fetchQuestionnaire[$i]["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"]))
-									continue;
-							?>
-								<?php //echo "b: " . $queryStr . "<br />";?>
-			                    <tr class="entry" id="<?php echo "quiz_" . $fetchQuestionnaire[$i]["qId"];?>">
-			                        <td title="<?php echo htmlspecialchars($fetchQuestionnaire[$i]["description"]);?>">
-			                            <a href="?p=showQuiz&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo substr(htmlspecialchars($fetchQuestionnaire[$i]["qName"]), 0, 30);?></a>
-			                        </td>
-			                        <td>
-			                            <?php echo ($fetchQuestionnaire[$i]["sName"]==NULL) ? "Nicht zugeordnet" : $fetchQuestionnaire[$i]["sName"];?>
-			                        </td>
-			                        <td class="nameCol" original-title="<?php echo $fetchQuestionnaire[$i]["uEmail"];?>">
-			                            <?php echo htmlspecialchars($fetchQuestionnaire[$i]["firstname"]) . " " . htmlspecialchars($fetchQuestionnaire[$i]["lastname"]);?>
-			                        </td>
-			                        <td>
-			                        	<?php 
-			                        	$stmt = $dbh->prepare("select question_id from qunaire_qu where questionnaire_id = " . $fetchQuestionnaire[$i]["qId"]);
-			                        	$stmt->execute();
-			                        	echo $stmt->rowCount();
-			                        	?>
-			                        </td>
-			                        <td>
-			                            <?php 
-			                            $stmt = $dbh->prepare("select id from user_qunaire_session where user_id = :user_id and questionnaire_id = :qunaire_id");
-			                            $stmt->bindParam(":user_id", $_SESSION["id"]);
-			                            $stmt->bindParam(":qunaire_id", $fetchQuestionnaire[$i]["qId"]);
-			                            $stmt->execute();
-			                            $ownParticipationAmount = $stmt->rowCount();
-			                            echo $ownParticipationAmount;
-			                            ?>
-			                        </td>
-			                        <?php if($_SESSION["role"]["creator"] == 1){?>
-				                        <td>
-				                        	<?php 
-				                        	$allParticipations = -1;
-				                            $stmt = $dbh->prepare("select distinct user_id from user_qunaire_session where questionnaire_id = :qunaire_id");
-			                            	$stmt->bindParam(":qunaire_id", $fetchQuestionnaire[$i]["qId"]);
-				                            $stmt->execute();
-				                            $allParticipations = $stmt->rowCount();
-				                            echo $allParticipations;
-				                            ?>
-				                        </td>
-			                        <?php }?>
-			                        
-			                        <td style="white-space: nowrap;">
-			                            <?php 
-			                            $prio = "";
-			                            $hint = "";
-			                            switch ($fetchQuestionnaire[$i]["priority"])
-			                            {
-			                            	case 0:
-			                            		$prio = "Green";
-			                            		$hint = $lang["lowPrio"];
-			                            		break;
-			                            	case 1:
-			                            		$prio = "Yellow";
-			                            		$hint = $lang["middlePrio"];
-			                            		break;
-			                            	case 2:
-			                            		$prio = "Red";
-			                            		$hint = $lang["highPrio"];
-			                            		break;
-			                            }
-			                            ?>
-			                            <img class="prioImg" src="<?php echo "assets/priority" . $prio . ".png";?>" original-title="<?php echo $hint;?>" style="margin-right: 5px;"/>
-			                            <?php 
-			                            $stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id");
-			                            $stmt->bindParam(":user_id", $_SESSION["id"]);
-			                            $stmt->bindParam(":questionnaire_id", $fetchQuestionnaire[$i]["qId"]);
-			                            if(!$stmt->execute())
-			                            {
-			                            	header("Location: index.php?p=quiz&code=-14");
-			                            	exit;
-			                            }
-			                            $fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
-			                            
-			                            $tmpPoints = null;
-			                            $fetchPoints = [0,0,0];
-			                            for ($j = 0; $j < count($fetchSession); $j++)
-			                            {
-			                            	$tmpPoints = getPoints($dbh, $fetchQuestionnaire[$i]["qId"], $fetchSession[$j]["id"], 0);
-			                            	if($j == 0 || $tmpPoints[0] >= $fetchPoints[0])
-				                            	$fetchPoints = $tmpPoints;
-			                            }
-			                            
-			                            if($fetchPoints[2] >= $fetchQuestionnaire[$i]["quiz_passed"])
-			                            {
-			                            	$completeImg = "icon_correct";
-			                            	$hint = $lang["quizFinished"];
-			                            }
-			                            else
-			                            { 
-			                            	$completeImg = "icon_incorrect";
-			                            	$hint = $lang["quizNotFinished"];
-			                            }
-			                            
-			                            if($fetchQuestionnaire[$i]["quiz_passed"] == 0)
-			                            {
-			                            	$completeImg = "icon_noPassing";
-			                            	$hint = $lang["noPassing"];
-		                            	}
-			                            ?>
-			                            <img class="quizCompleteImg" src="<?php echo "assets/" . $completeImg . ".png";?>" original-title="<?php echo $hint;?>" />
-			                            <?php echo ($fetchQuestionnaire[$i]["result_visible"] != 3) ? "(" . $fetchPoints[2] . "%)" : "( ? %)";?>
-			                        </td>
-			                        <td>
-			                            <?php 
-			                            $stmt = $dbh->prepare("select count(*) as count from qunaire_qu where questionnaire_id = :questionnaireId");
-			                            $stmt->bindParam(":questionnaireId", $fetchQuestionnaire[$i]["qId"]);
-			                            $stmt->execute();
-			                            $fetchQuestionCount = $stmt->fetch(PDO::FETCH_COLUMN, 0);
-			                            
-			                            $starttime = $fetchQuestionnaire[$i]["starttime"];
-			                            $endtime = $fetchQuestionnaire[$i]["endtime"];
-			                            $str = "";
-			                            $canParticipate = false;
-			                            $taskPaperAvailable = true;
-			                            
-			                            if(time() < $starttime)
-			                            	$str = $lang["quizStartsAt"] . date("d.m.Y H:i", $starttime);
-			                            if(time() >= $starttime && time() <= $endtime)
-			                            {
-			                            	$str = $lang["quizEndsAt"] . date("d.m.Y H:i", $endtime);
-			                            	$canParticipate = true;
-			                            }
-			                            if(time() > $endtime)
-			                            	$str = $lang["quizClosed"] . date("d.m.Y H:i", $endtime);
-			                            if($fetchQuestionnaire[$i]["noParticipationPeriod"] == 1)
-			                            	$str = $lang["quizOpenForever"];
-			                            echo $str;
-			                            if($fetchQuestionnaire[$i]["noParticipationPeriod"] == 1)
-			                            {
-			                            	$canParticipate = true;
-			                            }
-			                            if($_SESSION["role"]["manager"])
-			                            {
-			                            	$canParticipate = true;
-			                            }
-			                            if($fetchQuestionCount < 1)
-			                            {
-			                            	$canParticipate = false;
-			                            	$taskPaperAvailable = false;
-			                            }
-			                            if($fetchQuestionnaire[$i]["result_visible"] == 3 && ($fetchQuestionnaire[$i]["showTaskPaper"] == 0 && $ownParticipationAmount <= 0) && $_SESSION['role']['admin'] == 0 || (time() < $starttime && $fetchQuestionnaire[$i]["noParticipationPeriod"] == 0))
-			                            {
-			                            	$taskPaperAvailable = false;
-			                            }
-			                            ?>
-			                            
-			                        </td>
-			                        <td style="width: 130px;">
-			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"])) {?>
-			                            <div style="white-space: nowrap;">
-				                            <a href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>" class="editQunnaire" original-title="<?php echo str_replace("[1]", '&laquo;' . substr(htmlspecialchars($fetchQuestionnaire[$i]["qName"]), 0, 25) . '&raquo;', $lang["editQuiz"]);?>"><img id="editQunnaire" src="assets/icon_edit.png" alt="" height="18px" width="18px"></a>&nbsp;
-				                            <img id="delQuizImg" style="cursor: pointer;" class="deleteQuiz delQuizImg" src="assets/icon_delete.png" alt="" original-title="<?php echo $lang["delQuiz"];?>" height="18px" width="18px" onclick="delQuiz(<?php echo $fetchQuestionnaire[$i]["qId"];?>)">&nbsp;
-				                            <a href="?p=quizReport&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>" class="qunnaireReport" original-title="<?php echo $lang["showQuizReport"];?>"><img id="qunnaireReport" src="assets/icon_report.png" alt="" height="18px" width="18px"></a>&nbsp;
-				                            <?php $eyePic = $fetchQuestionnaire[$i]["public"] != 1 ? 'closed' : 'open';
-											echo '<img alt="'.$eyePic.'" src="assets/icon_eye_' . $eyePic . '.png" width="13" height="10" class="eye_'.$eyePic.'" original-title="'.$lang["quiz_" . $eyePic].'">';?><br />
-										</div>
-			                        <?php }?>
-			                            <div style="white-space: nowrap;">
-			                            	<?php if($canParticipate) {?>
-			                            		<div style="height: 20px; width: 20px; float: left; margin-right: 4px;">
-				                            		<a href="Pindex.php?p=participationIntro&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" class="participate" original-title="<?php echo $lang["participateQuiz"];?>"><img class="startQuizButton" src="assets/green-start-button.png" alt="<?php echo $lang["participateQuiz"];?>" height="18px" width="18px"></a>&nbsp;
-				                            	</div>
-				                            <?php }
-				                            if(($taskPaperAvailable && $ownParticipationAmount > 0) || $_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"]))
-				                            {
-				                            ?>
-			                                	<a href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target='_blank' class="showTaskPaper" original-title="<?php echo $lang["showTaskpaper"];?>"><img src="assets/icon_quiz.png" alt="" height="18px" width="18px"></a>&nbsp;
-			                                <?php 
-				                            }
-			                                if(((time() > $endtime || $fetchQuestionnaire[$i]["result_visible"] == 1) && $fetchQuestionnaire[$i]["result_visible"] != 3) && $ownParticipationAmount > 0) {?>
-			                                	<a href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target="_blank" class="showSolutionPaperWithOwnSolutions" original-title="<?php echo $lang["showTaskPaperWithSolution"];?>"><img src="assets/pdf_icon.png" alt="" height="18px" width="18px"></a>&nbsp;
-			                                <?php }
-			                                if($ownParticipationAmount > 0) {?>
-			                                	<a href="<?php echo "Pindex.php?p=participationOutro&quizId=" . $fetchQuestionnaire[$i]["qId"];?>" class="showOwnParticipations" original-title="<?php echo $lang["showOwnParticipations"];?>"><img id="ownQunnaireReport" src="assets/icon_report.png" alt="" height="18px" width="18px"></a>
-			                                <?php }?>
-		                                </div>
-			                        </td>
-			                    </tr>
-			                <?php }?>
-			            </tbody>
-			            <tfoot>
-			            	<?php if($_SESSION['role']['creator'] == 1) {?>
-			                <tr>
-			                    <th colspan="9" style="text-align: center">
-			                        <input id="btnAddQuiz" class="btn" type="button" style="width: 100%" value="<?php echo $lang["createQuiz"];?>" onclick="window.location='?p=createEditQuiz';"/></th>
-			                </tr>
-				            <?php }?>
-			            </tfoot>
-			        </table>
-			    </div>
-			</form>
-		</div>
-	</div>
-</div>

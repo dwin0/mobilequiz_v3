@@ -76,6 +76,7 @@ ob_end_clean();
 <link rel="stylesheet" type="text/css" href="css/bootstrap-datepicker3.min.css" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/snackbar.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap-multiselect.css" />
 
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/bootstrap.js"></script>
@@ -88,8 +89,8 @@ ob_end_clean();
 <script src="js/jquery.tipsy.js"></script>
 <script src="js/bootstrap-datepicker.min.js"></script>
 <script src="js/bootstrap-tagsinput.min.js"></script>
-
 <script src="locales/bootstrap-datepicker.de.min.js"></script>
+<script src="js/bootstrap-multiselect.js"></script>
 
 <!-- PhotoSwipe -->
 <link rel="stylesheet" href="PhotoSwipe/photoswipe.css"> 
