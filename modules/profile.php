@@ -82,6 +82,29 @@
 		    }
 		});
 	}
+
+	$(document).ready(function() {
+	    $('#topic').multiselect({
+
+	    	buttonText: function(options, select) {
+	            if (options.length === 0) {
+	                return '<?php echo $lang["pleaseChoose"]?>';
+	            }
+	             else {
+	                 var labels = [];
+	                 options.each(function() {
+	                     if ($(this).attr('label') !== undefined) {
+	                         labels.push($(this).attr('label'));
+	                     }
+	                     else {
+	                         labels.push($(this).html());
+	                     }
+	                 });
+	                 return labels.join(', ') + '';
+	             }
+	        }
+	    });
+	});
 	
 	$(function() {
 
@@ -156,9 +179,42 @@
 		</div>
 		<form method="POST" action="?p=profileSettings&action=saveProfileData" >
 			<div class="panel-body" id="profileContent">
-		        <div style="height: 20px;">
-		        </div>
 			    <div class="control-group">
+			    
+			        <label class="control-label" for="topic">
+			            <?php echo $lang["fieldOfInterest"]?> *
+			        </label>
+			        <div class="controls" style="margin-bottom: 1.5em;">
+		                <select id="topic" multiple="multiple" class="form-control" name="topic[]" required>
+		                    <?php 
+		                    $stmt = $dbh->prepare("select subject_id from question group by subject_id");
+		                    $stmt->execute();
+		                    $result = $stmt->fetchAll();
+		                    
+		                    $userId = $_SESSION["id"];
+		                    $stmt = $dbh->prepare("select subject_id from group inner join user_group on group.id = user_group.group_id where user_group.user_id = :userId and group.subject_id is not null");
+		                    $stmt->bindParam(":userId", $userId);
+		                    $stmt->execute();
+		                    $userInterestGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		                    
+		                    for($i = 0; $i < count($result); $i++){
+								if($result[$i]["subject_id"] == null)
+								{
+									continue;
+								}
+								
+								$stmt = $dbh->prepare("select name from subjects where id = " . $result[$i]["subject_id"]);
+								$stmt->execute();
+								$resultSubjectName = $stmt->fetchAll(PDO::FETCH_ASSOC);
+															
+								$selected = (in_array($result[$i]["subject_id"], $userInterestGroups)) ? "selected" : "";
+								
+								echo "<option value=\"" . $result[$i]["subject_id"] . "\" " . $selected . ">" . $resultSubjectName[0]["name"] . "</option>";
+		                    } ?>
+		                </select>
+					</div>
+			    
+			    
 			        <label class="control-label" for="email">
 			            <?php echo $lang["email"]?>*
 			        </label>

@@ -333,6 +333,8 @@
 				return "E-Mail schon vorhanden.";
 			case -10:
 				return "Versenden der E-Mail fehlgeschlagen.";
+			case -11:
+				return "Themengebiet Fehler.";
 			default:
 				return "Allgemeiner Fehler. (Code " . $code . ")";
 		}

@@ -108,6 +108,50 @@ if($_POST["action"] == 'changeRole')
 				header("Location: ?p=profile&code=-4&info=user_data");
 				exit;
 			}
+			
+			
+			$topics = $_POST["topic"];
+			$numberOfTopics = count($topics);
+			
+			$stmt = $dbh->prepare("select group.id from group inner join user_group on group.id = user_group.group_id where user_group.user_id = :userId and group.subject_id is not null");
+			$stmt->bindParam(":userId", $_SESSION["id"]);
+			$stmt->execute();
+			$fetchUserInterestGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			
+			for($i = 0; $i < $numberOfTopics; $i++)
+			{
+				if(! in_array($topics[$i], $fetchUserInterestGroups)) //new interest
+				{
+					$stmt = $dbh->prepare("select id from group where subject_id = :subjectId");
+					$stmt->bindParam(':subjectId', $topics[$i]);
+					$stmt->execute();
+					$fetchSubjectGroup = $stmt->fetch(PDO::FETCH_ASSOC);
+						
+					$stmt = $dbh->prepare("insert into user_group values (:userId, :groupId)");
+					$stmt->bindParam(':userId', $lastId);
+					$stmt->bindParam(':groupId', $fetchSubjectGroup["id"]);
+					if(! $stmt->execute())
+					{
+						header("Location: ?p=profile&code=-4");
+						exit;
+					}
+					
+					unset($fetchSubjectGroup($topics[$i]));
+					unset($topics[$i]);
+				} elseif (in_array($topics[$i], $fetchUserInterestGroups)) //already in group
+				{
+					continue;
+				}
+			}
+			
+			for($i = 0; $i < count($fetchSubjectGroup); $i++) //in group but not selected anymore -> delete
+			{
+				$stmt = $dbh->prepare("delete from user_group where group_id = :groupId");
+				$stmt->bindParam(':groupId', $fetchSubjectGroup[$i]);
+				$stmt->execute();
+			}
+			
+			
 
 			if($fetchUser["email"] != $_POST["email"])
 			{
@@ -335,6 +379,26 @@ if($_POST["action"] == 'changeRole')
 			$stmt->bindParam(":name", $fetchRequest["topic"]);
 			if($stmt->execute()) {
 				$lastInsertedId = $dbh->lastInsertId();
+				
+				//create interest-group
+				do{
+					$randomKey = substr(md5(uniqid(rand(), true)), 1, 6);
+					$stmt = $dbh->prepare("select token from `group` where token = :token");
+					$stmt->bindParam(":token", $randomkey);
+					$stmt->execute();
+				} while($stmt->rowCount() > 0);
+					
+				$groupName = "interest_group_" . $fetchRequest["topic"];
+				$stmt = $dbh->prepare("insert into `group` (name, owner_id, token, subject_id) values (:groupName, :ownerId, :token, :subjectId)");
+				$stmt->bindParam(":groupName", $groupName);
+				$stmt->bindParam(":ownerId", $_SESSION["id"]);
+				$stmt->bindParam(":token", $randomKey);
+				$stmt->bindParam(":subjectId", $lastInsertedId);
+				if(!$stmt->execute())
+				{
+					echo "failed";
+				}
+				
 				
 				if(isset($fetchRequest["questionnaire_id"]))
 				{

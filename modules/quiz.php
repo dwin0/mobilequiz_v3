@@ -476,26 +476,26 @@
 			                        
 			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"])) {?>
 											
-										<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["editQuizAction"];?></a>
-										<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchQuestionnaire[$i]["qId"];?>)"><?php echo $lang["delQuiz"];?></a>
-										<a class="dropdown-item" href="?p=quizReport&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["showQuizReport"];?></a>
+										<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuizAction"];?></a>
+										<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchQuestionnaire[$i]["qId"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delQuiz"];?></a>
+										<a class="dropdown-item" href="?p=quizReport&id=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showQuizReport"];?></a>
 				                        								
 			                        <?php }?>
 		                            	<?php if($canParticipate) {?>
-			                            	<a class="dropdown-item" href="Pindex.php?p=participationIntro&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["participateQuiz"];?></a>
+			                            	<a class="dropdown-item" href="Pindex.php?p=participationIntro&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-play-circle"></span> <?php echo $lang["participateQuiz"];?></a>
 			                            <?php } ?>
-			                            	<a class="dropdown-item" href="?p=showQuiz&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["showQuizInfo"];?></a>
+			                            	<a class="dropdown-item" href="?p=showQuiz&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $lang["showQuizInfo"];?></a>
 			                            <?php
 			                            if(($taskPaperAvailable && $ownParticipationAmount > 0) || $_SESSION['role']['admin'] == 1 || $fetchQuestionnaire[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchQuestionnaire[$i]["qId"]))
 			                            {
 			                            ?>
-		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target='_blank'><?php echo $lang["showTaskpaper"];?></a>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target='_blank'><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskpaper"];?></a>
 		                                <?php }
 		                                if(((time() > $endtime || $fetchQuestionnaire[$i]["result_visible"] == 1) && $fetchQuestionnaire[$i]["result_visible"] != 3) && $ownParticipationAmount > 0) {?>
-		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target="_blank"><?php echo $lang["showTaskPaperWithSolution"];?></a>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId=<?php echo $fetchQuestionnaire[$i]["qId"];?>" target="_blank"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskPaperWithSolution"];?></a>
 		                                <?php }
 		                                if($ownParticipationAmount > 0) {?>
-		                                	<a class="dropdown-item" href="<?php echo "Pindex.php?p=participationOutro&quizId=" . $fetchQuestionnaire[$i]["qId"];?>"><?php echo $lang["showOwnParticipations"];?></a>
+		                                	<a class="dropdown-item" href="<?php echo "Pindex.php?p=participationOutro&quizId=" . $fetchQuestionnaire[$i]["qId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showOwnParticipations"];?></a>
 		                                <?php }?>
 		                                </div>
 			                        </td>
@@ -581,7 +581,7 @@
     	
     	$('#quizzes').DataTable({
             sort: true,
-            paginate: false,
+            paginate: true,
             lengthChange: false,
             responsive: true,
             columns: [

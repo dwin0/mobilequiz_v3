@@ -157,7 +157,7 @@
 		<?php } else {
 			if($participations < $fetchQunaire["amount_participations"] || $fetchQunaire["amount_participations"] == 0 || $_SESSION["role"]["admin"] == 1) {
 			?>
-			<input type="button" id="startQuiz" name="startQuiz" value="<?php echo $lang["startQuiz"]; ?>" data-icon="arrow-r" data-iconpos="right" onclick="<?php echo "startNewQuiz(". $quizId . ")";?>"/>
+			<input type="button" id="startQuiz" name="startQuiz" value="<?php echo $lang["begin"]; ?>" data-icon="arrow-r" data-iconpos="right" onclick="<?php echo "startNewQuiz(". $quizId . ")";?>"/>
 		<?php 
 			} else {
 				?>

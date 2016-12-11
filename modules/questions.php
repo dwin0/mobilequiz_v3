@@ -337,9 +337,10 @@
 										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -120px">
 									
 			                        	<?php if($_SESSION['role']['admin'] == 1 || $resultArray[$i]["owner_id"] == $_SESSION["id"]) {?>
-				                            <a class="dropdown-item" href="<?php echo "?p=createEditQuestion&mode=edit&id=" . $resultArray[$i]["q_id"];?>"><?php echo $lang["editQuestion"]?></a>
-	                                		<a class="dropdown-item" onclick="delQuestion(<?php echo $resultArray[$i]["q_id"];?>)"><?php echo $lang["deleteQuestion"]?></a>
+				                            <a class="dropdown-item" href="<?php echo "?p=createEditQuestion&mode=edit&id=" . $resultArray[$i]["q_id"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuestion"]?></a>
+	                                		<a class="dropdown-item" onclick="delQuestion(<?php echo $resultArray[$i]["q_id"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["deleteQuestion"]?></a>
 			                        	<?php }?>
+			                        	</div>
 			                        </td>
 			                    </tr>
 			                <?php }?>
@@ -429,7 +430,7 @@
 
         $('#questions').DataTable({
             sort: true,
-            paginate: false,
+            paginate: true,
             lengthChange: false,
             responsive: true,
             columns: [

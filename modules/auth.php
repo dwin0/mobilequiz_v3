@@ -31,6 +31,15 @@
 		$nickname = "";
 		$registerErrorCode = 0;
 		
+		if(isset($_POST["topic"]))
+		{
+			$topics = $_POST["topic"];
+		}
+		else {
+			$allOk = false;
+			$registerErrorCode = -11;
+		}
+		
 		if(isset($_POST["email"]))
 		{
 			$email = $_POST["email"];
@@ -146,6 +155,25 @@
 				$allOk = false;
 				$registerErrorCode = -9;
 			}
+			
+			$numberOfInterests = count($topics);
+			for($i = 0; $i < $numberOfInterests; $i++)
+			{
+				$stmt = $dbh->prepare("select id from group where subject_id = :subjectId");
+				$stmt->bindParam(':subjectId', $topics[$i]);
+				$stmt->execute();
+				$fetchSubjectGroup = $stmt->fetch(PDO::FETCH_ASSOC);
+					
+				$stmt = $dbh->prepare("insert into user_group values (:userId, :groupId)");
+				$stmt->bindParam(':userId', $lastId);
+				$stmt->bindParam(':groupId', $fetchSubjectGroup["id"]);
+				if(! $stmt->execute())
+				{
+					$allOk = false;
+					$registerErrorCode = -9;
+				}
+			}
+				
 			
 			$activationLink = "http://sinv-56082.edu.hsr.ch/index.php?p=auth&action=verification&key=" . $randomKey;
 			//$activationLink = $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']  . "?p=auth&action=verification&key=" . $randomKey;

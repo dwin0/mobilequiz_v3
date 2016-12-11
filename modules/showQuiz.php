@@ -163,13 +163,16 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 		</div>
 		<div class="panel-body">
 			<p>
-				<a href="https://sinv-56082.edu.hsr.ch/index.php?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $_GET["quizId"];?>" target="_blank"><?php echo $lang["showPrintTasksheet"];?></a>
+				<a href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $_GET["quizId"];?>" target="_blank"><?php echo $lang["showPrintTasksheet"];?></a>
 			</p>
 		</div>
 	</div>
-	<div style="height: 20px;"></div>
-	<div class="left" style="float: left;">
-		<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
+	<div>
+		<div style="float: left;">
+			<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
+		</div>
+		<div style="float: right;">
+			<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["startQuiz"];?>" onclick="window.location='<?php echo "?quiz=" . $fetchQuiz["qnaire_token"];?>'"/>
+		</div>
 	</div>
-</div>
 </div>
