@@ -140,8 +140,28 @@ PARTICIPATION PAGE
 */
 
 #buttons {
-	padding-left: 40%;
+	display: block !important;
+    width: 60%;
+    margin-left: 20%;
+    margin-right: 20%;
 }
+
+#buttons > div {
+	width: 100%;
+}
+
+#buttons > div > div.ui-last-child {
+	float: right;
+}
+
+#buttons > div > div.ui-first-child {
+	border-right-width: thin;
+}
+
+#buttons > div > div.ui-last-child, #buttons > div > div.ui-first-child {
+	border-radius: 5.625px;
+}
+
 
 .answers {
 	width: 60%;
@@ -436,6 +456,7 @@ END QUIZ PAGE
 	#buttons {
 		padding-left: 0;
 		width: 100%;
+		margin: 0;
 		display:inline-block !important;
 		text-align:center;
 	}
@@ -471,10 +492,30 @@ END QUIZ PAGE
 @media (max-width: 680px) {
 	
 	/*START PARTICIPATION PAGE*/
+	
 	.answers > ul > li > div > div {
 		display: table-header-group !important;
 	}
+	
 	/*END PARTICIPATION PAGE*/	
+	
+	
+	/*START PARTICIPATION OUTRO PAGE*/
+	
+	
+	#outroNext {
+		clear: both;
+	}
+	
+	#rejoinQuiz, #outroNext {
+		width: 200px;
+		border-radius: 5.625px;
+		border-width: thin;
+	}
+	
+	
+	
+	/*END PARTICIPATION OUTRO PAGE*/	
 	
 	
 	/*START CREATE_EDIT_QUESTION PAGE*/

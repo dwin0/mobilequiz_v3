@@ -366,8 +366,8 @@
 	</div>
 </div>
 <div data-role="controlgroup" data-type="horizontal" style="margin-top: 25px;">
-	<a href="?p=participationIntro&quizId=<?php echo $quizId;?>" data-theme="a" data-ajax="false" data-iconshadow="true" data-role="button" data-icon="arrow-l" data-iconpos="left"><?php echo $lang["rejoinQuiz"]; ?></a>
-	<a href="index.php?p=quiz" data-theme="a" data-iconshadow="true" data-ajax="false" data-role="button" data-icon="arrow-r" data-iconpos="right"><?php echo $lang["nextQuestion"]; ?></a>
+	<a id="rejoinQuiz" href="?p=participationIntro&quizId=<?php echo $quizId;?>" data-theme="a" data-ajax="false" data-iconshadow="true" data-role="button" data-icon="arrow-l" data-iconpos="left"><?php echo $lang["rejoinQuiz"]; ?></a>
+	<a id="outroNext" href="index.php?p=quiz" data-theme="a" data-iconshadow="true" data-ajax="false" data-role="button" data-icon="arrow-r" data-iconpos="right"><?php echo $lang["nextQuestion"]; ?></a>
 </div>
 
 

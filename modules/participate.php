@@ -268,7 +268,7 @@ $_SESSION["choosedQuestion"] = $choosedQuestion;
 		<?php if($_SESSION["questionNumber"] > 0) {?>
 		<input type="submit" id="prevQuestion" name="prevQuestion" value="<?php echo $lang["btnBack"]; ?>" data-icon="arrow-l" data-iconpos="left" />
 		<?php } else {?>
-		<div style="visibility: hidden;'" class="ui-btn ui-input-btn ui-corner-all ui-shadow ui-icon-arrow-l ui-btn-icon-left ui-first-child">Zur&uuml;ck</div>
+		<div style="visibility: hidden;'" class="ui-btn ui-input-btn ui-corner-all ui-shadow ui-icon-arrow-l ui-btn-icon-left ui-first-child"><?php echo $lang["btnBack"]?></div>
 		<?php } ?>
 		<input type="submit" id="nextQuestion" name="nextQuestion" value="<?php echo $lang["nextQuestion"]; ?>" data-icon="arrow-r" data-iconpos="right" />
 	</div>
