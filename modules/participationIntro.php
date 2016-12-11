@@ -17,7 +17,10 @@
 		exit;
 	}
 	
-	$stmt = $dbh->prepare("select questionnaire.*, count(qunaire_qu.questionnaire_id) as question_count, user_data.firstname, user_data.lastname, user.email from questionnaire inner join qunaire_qu on qunaire_qu.questionnaire_id = questionnaire.id inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :id");
+	$stmt = $dbh->prepare("select execution.*, questionnaire.description, count(qunaire_qu.questionnaire_id) as question_count, user_data.firstname, user_data.lastname, user.email 
+			from questionnaire inner join qunaire_qu on qunaire_qu.questionnaire_id = questionnaire.id inner join user on user.id = questionnaire.owner_id 
+			inner join user_data on user_data.user_id = user.id inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
+			inner join execution on qunaire_exec.execution_id = execution.id  where questionnaire.id = :id");
 	$stmt->bindParam(":id", $quizId);
 	if(!$stmt->execute())
 	{
@@ -89,7 +92,8 @@
 		<div class="tr">
 			<div class="td label"><?php echo $lang["amountParticipations"];?></div>
 			<div class="td label"><?php
-			$stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :questionnaire_id and user_id = :user_id");
+			$stmt = $dbh->prepare("select user_exec_session.id from user_exec_session inner join qunaire_exec on user_exec_session.execution_id = qunaire_exec.execution_id 
+							where qunaire_exec.questionnaire_id = :questionnaire_id and user_exec_session.user_id = :user_id");
 			$stmt->bindParam(":questionnaire_id", $quizId);
 			$stmt->bindParam(":user_id", $_SESSION["id"]);
 			$stmt->execute();
@@ -131,10 +135,6 @@
 		<b>Sie sind gerade noch in einer laufender Lernkontrolle eingetragen, bitte schliessen 
 		Sie diese Lernokontrolle zuerst ab.</b>
 	<?php }
-	$stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :questionnaire_id and user_id = :user_id");
-	$stmt->bindParam(":questionnaire_id", $quizId);
-	$stmt->bindParam(":user_id", $_SESSION["id"]);
-	$stmt->execute();
 	if($participations < $fetchQunaire["amount_participations"] || $fetchQunaire["amount_participations"] == 0 || $_SESSION["role"]["admin"] == 1) {
 	?>
 	<label>
@@ -143,7 +143,8 @@
 	<?php }?>
 	<div id="startButton" style="display: none;" data-role="controlgroup" data-type="horizontal">
 		<?php 
-			$stmt = $dbh->prepare("select id from user_qunaire_session where user_id = :user_id and questionnaire_id = :qId and endtime is null");
+			$stmt = $dbh->prepare("select user_exec_session.id from user_exec_session inner join qunaire_exec on user_exec_session.execution_id = qunaire_exec.execution_id 
+							where qunaire_exec.questionnaire_id = :questionnaire_id and user_exec_session.user_id = :user_id and endtime is null");
 			$stmt->bindParam(":user_id", $_SESSION["id"]);
 			$stmt->bindParam(":qId", $quizId);
 			$stmt->execute();

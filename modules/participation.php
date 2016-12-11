@@ -33,7 +33,8 @@ if($action == "startQuiz")
 		exit;
 	}
 	
-	$stmt = $dbh->prepare("select id, amount_participations, public, starttime, endtime, noParticipationPeriod from questionnaire where id = :id");
+	$stmt = $dbh->prepare("select amount_participations, public, starttime, endtime, noParticipationPeriod from questionnaire 
+			inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id  where questionnaire.id = :id");
 	$stmt->bindParam(":id", $id);
 	$stmt->execute();
 	$fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -47,7 +48,8 @@ if($action == "startQuiz")
 	checkAuthorization($_GET["quizId"], $fetchQuiz, false);
 	
 	//max participations
-	$stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :questionnaire_id and user_id = :user_id");
+	$stmt = $dbh->prepare("select user_exec_session.id from user_exec_session inner join qunaire_exec on user_exec_session.execution_id = qunaire_exec.execution_id 
+							where qunaire_exec.questionnaire_id = :questionnaire_id and user_exec_session.user_id = :user_id");
 	$stmt->bindParam(":questionnaire_id", $id);
 	$stmt->bindParam(":user_id", $_SESSION["id"]);
 	$stmt->execute();
@@ -58,10 +60,9 @@ if($action == "startQuiz")
 		exit;
 	}
 	
-	$stmt = $dbh->prepare("insert into user_qunaire_session (user_id, questionnaire_id, starttime) 
-			values (:user_id, :questionnaire_id, :starttime)");
+	$stmt = $dbh->prepare("insert into user_exec_session (user_id, execution_id, starttime) values (:user_id, :execution_id, :starttime)");
 	$stmt->bindParam(":user_id", $_SESSION["id"]);
-	$stmt->bindParam(":questionnaire_id", $id);
+	$stmt->bindParam(":execution_id", ''); //TODO: Execution_id ergänzen
 	$stmt->bindParam(":starttime", time());
 	if($stmt->execute())
 	{
@@ -78,7 +79,7 @@ if($action == "startQuiz")
 	
 } else if($action == "endQuiz")
 {
-	$stmt = $dbh->prepare("update user_qunaire_session set endtime = :endtime, end_state = :end_state where id = :idSession"); //incomplete statement (points, finished in time)
+	$stmt = $dbh->prepare("update user_exec_session set endtime = :endtime, end_state = :end_state where id = :idSession"); //incomplete statement (points, finished in time)
 	$stmt->bindParam(":idSession", $_SESSION["idSession"]);
 	$stmt->bindParam(":endtime", time());
 	$code = 0;
