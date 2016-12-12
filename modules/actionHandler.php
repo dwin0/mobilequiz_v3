@@ -27,9 +27,6 @@
 		case "delQuestion":
 			deleteQuestion();
 			break;
-		case "insertQuiz":
-			insertQuiz(); //TODO: Remove
-			break;
 		case "addQuestionToQuiz":
 			addQuestionToQuiz();
 			break;
@@ -45,6 +42,8 @@
 		case "delQuiz":
 			deleteQuiz();
 			break;
+		case "delExec":
+			deleteExecution();
 		case "addAssignation":
 			addAssignation();
 			break;

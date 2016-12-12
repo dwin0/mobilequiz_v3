@@ -526,7 +526,138 @@ function getQuestionInfos($questionId, $quizId)
 	return $infos;
 }
 
+function deleteExecution()
+{
+	global $dbh;
+	$response_array["status"] = "OK";
+	
+	if(!isset($_POST["execId"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["parameterError"];
+	}
+	
+	if($_SESSION['role']['creator'])
+	{
+		$stmt = $dbh->prepare("select owner_id, questionnaire.id from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
+							inner join execution on qunaire_exec.execution_id = execution.id where execution.id = :id");
+		$stmt->bindParam(":id", $_POST["execId"]);
+		$stmt->execute();
+		$fetchOwnerAndId = $stmt->fetch(PDO::FETCH_ASSOC);
 
+		if($_SESSION["id"] == $fetchOwnerAndId["owner_id"] || $_SESSION['role']['admin'] == 1)
+		{
+			$stmt = $dbh->prepare("delete from qunaire_exec where execution_id = :execId");
+			$stmt->bindParam(":execId", $_POST["execId"]);
+			$delQunaire_Exec = $stmt->execute();
+			
+			$stmt = $dbh->prepare("delete from group_exec where execution_id = :execId");
+			$stmt->bindParam(":execId", $_POST["execId"]);
+			$delGroup_Exec = $stmt->execute();
+			
+			$stmt = $dbh->prepare("delete from user_exec where execution_id = :execId");
+			$stmt->bindParam(":execId", $_POST["execId"]);
+			$delUser_Exec = $stmt->execute();
+			
+			$stmt = $dbh->prepare("select id from user_exec_session where execution_id = :execId");
+			$stmt->bindParam(":execId", $_POST["execId"]);
+			$stmt->execute();
+			$fetchSessionId = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			
+			$delAn_qu_user = true;
+			for($i = 0; $i < count($fetchSessionId); $i++)
+			{
+				$stmt = $dbh->prepare("delete from an_qu_user where session_id = :sId");
+				$stmt->bindParam(":sId", $fetchSessionId[$i]["id"]);
+				if(!$stmt->execute())
+					$delAn_qu_user = false;
+			}
+			
+			$stmt = $dbh->prepare("delete from user_exec_session where execution_id = :execId");
+			$stmt->bindParam(":execId", $_POST["execId"]);
+			$delUser_exec_session = $stmt->execute();
+			
+			$stmt = $dbh->prepare("delete from execution where id = :execId");
+			$stmt->bindParam(":execId", $_POST["execId"]);
+			$delExecution = $stmt->execute();
+			
+			if($delQunaire_Exec && $delGroup_Exec && $delUser_Exec && $delAn_qu_user && $delUser_exec_session && $delExecution)
+			{
+				$response_array["status"] = "OK";
+				$response_array["quizId"] = $fetchOwnerAndId["id"];
+			} else {
+				$response_array["status"] = "error";
+				$response_array["text"] = $lang["DB-Update-Error"];
+			}
+			
+			echo json_encode($response_array);
+			exit;
+		} else {
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["noAccessError"];
+			echo json_encode($response_array);
+			exit;
+		}
+	} else {
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["noAccessError"];
+		echo json_encode($response_array);
+		exit;
+	}
+}
+
+function deleteQuiz()
+{
+	global $dbh;
+
+	if($_SESSION['role']['creator'])
+	{
+		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
+		$stmt->bindParam(":id", $_GET["quizId"]);
+		$stmt->execute();
+		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1)
+		{
+			$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :qId");
+			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$delQunaire_qu = $stmt->execute();
+
+			$stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :qId");
+			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$stmt->execute();
+			$fetchSessionId = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+			$delAn_qu_user = true;
+			for($i = 0; $i < count($fetchSessionId); $i++)
+			{
+				$stmt = $dbh->prepare("delete from an_qu_user where session_id = :sId");
+				$stmt->bindParam(":sId", $fetchSessionId[$i]["id"]);
+				if(!$stmt->execute())
+					$delAn_qu_user = false;
+			}
+
+			$stmt = $dbh->prepare("delete from user_qunaire_session where questionnaire_id = :qId");
+			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$delUser_qunaire_session = $stmt->execute();
+
+			$stmt = $dbh->prepare("delete from qunaire_assigned_to where questionnaire_id = :qId");
+			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$delQunaire_assigned_to = $stmt->execute();
+
+			$stmt = $dbh->prepare("delete from questionnaire where id = :qId");
+			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$delQuestionnaire = $stmt->execute();
+
+			if($delQunaire_qu && $delUser_qunaire_session && $delQuestionnaire && $delAn_qu_user && $delQunaire_assigned_to)
+			{
+				echo "deleteQuizOk";
+			} else {
+				echo "failed";
+			}
+		}
+	}
+}
 
 
 
@@ -1297,60 +1428,6 @@ function deleteQuestionFromQuiz()
 			} else {echo "failed";}
 		} else {echo "failed";}
 	} else {echo "failed";}
-}
-
-
-function deleteQuiz()
-{
-	global $dbh;
-	
-	if($_SESSION['role']['creator'])
-	{
-		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["quizId"]);
-		$stmt->execute();
-		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
-	
-		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1)
-		{
-			$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
-			$delQunaire_qu = $stmt->execute();
-	
-			$stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
-			$stmt->execute();
-			$fetchSessionId = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	
-			$delAn_qu_user = true;
-			for($i = 0; $i < count($fetchSessionId); $i++)
-			{
-				$stmt = $dbh->prepare("delete from an_qu_user where session_id = :sId");
-				$stmt->bindParam(":sId", $fetchSessionId[$i]["id"]);
-				if(!$stmt->execute())
-					$delAn_qu_user = false;
-			}
-	
-			$stmt = $dbh->prepare("delete from user_qunaire_session where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
-			$delUser_qunaire_session = $stmt->execute();
-	
-			$stmt = $dbh->prepare("delete from qunaire_assigned_to where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
-			$delQunaire_assigned_to = $stmt->execute();
-	
-			$stmt = $dbh->prepare("delete from questionnaire where id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
-			$delQuestionnaire = $stmt->execute();
-	
-			if($delQunaire_qu && $delUser_qunaire_session && $delQuestionnaire && $delAn_qu_user && $delQunaire_assigned_to)
-			{
-				echo "deleteQuizOk";
-			} else {
-				echo "failed";
-			}
-		}
-	}
 }
 
 function moveQuestion()

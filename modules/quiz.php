@@ -567,25 +567,26 @@
 			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"])) {?>
 											
 										<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchExecution[$i]["qId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuizAction"];?></a>
-										<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchExecution[$i]["qId"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delQuiz"];?></a>
-										<a class="dropdown-item" href="?p=quizReport&id=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showQuizReport"];?></a>
+										<a class="dropdown-item" href="?p=createEditExecution&mode=edit&execId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editExecutionAction"];?></a>										
+										<a class="dropdown-item" onclick="delExec(<?php echo $fetchExecution[$i]["execId"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delExec"];?></a>
+										<a class="dropdown-item" href="?p=quizReport&execId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showQuizReport"];?></a>
 				                        								
 			                        <?php }?>
 		                            	<?php if($canParticipate) {?>
-			                            	<a class="dropdown-item" href="Pindex.php?p=participationIntro&quizId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-play-circle"></span> <?php echo $lang["participateQuiz"];?></a>
+			                            	<a class="dropdown-item" href="Pindex.php?p=participationIntro&execId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-play-circle"></span> <?php echo $lang["participateQuiz"];?></a>
 			                            <?php } ?>
-			                            	<a class="dropdown-item" href="?p=showQuiz&quizId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $lang["showQuizInfo"];?></a>
+			                            	<a class="dropdown-item" href="?p=showQuiz&execId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $lang["showQuizInfo"];?></a>
 			                            <?php
 			                            if(($taskPaperAvailable && $ownParticipationAmount > 0) || $_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"]))
 			                            {
 			                            ?>
-		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $fetchExecution[$i]["execId"];?>" target='_blank'><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskpaper"];?></a>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaper&execId=<?php echo $fetchExecution[$i]["execId"];?>" target='_blank'><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskpaper"];?></a>
 		                                <?php }
 		                                if(((time() > $endtime || $fetchExecution[$i]["result_visible"] == 1) && $fetchExecution[$i]["result_visible"] != 3) && $ownParticipationAmount > 0) {?>
-		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId=<?php echo $fetchExecution[$i]["execId"];?>" target="_blank"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskPaperWithSolution"];?></a>
+		                                	<a class="dropdown-item" href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&execId=<?php echo $fetchExecution[$i]["execId"];?>" target="_blank"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showTaskPaperWithSolution"];?></a>
 		                                <?php }
 		                                if($ownParticipationAmount > 0) {?>
-		                                	<a class="dropdown-item" href="<?php echo "Pindex.php?p=participationOutro&quizId=" . $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showOwnParticipations"];?></a>
+		                                	<a class="dropdown-item" href="<?php echo "Pindex.php?p=participationOutro&execId=" . $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showOwnParticipations"];?></a>
 		                                <?php }?>
 		                                </div>
 			                        </td>
@@ -621,6 +622,44 @@
 					alert(<?php echo "\"" . $lang["deletingFailed"] . "\"";?>);
 				}
 			});
+		}
+	}
+
+	function delExec(id)
+	{
+		if(confirm("<?php echo $lang["deleteConfirmation"] ?>")) 
+		{
+			var data = new FormData();
+			data.append("execId", id);
+			
+			$.ajax({
+		        url: '?p=actionHandler&action=delExec',
+		        type: 'POST',
+		        data: data,
+		        cache: false,
+		        dataType: 'json',
+		        processData: false,
+		        contentType: false,
+		        success: function(data)
+		        {
+					switch(data.status)
+					{
+						case "OK":
+							$('#quizzes').DataTable().row($('#quiz_'+data.quizId)).remove().draw();
+							$('#topicActionResult').html("<span style=\"color: green;\"><?php echo $lang["executionSuccessfullyDeleted"];?>.</span>");
+							console.log("OK");
+							break;
+						case "error":
+							alert("Error: " + data.text);
+							break;
+					}
+		        },
+		        error: function()
+		        {
+		            console.log("Ajax couldn't send data");
+		            alert("Ajax couldn't send data");
+		        }
+		    });
 		}
 	}
 

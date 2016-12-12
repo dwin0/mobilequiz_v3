@@ -6,29 +6,32 @@ if($_SESSION["role"]["user"] != 1)
 	exit;
 }
 
-if(!isset($_GET["quizId"]))
+if(!isset($_GET["execId"]))
 {
 	header("Location: ?p=quiz&code=-15");
 	exit;
 }
 
-$stmt = $dbh->prepare("select questionnaire.name, noParticipationPeriod, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
-$stmt->bindParam(":quizId", $_GET["quizId"]);
+$stmt = $dbh->prepare("select questionnaire.name, noParticipationPeriod, description, starttime, endtime, execution.last_modified, exec_token, firstname, lastname, email 
+					from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id 
+					inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id 
+					where execution.id = :execId");
+$stmt->bindParam(":execId", $_GET["execId"]);
 if(!$stmt->execute())
 {
 	header("Location: ?p=quiz&code=-25");
 	exit;
 }
-$fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
+$fetchExec = $stmt->fetch(PDO::FETCH_ASSOC);
 
 ?>
 <div class="container theme-showcase">
 	<div class="page-header">
-		<h1><?php echo $lang["quiz"] . " &laquo;" . $fetchQuiz["name"] . "&raquo;"?></h1>
+		<h1><?php echo $lang["quiz"] . " &laquo;" . $fetchExec["name"] . "&raquo;"?></h1>
 	</div>
 	<div class="panel panel-default">
 		<div class="panel-heading">
-			<h3 class="panel-title"><?php echo "Publikationslink - Stand vom " . date("d.m.Y H:i:s", $fetchQuiz["last_modified"]); ?></h3>
+			<h3 class="panel-title"><?php echo "Publikationslink - Stand vom " . date("d.m.Y H:i:s", $fetchExec["last_modified"]); ?></h3>
 		</div>
 		<div class="panel-body">
 			<div class="row">
@@ -37,20 +40,20 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 						<div class="form-group">
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizCreateName"];?></label>
 							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php echo $fetchQuiz["name"];?></p>
+								<p class="form-control-static"><?php echo $fetchExec["name"];?></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["description"];?></label>
 							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php echo $fetchQuiz["description"];?></p>
+								<p class="form-control-static"><?php echo $fetchExec["description"];?></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizStartDate"];?>
 							</label>
 							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"]));?></p>
+								<p class="form-control-static"><?php echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchExec["starttime"]));?></p>
 							</div>
 						</div>
 						<div class="form-group">
@@ -58,20 +61,36 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 							</label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php
-									if($fetchQuiz["noParticipationPeriod"]) {
+									if($fetchExec["noParticipationPeriod"]) {
 										echo $lang["quizOpenForever"];
 									} else {
-										echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"]));
+										echo utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchExec["endtime"]));
 									}
+								?></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizTableAmountQuestions"];?></label>
+							<div class="col-md-9 col-sm-8">
+								<p class="form-control-static"><?php 
+									$stmt = $dbh->prepare("select question.id from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on 
+														questionnaire.id = qunaire_qu.questionnaire_id inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
+														inner join execution on qunaire_exec.execution_id = execution.id where execution.id = :execId");
+									$stmt->bindParam(":execId", $_GET["execId"]);
+									$stmt->execute();
+									echo $stmt->rowCount();
 								?></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["maxPoints"];?></label>
 							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select question.id, type_id, questionnaire.singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
-									$stmt->bindParam(":quizId", $_GET["quizId"]);
+								<p class="form-control-static"><?php
+									$stmt = $dbh->prepare("select question.id, type_id, execution.singlechoice_multiplier from question inner join qunaire_qu 
+														on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id 
+														inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id 
+														where execution.id = :execId");
+									$stmt->bindParam(":execId", $_GET["execId"]);
 									$stmt->execute();
 									$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 									$totalPoints = 0;
@@ -92,22 +111,11 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizTableAmountQuestions"];?></label>
-							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select id from question inner join qunaire_qu on qunaire_qu.question_id = question.id where qunaire_qu.questionnaire_id = :quizId");
-									$stmt->bindParam(":quizId", $_GET["quizId"]);
-									$stmt->execute();
-									echo $stmt->rowCount();
-								?></p>
-							</div>
-						</div>
-						<div class="form-group">
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["amountParticipants"];?></label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select questionnaire.id, user_qunaire_session.user_id from questionnaire inner join user_qunaire_session on user_qunaire_session.questionnaire_id = questionnaire.id where questionnaire.id = :quizId group by user_id");
-									$stmt->bindParam(":quizId", $_GET["quizId"]);
+									$stmt = $dbh->prepare("select execution_id, user_exec_session.user_id from user_exec_session where execution_id = :execId group by user_id");
+									$stmt->bindParam(":execId", $_GET["execId"]);
 									$stmt->execute();
 									echo $stmt->rowCount();
 								?></p>
@@ -117,8 +125,8 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["amountParticipations"];?></label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select questionnaire.id, user_qunaire_session.user_id from questionnaire inner join user_qunaire_session on user_qunaire_session.questionnaire_id = questionnaire.id where questionnaire.id = :quizId");
-									$stmt->bindParam(":quizId", $_GET["quizId"]);
+									$stmt = $dbh->prepare("select execution_id, user_exec_session.user_id from user_exec_session where execution_id = :execId");
+									$stmt->bindParam(":execId", $_GET["execId"]);
 									$stmt->execute();
 									echo $stmt->rowCount();
 								?></p>
@@ -129,20 +137,20 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 						<?php 
 						//$quizLink = str_replace("/index.php", "", $_SERVER["HTTP_HOST"].$_SERVER['PHP_SELF']);
 						$quizLink = "sinv-56082.edu.hsr.ch";
-						$showedLink = $quizLink . "/?quiz=" . $fetchQuiz["qnaire_token"];
+						$showedLink = $quizLink . "/?quiz=" . $fetchExec["exec_token"];
 						
 						$text;
-						if($fetchQuiz["noParticipationPeriod"]) {
+						if($fetchExec["noParticipationPeriod"]) {
 							$text = $lang["showQuizForever"];
 						} else {
 							$text = $lang["showQuiz"];
 						}
 						
-						$text = str_replace("[0]", "<a href=\"?quiz=" . $fetchQuiz["qnaire_token"] . "\">" . $showedLink . "</a>", $text);
-						$text = str_replace("[1]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"])), $text);
-						$text = str_replace("[2]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"])), $text);
-						$text = str_replace("[3]", $fetchQuiz["firstname"] . " " . $fetchQuiz["lastname"], $text);
-						$text = str_replace("[4]", $fetchQuiz["email"], $text);
+						$text = str_replace("[0]", "<a href=\"?quiz=" . $fetchExec["exec_token"] . "\">" . $showedLink . "</a>", $text);
+						$text = str_replace("[1]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchExec["starttime"])), $text);
+						$text = str_replace("[2]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchExec["endtime"])), $text);
+						$text = str_replace("[3]", $fetchExec["firstname"] . " " . $fetchExec["lastname"], $text);
+						$text = str_replace("[4]", $fetchExec["email"], $text);
 						echo $text;
 						?>
 					</p>
@@ -163,7 +171,7 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 		</div>
 		<div class="panel-body">
 			<p>
-				<a href="?p=generatePDF&action=getQuizTaskPaper&quizId=<?php echo $_GET["quizId"];?>" target="_blank"><?php echo $lang["showPrintTasksheet"];?></a>
+				<a href="?p=generatePDF&action=getQuizTaskPaper&execId=<?php echo $_GET["execId"];?>" target="_blank"><?php echo $lang["showPrintTasksheet"];?></a>
 			</p>
 		</div>
 	</div>
@@ -172,7 +180,7 @@ $fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
 			<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["buttonBackToOverview"];?>" onclick="window.location='?p=quiz';"/>
 		</div>
 		<div style="float: right;">
-			<input type="button" class="btn" id="btnBackToOverview" value="<?php echo $lang["startQuiz"];?>" onclick="window.location='<?php echo "?quiz=" . $fetchQuiz["qnaire_token"];?>'"/>
+			<input type="button" class="btn" id="btnStartQuiz" value="<?php echo $lang["startQuiz"];?>" onclick="window.location='<?php echo "?quiz=" . $fetchExec["exec_token"];?>'"/>
 		</div>
 	</div>
 </div>
