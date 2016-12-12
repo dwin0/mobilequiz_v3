@@ -26,29 +26,29 @@
 	}
 	
 	//Query Quiz
-	$quizId = 0;
-	if(isset($_GET["quizId"]))
+	$execId = 0;
+	if(isset($_GET["execId"]))
 	{
-		$quizId = $_GET["quizId"];
+		$execId = $_GET["execId"];
 	} else {
 		header("Location: index.php?p=quiz&code=-2");
 		exit;
 	}
 
-	$stmt = $dbh->prepare("select result_visible, result_visible_points, singlechoice_multiplier, public from questionnaire where id = :questionnaire_id");
-	$stmt->bindParam(":questionnaire_id", $quizId);
+	$stmt = $dbh->prepare("select result_visible, result_visible_points, singlechoice_multiplier, public from execution where id = :execId");
+	$stmt->bindParam(":execId", $execId);
 	$stmt->execute();
-	$fetchQuestionnaire = $stmt->fetch(PDO::FETCH_ASSOC);
+	$fetchExecution = $stmt->fetch(PDO::FETCH_ASSOC);
 	
 	if(!isset($_GET["session"]))
-		$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id and endtime is not null order by id desc limit 1");
+		$stmt = $dbh->prepare("select * from user_exec_session where user_id = :user_id and execution_id = :execId and endtime is not null order by id desc limit 1");
 	else
 	{
-		$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id and endtime is not null and id = :session_id");
+		$stmt = $dbh->prepare("select * from user_exec_session where user_id = :user_id and execution_id = :execId and endtime is not null and id = :session_id");
 		$stmt->bindParam(":session_id", $_GET["session"]);
 	}
 	$stmt->bindParam(":user_id", $_SESSION["id"]);
-	$stmt->bindParam(":questionnaire_id", $quizId);
+	$stmt->bindParam(":execId", $execId);
 	if(!$stmt->execute() || $stmt->rowCount() < 1)
 	{
 		header("Location: index.php?p=quiz&code=-14&info=unknown " . $stmt->rowCount() . " " . $_GET["session"]);
@@ -63,7 +63,12 @@
 	}
 	
 	include_once 'modules/authorizationCheck_participation.php';
-	checkAuthorization($_GET["quizId"], $fetchQuestionnaire, true);
+	
+	$stmt = $dbh->prepare("select questionnaire_id from qunaire_exec where execution_id = :execId");
+	$stmt->bindParam(":execId", $execId);
+	$stmt->execute();
+	$quizId = $stmt->fetch(PDO::FETCH_ASSOC);
+	checkAuthorization($quizId["questionnaire_id"], $fetchExecution, true);
 	
 	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
@@ -85,9 +90,9 @@
 		<p id="codeResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 		<div>
 			<?php 
-			$stmt = $dbh->prepare("select id from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id and endtime is not null order by id desc");
+			$stmt = $dbh->prepare("select id from user_exec_session where user_id = :user_id and execution_id = :execId and endtime is not null order by id desc");
 			$stmt->bindParam(":user_id", $_SESSION["id"]);
-			$stmt->bindParam(":questionnaire_id", $quizId);
+			$stmt->bindParam(":execId", $execId);
 			$stmt->execute();
 			$fetchIdForSelect = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			?>
@@ -112,9 +117,9 @@
 			<tr>
 				<td><?php echo $lang["amountParticipated"]; ?>:</td>
 				<td><?php 
-					$stmt = $dbh->prepare("select count(*) as count from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id");
+					$stmt = $dbh->prepare("select count(*) as count from user_exec_session where user_id = :user_id and execution_id = :execId");
 					$stmt->bindParam(":user_id", $_SESSION["id"]);
-					$stmt->bindParam(":questionnaire_id", $quizId);
+					$stmt->bindParam(":execId", $execId);
 					$stmt->execute();
 					$fetchCount = $stmt->fetch(PDO::FETCH_ASSOC);
 					echo $fetchCount["count"];
@@ -124,7 +129,7 @@
 				<td><?php echo $lang["timeNeeded"]; ?>:</td>
 				<td><?php echo gmdate("H:i:s", ($fetchSession["endtime"]-$fetchSession["starttime"])) . " (hh:mm:ss)";?></td>
 			</tr>
-			<?php if($fetchQuestionnaire["result_visible"] != 3) {?>
+			<?php if($fetchExecution["result_visible"] != 3) {?>
 				<tr>
 					<td><?php echo $lang["completedQuestions"]; ?>:</td>
 					<td><?php 
@@ -138,11 +143,11 @@
 				<tr>
 					<td><?php echo $lang["totalPoints"]; ?>:</td>
 					<td><?php 
-						if($fetchQuestionnaire["result_visible_points"] == 1) {
-						$fetchPoints = getPoints($dbh, $quizId, $fetchSession["id"], 2);
+						if($fetchExecution["result_visible_points"] == 1) {
+						$fetchPoints = getPoints($dbh, $quizId["questionnaire_id"], $fetchSession["id"], 2);
 						echo $fetchPoints[0] . "/" . $fetchPoints[1] . " (" . $fetchPoints[2] . "%)";
 						} else {
-							echo "Anzeigen der Punkte deaktiviert.";
+							echo "Anzeigen der Punkte ist deaktiviert.";
 						}
 					?></td>
 				</tr>
@@ -169,27 +174,29 @@
 		<h2><?php echo $lang["participationResultsHeading"]; ?></h2>
 		<p><?php 
 		
-			if($fetchQuestionnaire["result_visible"] == 1)
+			if($fetchExecution["result_visible"] == 1)
 			{
 				echo $lang["resultVisible1"];
-			} else if($fetchQuestionnaire["result_visible"] == 2)
+			} else if($fetchExecution["result_visible"] == 2)
 			{
 				echo $lang["resultVisible2"];
-			} else if($fetchQuestionnaire["result_visible"] == 3)
+			} else if($fetchExecution["result_visible"] == 3)
 			{
 				echo $lang["resultVisible3"];
 			}
 		?></p>
 		<?php 
-		if($fetchQuestionnaire["result_visible"] != 3) 
+		if($fetchExecution["result_visible"] != 3) 
 		{
 		
-			$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, question.picture_link, an_qu_user.question_order from question inner join qunaire_qu on qunaire_qu.question_id = question.id left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order");
-			$stmt->bindParam(":questionnaire_id", $quizId);
+			$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, question.picture_link, an_qu_user.question_order 
+								from question inner join qunaire_qu on qunaire_qu.question_id = question.id left outer join an_qu_user on an_qu_user.question_id = question.id 
+								and session_id = :session_id where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order");
+			$stmt->bindParam(":questionnaire_id", $quizId["questionnaire_id"]);
 			$stmt->bindParam(":session_id", $fetchSession["id"]);
 			if(!$stmt->execute())
 			{
-				header("Location: index.php?p=quiz&code=-26&quizId=" . $quizId . "&session=" . $fetchSession["id"] . "&dbhError=". $dbh->errorInfo()[0] . "&stmtError=" . $stmt->errorInfo()[2]);
+				header("Location: index.php?p=quiz&code=-26&quizId=" . $quizId["questionnaire_id"] . "&session=" . $fetchSession["id"] . "&dbhError=". $dbh->errorInfo()[0] . "&stmtError=" . $stmt->errorInfo()[2]);
 				exit;
 			}
 			$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -252,10 +259,10 @@
 							</thead>
 							<tbody>
 								<?php 
-								$stmt = $dbh->prepare("select answer_question.answer_id, answer.text, answer_question.is_correct, (select selected from an_qu_user where answer_question.answer_id = an_qu_user.answer_id and session_id = :session_id) as selected
-									from answer_question 
-									inner join answer on answer.id = answer_question.answer_id 
-									where answer_question.question_id = :question_id");
+								$stmt = $dbh->prepare("select answer_question.answer_id, answer.text, answer_question.is_correct, 
+										(select selected from an_qu_user where answer_question.answer_id = an_qu_user.answer_id and session_id = :session_id) as selected
+										from answer_question inner join answer on answer.id = answer_question.answer_id 
+										where answer_question.question_id = :question_id");
 								$stmt->bindParam(":question_id", $fetchQuestions[$i]["questionId"]);
 								$stmt->bindParam(":session_id", $fetchSession["id"]);
 								if(!$stmt->execute())
@@ -274,13 +281,13 @@
 									{
 										if($fetchAnswers[$j]["selected"] == 1)
 										{
-											$punkte = -1*$fetchQuestionnaire["singlechoice_multiplier"];
+											$punkte = -1*$fetchExecution["singlechoice_multiplier"];
 										}
 										if($fetchAnswers[$j]["is_correct"] == 1 && $fetchAnswers[$j]["selected"] == 1)
 										{
 											$answerColor = "#CCFF99";
 											$answeredCorrect = true;
-											$punkte = 1*$fetchQuestionnaire["singlechoice_multiplier"];
+											$punkte = 1*$fetchExecution["singlechoice_multiplier"];
 											break;
 										}
 										$answerColor = "#FFCCCC";
@@ -294,10 +301,10 @@
 										<td style="text-align: center; font-size: 1.2em"><?php
 										if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 										{
-											if($fetchQuestionnaire["result_visible"] == 1)
+											if($fetchExecution["result_visible"] == 1)
 											{
 												echo $fetchAnswers[$j]["is_correct"] == 1 ? '&#9673;' : '&Omicron;';
-											} else if($fetchQuestionnaire["result_visible"] == 2)
+											} else if($fetchExecution["result_visible"] == 2)
 											{
 												if($answeredCorrect)
 													echo $fetchAnswers[$j]["is_correct"] == 1 ? '&#9673;' : '&Omicron;';
@@ -306,10 +313,10 @@
 											}
 										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 										{
-											if($fetchQuestionnaire["result_visible"] == 1)
+											if($fetchExecution["result_visible"] == 1)
 											{
 												echo getMultiplechoiceChar($fetchAnswers[$j]["is_correct"]);
-											} else if($fetchQuestionnaire["result_visible"] == 2)
+											} else if($fetchExecution["result_visible"] == 2)
 											{
 												if($fetchAnswers[$j]["is_correct"] == $fetchAnswers[$j]["selected"])
 												{
@@ -366,7 +373,7 @@
 	</div>
 </div>
 <div data-role="controlgroup" data-type="horizontal" style="margin-top: 25px;">
-	<a id="rejoinQuiz" href="?p=participationIntro&quizId=<?php echo $quizId;?>" data-theme="a" data-ajax="false" data-iconshadow="true" data-role="button" data-icon="arrow-l" data-iconpos="left"><?php echo $lang["rejoinQuiz"]; ?></a>
+	<a id="rejoinQuiz" href="?p=participationIntro&execId=<?php echo $execId;?>" data-theme="a" data-ajax="false" data-iconshadow="true" data-role="button" data-icon="arrow-l" data-iconpos="left"><?php echo $lang["rejoinQuiz"]; ?></a>
 	<a id="outroNext" href="index.php?p=quiz" data-theme="a" data-iconshadow="true" data-ajax="false" data-role="button" data-icon="arrow-r" data-iconpos="right"><?php echo $lang["nextQuestion"]; ?></a>
 </div>
 
@@ -379,7 +386,7 @@
 
 	function refreshOnSelect(value)
 	{
-		window.location = "Pindex.php?p=participationOutro&quizId="+<?php echo $quizId;?>+"&session=" + value;
+		window.location = "Pindex.php?p=participationOutro&execId="+<?php echo $execId;?>+"&session=" + value;
 	}
 
 </script>

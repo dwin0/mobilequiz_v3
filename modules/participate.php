@@ -33,16 +33,18 @@ if($stmt->rowCount() > 0)
 
 if($isNew)
 {
-	$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link, qunaire_qu.order, questionnaire.random_questions, questionnaire.random_answers
+	$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link, qunaire_qu.order, execution.random_questions, execution.random_answers
 			from question 
 				inner join qunaire_qu on qunaire_qu.question_id = question.id 
-				inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id 
-				inner join user_qunaire_session on user_qunaire_session.questionnaire_id = questionnaire.id 
-			where user_qunaire_session.questionnaire_id = :quizId 
-				and user_qunaire_session.id = :sessionId 
+				inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id
+                inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
+                inner join execution on qunaire_exec.execution_id = execution.id 
+				inner join user_exec_session on user_exec_session.execution_id = execution.id
+			where execution.id = :execId
+				and user_exec_session.id = :sessionId
 				and question.id not in (select question_id from an_qu_user where session_id = :sessionId) 
 			group by question.id");
-	$stmt->bindParam(":quizId", $_SESSION["quizSession"]);
+	$stmt->bindParam(":execId", $_SESSION["quizSession"]);
 	$stmt->bindParam(":sessionId", $_SESSION["idSession"]);
 	
 	if($stmt->execute())
@@ -74,8 +76,8 @@ if($isNew)
 	{
 		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, question.picture_link, selected, question_order 
 				from (select question.id, question.text, question.type_id, question.picture_link, selected, question_order 
-				from user_qunaire_session left outer join an_qu_user on user_qunaire_session.id = an_qu_user.session_id inner join question on an_qu_user.question_id = question.id 
-				where user_qunaire_session.id = :sessionId)question 
+				from user_exec_session left outer join an_qu_user on user_exec_session.id = an_qu_user.session_id inner join question on an_qu_user.question_id = question.id 
+				where user_exec_session.id = :sessionId)question 
 				where selected is null or (type_id = 2 and selected = 0) group by id order by question_order");
 		$stmt->bindParam(":sessionId", $_SESSION["idSession"]);
 		$stmt->execute();

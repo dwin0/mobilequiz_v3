@@ -2,10 +2,10 @@
 	setlocale(LC_ALL, 'de_DE', 'deu_deu');
 
 	//Query Quiz
-	$quizId = -1;
-	if(isset($_GET["quizId"]))
+	$execId = -1;
+	if(isset($_GET["execId"]))
 	{
-		$quizId = $_GET["quizId"];
+		$execId = $_GET["execId"];
 	} else {
 		header("Location: index.php?p=quiz&code=-2");
 		exit;
@@ -13,15 +13,15 @@
 	
 	if($_SESSION["role"]["user"] != 1)
 	{
-		header("Location: index.php?p=home&code=-20&toQuiz=" . $quizId);
+		header("Location: index.php?p=home&code=-20&toQuiz=" . $execId);
 		exit;
 	}
 	
-	$stmt = $dbh->prepare("select execution.*, questionnaire.description, count(qunaire_qu.questionnaire_id) as question_count, user_data.firstname, user_data.lastname, user.email 
+	$stmt = $dbh->prepare("select execution.*, questionnaire.description, questionnaire.id as qId, count(qunaire_qu.questionnaire_id) as question_count, user_data.firstname, user_data.lastname, user.email 
 			from questionnaire inner join qunaire_qu on qunaire_qu.questionnaire_id = questionnaire.id inner join user on user.id = questionnaire.owner_id 
 			inner join user_data on user_data.user_id = user.id inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
-			inner join execution on qunaire_exec.execution_id = execution.id  where questionnaire.id = :id");
-	$stmt->bindParam(":id", $quizId);
+			inner join execution on qunaire_exec.execution_id = execution.id  where execution.id = :id");
+	$stmt->bindParam(":id", $execId);
 	if(!$stmt->execute())
 	{
 		header("Location: index.php?p=quiz&code=-14");
@@ -30,15 +30,15 @@
 	$fetchQunaire = $stmt->fetch(PDO::FETCH_ASSOC);
 	
 	include_once 'modules/authorizationCheck_participation.php';
-	checkAuthorization($_GET["quizId"], $fetchQunaire, false);
+	checkAuthorization($fetchQunaire["qId"], $fetchQunaire, false);
 	
 ?>
 <script type="text/javascript">
 
-	function startNewQuiz(quizId)
+	function startNewQuiz(execId)
 	{
 		if(document.getElementById('checkReadAll').checked)
-			window.location='?p=participation&action=startQuiz&quizId=' + quizId;
+			window.location='?p=participation&action=startQuiz&execId=' + execId;
 		else
 		{
 			$('#checkReadAll').tipsy("show");
@@ -93,8 +93,8 @@
 			<div class="td label"><?php echo $lang["amountParticipations"];?></div>
 			<div class="td label"><?php
 			$stmt = $dbh->prepare("select user_exec_session.id from user_exec_session inner join qunaire_exec on user_exec_session.execution_id = qunaire_exec.execution_id 
-							where qunaire_exec.questionnaire_id = :questionnaire_id and user_exec_session.user_id = :user_id");
-			$stmt->bindParam(":questionnaire_id", $quizId);
+							where qunaire_exec.execution_id = :execId and user_exec_session.user_id = :user_id");
+			$stmt->bindParam(":execId", $execId);
 			$stmt->bindParam(":user_id", $_SESSION["id"]);
 			$stmt->execute();
 			$participations = $stmt->rowCount();
@@ -144,21 +144,21 @@
 	<div id="startButton" style="display: none;" data-role="controlgroup" data-type="horizontal">
 		<?php 
 			$stmt = $dbh->prepare("select user_exec_session.id from user_exec_session inner join qunaire_exec on user_exec_session.execution_id = qunaire_exec.execution_id 
-							where qunaire_exec.questionnaire_id = :questionnaire_id and user_exec_session.user_id = :user_id and endtime is null");
+							where qunaire_exec.execution_id = :execId and user_exec_session.user_id = :user_id and endtime is null");
 			$stmt->bindParam(":user_id", $_SESSION["id"]);
-			$stmt->bindParam(":qId", $quizId);
+			$stmt->bindParam(":execId", $execId);
 			$stmt->execute();
 			$fetchEndtimeNull = $stmt->fetch(PDO::FETCH_ASSOC);
 			
 			if($stmt->rowCount() > 0) {
-				$_SESSION["quizSession"] = $quizId;
+				$_SESSION["quizSession"] = $execId;
 				$_SESSION["idSession"] = $fetchEndtimeNull["id"];
 			?>
 			<input type="button" id="startQuiz" name="startQuiz" value="<?php echo $lang["toCurrentQuiz"]; ?>" data-icon="arrow-r" data-iconpos="right" onclick="<?php echo "window.location='?p=participate';";?>"/>
 		<?php } else {
 			if($participations < $fetchQunaire["amount_participations"] || $fetchQunaire["amount_participations"] == 0 || $_SESSION["role"]["admin"] == 1) {
 			?>
-			<input type="button" id="startQuiz" name="startQuiz" value="<?php echo $lang["begin"]; ?>" data-icon="arrow-r" data-iconpos="right" onclick="<?php echo "startNewQuiz(". $quizId . ")";?>"/>
+			<input type="button" id="startQuiz" name="startQuiz" value="<?php echo $lang["begin"]; ?>" data-icon="arrow-r" data-iconpos="right" onclick="<?php echo "startNewQuiz(". $execId . ")";?>"/>
 		<?php 
 			} else {
 				?>

@@ -25,16 +25,16 @@ if($action == "startQuiz")
 {
 	
 	$id = 0;
-	if(isset($_GET["quizId"]))
+	if(isset($_GET["execId"]))
 	{
-		$id = $_GET["quizId"];
+		$id = $_GET["execId"];
 	} else {
 		header("Location: index.php?p=quiz&code=-2");
 		exit;
 	}
 	
-	$stmt = $dbh->prepare("select amount_participations, public, starttime, endtime, noParticipationPeriod from questionnaire 
-			inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id  where questionnaire.id = :id");
+	$stmt = $dbh->prepare("select amount_participations, public, starttime, endtime, noParticipationPeriod, questionnaire.id as qId from questionnaire 
+			inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id  where execution.id = :id");
 	$stmt->bindParam(":id", $id);
 	$stmt->execute();
 	$fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -45,12 +45,12 @@ if($action == "startQuiz")
 	}
 	
 	include_once 'modules/authorizationCheck_participation.php';
-	checkAuthorization($_GET["quizId"], $fetchQuiz, false);
+	checkAuthorization($fetchQuiz["qId"], $fetchQuiz, false);
 	
 	//max participations
 	$stmt = $dbh->prepare("select user_exec_session.id from user_exec_session inner join qunaire_exec on user_exec_session.execution_id = qunaire_exec.execution_id 
-							where qunaire_exec.questionnaire_id = :questionnaire_id and user_exec_session.user_id = :user_id");
-	$stmt->bindParam(":questionnaire_id", $id);
+							where qunaire_exec.execution_id = :id and user_exec_session.user_id = :user_id");
+	$stmt->bindParam(":id", $id);
 	$stmt->bindParam(":user_id", $_SESSION["id"]);
 	$stmt->execute();
 	$participations = $stmt->rowCount();
@@ -62,7 +62,7 @@ if($action == "startQuiz")
 	
 	$stmt = $dbh->prepare("insert into user_exec_session (user_id, execution_id, starttime) values (:user_id, :execution_id, :starttime)");
 	$stmt->bindParam(":user_id", $_SESSION["id"]);
-	$stmt->bindParam(":execution_id", ''); //TODO: Execution_id ergänzen
+	$stmt->bindParam(":execution_id", $id);
 	$stmt->bindParam(":starttime", time());
 	if($stmt->execute())
 	{
@@ -117,8 +117,8 @@ if($action == "startQuiz")
 		$stmt->execute();
 		$answeredQuestionsId = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		
-		$stmt = $dbh->prepare("select question_id from qunaire_qu where questionnaire_id = :quizSession");
-		$stmt->bindParam(":quizSession", $_SESSION["quizSession"]);
+		$stmt = $dbh->prepare("select question_id from qunaire_qu inner join qunaire_exec on qunaire_qu.questionnaire_id = qunaire_exec.questionnaire_id where qunaire_exec.execution_id = :execId");
+		$stmt->bindParam(":execId", $_SESSION["quizSession"]);
 		$stmt->execute();
 		$allQuestionsId = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		
@@ -141,14 +141,14 @@ if($action == "startQuiz")
 	
 	if($stmt->execute())
 	{
-		$quizId = $_SESSION["quizSession"];
+		$execId = $_SESSION["quizSession"];
 		$_SESSION["quizSession"] = -1;
 		$_SESSION["idSession"] = -1;
 		$_SESSION["questionNumber"] = -1;
 		$_SESSION["unansweredNumber"] = -1;
 		$_SESSION["next_button_time"] = -1;
 		$_SESSION["additionalTime"] = -1;
-		header("Location: ?p=participationOutro&quizId=" . $quizId);
+		header("Location: ?p=participationOutro&execId=" . $execId);
 		exit;
 	} else {
 		header("Location: index.php?p=quiz&code=-37");
@@ -231,8 +231,9 @@ if($action == "startQuiz")
 	
 	if(!isset($_COOKIE["sendParticipantQuestion"]))
 	{
-		$stmt = $dbh->prepare("select email, firstname, lastname from user inner join questionnaire on user.id = questionnaire.owner_id inner join user_data on user.id = user_data.user_id where questionnaire.id = :qunaireId");
-		$stmt->bindParam(":qunaireId", $_SESSION["quizSession"]);
+		$stmt = $dbh->prepare("select email, firstname, lastname from user inner join questionnaire on user.id = questionnaire.owner_id inner join user_data on user.id = user_data.user_id 
+							inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id where qunaire_exec.execution_id = :execId");
+		$stmt->bindParam(":execId", $_SESSION["quizSession"]);
 		$stmt->execute();
 		$fetchAnswers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		

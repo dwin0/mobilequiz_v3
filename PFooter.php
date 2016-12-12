@@ -1,8 +1,8 @@
 <div data-role="footer" data-position="fixed">
 	<?php if(isset($_SESSION["quizSession"]) && $_SESSION["quizSession"] >= 0) {
 
-		$stmt = $dbh->prepare("select name from questionnaire where id = :qunaireId");
-		$stmt->bindParam(":qunaireId", $_SESSION["quizSession"]);
+		$stmt = $dbh->prepare("select questionnaire.name from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id where execution_id = :execId");
+		$stmt->bindParam(":execId", $_SESSION["quizSession"]);
 		$stmt->execute();
 		$fetch = $stmt->fetch(PDO::FETCH_ASSOC);
 		$quizName = $fetch["name"];

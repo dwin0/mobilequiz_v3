@@ -1,19 +1,20 @@
 <?php 
-	$id = 0;
-	if(isset($_GET["quizId"]))
+	$execId = 0;
+	if(isset($_GET["execId"]))
 	{
-		$id = $_GET["quizId"];
+		$execId = $_GET["execId"];
 	} else {
 		if(isset($_SESSION["quizSession"]) && isset($_SESSION["idSession"]))
-			$id = $_SESSION["quizSession"];
+			$execId = $_SESSION["quizSession"];
 		else {
 			header("Location: index.php?p=quiz&code=-2");
 			exit;
 		}
 	}
 	
-	$stmt = $dbh->prepare("select questionnaire.name, limited_time from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id where questionnaire.id = :id");
-	$stmt->bindParam(":id", $id);
+	$stmt = $dbh->prepare("select questionnaire.name, limited_time from questionnaire inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
+						inner join execution on qunaire_exec.execution_id = execution.id where execution.id = :id");
+	$stmt->bindParam(":id", $execId);
 	$stmt->execute();
 	if($stmt->rowCount() <= 0)
 	{
@@ -96,8 +97,9 @@
 		<?php 
 			if(isset($_SESSION["quizSession"]) && $_SESSION["quizSession"] >= 0)
 			{
-				$stmt = $dbh->prepare("select question.id from questionnaire inner join qunaire_qu on qunaire_qu.questionnaire_id = questionnaire.id inner join question on question.id = qunaire_qu.question_id where questionnaire.id = :questionnaire_id");
-				$stmt->bindParam(":questionnaire_id", $id);
+				$stmt = $dbh->prepare("select question.id from questionnaire inner join qunaire_qu on qunaire_qu.questionnaire_id = questionnaire.id inner join question on 
+									question.id = qunaire_qu.question_id inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id where execution_id = :execId");
+				$stmt->bindParam(":execId", $execId);
 				$stmt->execute();
 				$remainingQuestions = $stmt->rowCount();
 				

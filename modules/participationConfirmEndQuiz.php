@@ -59,7 +59,10 @@ $_SESSION["questionNumber"] = $fetchQuestionOrder["question_order"];
 	<?php if($_SESSION["questionNumber"] > 0) {?>
 	<input type="button" id="prevQuestion" name="prevQuestion" value="<?php echo $lang["btnBack"]; ?>" data-ajax="false" data-icon="arrow-l" data-iconpos="left" onclick="window.location='?p=participate';" />
 	<?php 
-		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, selected from (select question.id, question.text, question.type_id, selected from user_qunaire_session left outer join an_qu_user on user_qunaire_session.id = an_qu_user.session_id inner join question on an_qu_user.question_id = question.id where user_qunaire_session.id = :sessionId)question where selected is null or (type_id = 2 and selected = 0) group by id");
+		$stmt = $dbh->prepare("select question.id, question.text, question.type_id, selected from 
+							(select question.id, question.text, question.type_id, selected from user_exec_session left outer join an_qu_user on user_exec_session.id = an_qu_user.session_id 
+							inner join question on an_qu_user.question_id = question.id where user_exec_session.id = :sessionId)question 
+							where selected is null or (type_id = 2 and selected = 0) group by id");
 		$stmt->bindParam(":sessionId", $_SESSION["idSession"]);
 		$stmt->execute();
 		if($stmt->rowCount() != 0)
