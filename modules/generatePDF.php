@@ -48,7 +48,7 @@ $fontname = TCPDF_FONTS::addTTFfont('helper/tcpdf_min/fonts/Arial_Unicode_MS.ttf
 
 if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 {
-	if(!isset($_GET["quizId"]))
+	if(!isset($_GET["execId"]))
 	{
 		header("Location: ?p=quiz&code=-36&info=noQuizId");
 		exit;
@@ -58,8 +58,11 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 	$w = 0;
 	$l = 18;
 	
-	$stmt = $dbh->prepare("select questionnaire.name, description, starttime, endtime, result_visible, last_modified, qnaire_token, firstname, lastname, email, owner_id, noParticipationPeriod from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
-	$stmt->bindParam(":quizId", $_GET["quizId"]);
+	$stmt = $dbh->prepare("select questionnaire.id as qId, questionnaire.name, questionnaire.description, starttime, endtime, result_visible, firstname, lastname, email, owner_id, noParticipationPeriod 
+						from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id 
+						inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id 
+						where execution.id = :execId");
+	$stmt->bindParam(":execId", $_GET["execId"]);
 	if(!$stmt->execute())
 	{
 		header("Location: ?p=quiz&code=-36&info=DbError");
@@ -75,20 +78,20 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 
 	if($_SESSION['role']['admin'] != 1)
 	{
-		if(!doThisQuizHaveAGroupRestrictionAndAmIInThisGroup($dbh, $_GET["quizId"]))
+		if(!doThisQuizHaveAGroupRestrictionAndAmIInThisGroup($dbh, $fetchQuiz["qId"]))
 		{
 			header("Location: index.php?p=quiz&code=-38");
 			exit;
 		}
 	}
 	
-	$stmt = $dbh->prepare("select id from user_qunaire_session where user_id = :user_id and questionnaire_id = :qunaire_id");
+	$stmt = $dbh->prepare("select id from user_exec_session where user_id = :user_id and execution_id = :execId");
 	$stmt->bindParam (":user_id", $uId);
-	$stmt->bindParam (":qunaire_id", $_GET["quizId"]);
+	$stmt->bindParam (":execId", $_GET["execId"]);
 	$stmt->execute();
 	$ownParticipationAmount = $stmt->rowCount();
 
-	if($_SESSION["role"]["admin"] != 1 && $_SESSION["id"] != $fetchQuiz["owner_id"] && !amIAssignedToThisQuiz($dbh, $_GET["quizId"]))
+	if($_SESSION["role"]["admin"] != 1 && $_SESSION["id"] != $fetchQuiz["owner_id"] && !amIAssignedToThisQuiz($dbh, $fetchQuiz["qId"]))
 	{
 		if($action == "getQuizTaskPaperWithMyAnswers" &&
 				!(((time() > $fetchQuiz["endtime"] || $fetchQuiz["result_visible"] == 1) &&
@@ -160,8 +163,10 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 		$pdf->Cell($w,$l,date("d. F Y H:i:s", $fetchQuiz["endtime"]), 0, 1);
 	}
 	
-	$stmt = $dbh->prepare("select question.id, type_id, questionnaire.singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
-	$stmt->bindParam(":quizId", $_GET["quizId"]);
+	$stmt = $dbh->prepare("select question.id, type_id, execution.singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id 
+						inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id 
+						inner join execution on qunaire_exec.execution_id = execution.id where execution.id = :execId");
+	$stmt->bindParam(":execId", $_GET["execId"]);
 	$stmt->execute();
 	$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	$totalPoints = 0;
@@ -179,14 +184,16 @@ if($action == "getQuizTaskPaper" || $action == "getQuizTaskPaperWithMyAnswers")
 	}
 	
 	$pdf->SetFont('helvetica','B',$fontSize);
-	$pdf->Cell($w,$l,'Maximale Punktezahl:');
-	$pdf->SetFont('');
-	$pdf->Cell($w,$l,$totalPoints, 0, 1);
-	
-	$pdf->SetFont('helvetica','B',$fontSize);
 	$pdf->Cell($w,$l,'Anzahl Fragen:');
 	$pdf->SetFont('');
 	$pdf->Cell($w,$l,count($fetchQuestions), 0, 1);
+	
+	$pdf->SetFont('helvetica','B',$fontSize);
+	$pdf->Cell($w,$l,'Maximal mögliche Punktezahl:');
+	$pdf->SetFont('');
+	$pdf->Cell($w,$l,$totalPoints, 0, 1);
+	
+	
 }
 
 
@@ -197,7 +204,7 @@ if($action == "getQuizTaskPaper")
 	$pdf->Ln(8);
 	
 	$stmt = $dbh->prepare("select id, text, type_id, picture_link from question inner join qunaire_qu on qunaire_qu.question_id = question.id where qunaire_qu.questionnaire_id = :quizId");
-	$stmt->bindParam(":quizId", $_GET["quizId"]);
+	$stmt->bindParam(":quizId", $fetchQuiz["qId"]);
 	$stmt->execute();
 	$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	
@@ -282,9 +289,9 @@ if($action == "getQuizTaskPaper")
 	$pdf->Cell($w,$l,$fetchUser["firstname"] . " " . $fetchUser["lastname"] . " (" . $fetchUser["email"] . ") ", 0, 1);
 	
 	$choosedSession = null;
-	$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id");
+	$stmt = $dbh->prepare("select * from user_exec_session where user_id = :user_id and execution_id = :execId");
 	$stmt->bindParam(":user_id", $uId);
-	$stmt->bindParam(":questionnaire_id", $_GET["quizId"]);
+	$stmt->bindParam(":execId", $_GET["execId"]);
 	if (!$stmt->execute()) {
 		header("Location: index.php?p=quiz&code=-14");
 		exit();
@@ -295,7 +302,7 @@ if($action == "getQuizTaskPaper")
 	$fetchPoints = [0,0,0];
 	
 	for($j = 0; $j < count($fetchSession); $j ++) {
-		$tmpPoints = getPoints($dbh, $_GET["quizId"], $fetchSession[$j]["id"], 0);
+		$tmpPoints = getPoints($dbh, $fetchQuiz["qId"], $fetchSession[$j]["id"], 0);
 		if ($j == 0 || $tmpPoints [0] >= $fetchPoints [0])
 		{
 			$fetchPoints = $tmpPoints;
@@ -333,7 +340,7 @@ if($action == "getQuizTaskPaper")
 			inner join qunaire_qu on qunaire_qu.question_id = question.id
 			left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id
 			where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order;");
-	$stmt->bindParam(":questionnaire_id", $_GET["quizId"]);
+	$stmt->bindParam(":questionnaire_id", $fetchQuiz["qId"]);
 	$stmt->bindParam(":session_id", $choosedSession["id"]);
 	if(!$stmt->execute())
 	{
