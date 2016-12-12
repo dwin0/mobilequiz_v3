@@ -38,7 +38,7 @@
 	$stmt = $dbh->prepare("select result_visible, result_visible_points, singlechoice_multiplier, public from questionnaire where id = :questionnaire_id");
 	$stmt->bindParam(":questionnaire_id", $quizId);
 	$stmt->execute();
-	$fetchExecution = $stmt->fetch(PDO::FETCH_ASSOC);
+	$fetchQuestionnaire = $stmt->fetch(PDO::FETCH_ASSOC);
 	
 	if(!isset($_GET["session"]))
 		$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id and endtime is not null order by id desc limit 1");
@@ -63,7 +63,7 @@
 	}
 	
 	include_once 'modules/authorizationCheck_participation.php';
-	checkAuthorization($_GET["quizId"], $fetchExecution, true);
+	checkAuthorization($_GET["quizId"], $fetchQuestionnaire, true);
 	
 	$errorCode = new mobileError("", "red");
 	if(isset($_GET["code"]))
@@ -124,7 +124,7 @@
 				<td><?php echo $lang["timeNeeded"]; ?>:</td>
 				<td><?php echo gmdate("H:i:s", ($fetchSession["endtime"]-$fetchSession["starttime"])) . " (hh:mm:ss)";?></td>
 			</tr>
-			<?php if($fetchExecution["result_visible"] != 3) {?>
+			<?php if($fetchQuestionnaire["result_visible"] != 3) {?>
 				<tr>
 					<td><?php echo $lang["completedQuestions"]; ?>:</td>
 					<td><?php 
@@ -138,7 +138,7 @@
 				<tr>
 					<td><?php echo $lang["totalPoints"]; ?>:</td>
 					<td><?php 
-						if($fetchExecution["result_visible_points"] == 1) {
+						if($fetchQuestionnaire["result_visible_points"] == 1) {
 						$fetchPoints = getPoints($dbh, $quizId, $fetchSession["id"], 2);
 						echo $fetchPoints[0] . "/" . $fetchPoints[1] . " (" . $fetchPoints[2] . "%)";
 						} else {
@@ -169,19 +169,19 @@
 		<h2><?php echo $lang["participationResultsHeading"]; ?></h2>
 		<p><?php 
 		
-			if($fetchExecution["result_visible"] == 1)
+			if($fetchQuestionnaire["result_visible"] == 1)
 			{
 				echo $lang["resultVisible1"];
-			} else if($fetchExecution["result_visible"] == 2)
+			} else if($fetchQuestionnaire["result_visible"] == 2)
 			{
 				echo $lang["resultVisible2"];
-			} else if($fetchExecution["result_visible"] == 3)
+			} else if($fetchQuestionnaire["result_visible"] == 3)
 			{
 				echo $lang["resultVisible3"];
 			}
 		?></p>
 		<?php 
-		if($fetchExecution["result_visible"] != 3) 
+		if($fetchQuestionnaire["result_visible"] != 3) 
 		{
 		
 			$stmt = $dbh->prepare("select question.id as questionId, question.text as questionText, question.type_id, question.picture_link, an_qu_user.question_order from question inner join qunaire_qu on qunaire_qu.question_id = question.id left outer join an_qu_user on an_qu_user.question_id = question.id and session_id = :session_id where qunaire_qu.questionnaire_id = :questionnaire_id group by question.id order by an_qu_user.question_order");
@@ -274,13 +274,13 @@
 									{
 										if($fetchAnswers[$j]["selected"] == 1)
 										{
-											$punkte = -1*$fetchExecution["singlechoice_multiplier"];
+											$punkte = -1*$fetchQuestionnaire["singlechoice_multiplier"];
 										}
 										if($fetchAnswers[$j]["is_correct"] == 1 && $fetchAnswers[$j]["selected"] == 1)
 										{
 											$answerColor = "#CCFF99";
 											$answeredCorrect = true;
-											$punkte = 1*$fetchExecution["singlechoice_multiplier"];
+											$punkte = 1*$fetchQuestionnaire["singlechoice_multiplier"];
 											break;
 										}
 										$answerColor = "#FFCCCC";
@@ -294,10 +294,10 @@
 										<td style="text-align: center; font-size: 1.2em"><?php
 										if($fetchQuestions[$i]["type_id"] == 1) //singlechoice
 										{
-											if($fetchExecution["result_visible"] == 1)
+											if($fetchQuestionnaire["result_visible"] == 1)
 											{
 												echo $fetchAnswers[$j]["is_correct"] == 1 ? '&#9673;' : '&Omicron;';
-											} else if($fetchExecution["result_visible"] == 2)
+											} else if($fetchQuestionnaire["result_visible"] == 2)
 											{
 												if($answeredCorrect)
 													echo $fetchAnswers[$j]["is_correct"] == 1 ? '&#9673;' : '&Omicron;';
@@ -306,10 +306,10 @@
 											}
 										} else if($fetchQuestions[$i]["type_id"] == 2) //multiplechoice
 										{
-											if($fetchExecution["result_visible"] == 1)
+											if($fetchQuestionnaire["result_visible"] == 1)
 											{
 												echo getMultiplechoiceChar($fetchAnswers[$j]["is_correct"]);
-											} else if($fetchExecution["result_visible"] == 2)
+											} else if($fetchQuestionnaire["result_visible"] == 2)
 											{
 												if($fetchAnswers[$j]["is_correct"] == $fetchAnswers[$j]["selected"])
 												{

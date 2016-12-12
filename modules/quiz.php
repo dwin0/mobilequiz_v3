@@ -67,24 +67,13 @@
 	<p id="topicActionResult" style="color:<?php echo $errorCode->getColor();?>;"><?php echo $errorCode->getText();?></p>
 	<div class="panel panel-default">
 		<div class="panel-body">
-		
+
 			<?php if($_SESSION['role']['creator'] == 1) {?>
-            <button id="btnAddQuiz" class="btn btn-success" type="button" style="width: 260px; height: 3em; float: left; margin-bottom: 1em; margin-top: 8px" onclick="window.location='?p=createEditQuiz';"><?php echo $lang["createQuiz"];?> <span class="glyphicon glyphicon-plus"></span></button>
-	        <?php }?>
-			
-			<div style="width: 100%; margin-bottom: 1em;">
-				<div id="searchBoxDiv" class="control-group" style="width: 260px; margin-left:auto; margin-right:0;">
-					<label class="control-label" for="searchbox">
-						<b><?php echo $lang["search"]; ?></b>
-						<input type="search" id="searchbox" class="form-control input-sm magnifyingGlassstyle" 
-						style="width: 260px" placeholder="<?php echo $lang["enterSearchTerm"];?>">
-					</label>
-				</div>
-			</div>
+            	<button id="btnAddQuiz" class="btn btn-success" type="button" style="width: 260px; height: 3em; margin-bottom: 1em; margin-top: 8px" onclick="window.location='?p=createEditQuiz';"><?php echo $lang["createQuiz"];?> <span class="glyphicon glyphicon-plus"></span></button>
+        	<?php }?>
 			
 			<?php if($_SESSION['role']['creator'] == 1) {?>
-		 	<fieldset class="table-border" style="margin-top: 2em; margin-bottom: 4em;">
-				<legend class="table-border" style="margin-bottom: -1em"><?php echo "Quiz ohne Durchf&uuml;hrungen";?></legend>
+			<h3 style="margin-bottom: -0.5em;">Quizzes ohne Durchf&uuml;hrungen</h3>
 			    <table id="quizWithoutExec">
 			    	<thead>
 			    		<tr>
@@ -99,6 +88,7 @@
 			                </th>
 			    		</tr>
 			    	</thead>
+			    	<tbody>
 				    <?php 
 				    $stmt = $dbh->prepare("select questionnaire.id, questionnaire.name, questionnaire.subject_id, owner_id from questionnaire left join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id where qunaire_exec.questionnaire_id is null");
 				    $stmt->execute();
@@ -110,7 +100,7 @@
 				    	if($fetchQunaireWithoutExec[$i]["owner_id"] == $_SESSION["id"] || $_SESSION['role']['admin'] == 1 || amIAssignedToThisQuiz($dbh, $fetchQunaireWithoutExec[$i]["id"]))
 				    	{
 				    ?>
-			    	<tbody>
+			    	
 			    		<tr>
 			    			<td>
 			    				<?php echo $fetchQunaireWithoutExec[$i]["name"];?>
@@ -119,9 +109,10 @@
 			    				<?php
 			    				$stmt = $dbh->prepare("select name from subjects where id = " . $fetchQunaireWithoutExec[$i]["subject_id"]);
 			    				$stmt->execute();
+			    				$test = $stmt->queryString;
 			    				$fetchSubjectName = $stmt->fetch(PDO::FETCH_ASSOC);
-			    				
-			    				echo $fetchSubjectName["name"];?>
+			    				$subjectName = ($fetchSubjectName[0]["name"] == null) ? $lang["undefined"] : $fetchSubjectName[0]["name"];
+			    				echo $subjectName;?>
 			    			</td>
 			    			<td>
 			    				<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -131,13 +122,25 @@
 									<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchQunaireWithoutExec[$i]["id"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delQuiz"];?></a>
 			    				</div>
 			    			</td>
-			    		</tr>
-			    	</tbody>
+			    		</tr>			    	
 				    <?php }}?>
+				    </tbody>
 			    </table>
-			</fieldset>
 			<?php }?>
-		
+			
+			<div style="width: 100%; margin-bottom: 1em;">
+				<h3 style="float: left; margin-top: 25px; margin-bottom: 5px;">Durchf&uuml;hrungen</h3>
+				<div id="searchBoxDiv" class="control-group" style="width: 260px; margin-left:auto; margin-right:0;">
+					<label class="control-label" for="searchbox">
+						<b><?php echo $lang["search"]; ?></b>
+						<input type="search" id="searchbox" class="form-control input-sm magnifyingGlassstyle" 
+						style="width: 260px" placeholder="<?php echo $lang["enterSearchTerm"];?>">
+					</label>
+				</div>
+			</div>
+			
+			
+			
 			<form id="quizFilter" class="form-horizontal" action="?p=quiz" method="POST" style="clear: both">
 				<input type="hidden" name="alreadyThere" value="1" />
 			
@@ -681,10 +684,10 @@
             ],
             dom: '<"toolbar">frtip',
             language: {
-                zeroRecords: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTbaleZeroRecords"]);?>",
-                info: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableInfo"]);?>",
-                infoEmpty: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableEmpty"]);?>",
-                infoFiltered: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableInfoFiltered"]);?>",
+                zeroRecords: "<?php echo str_replace("[1]", $lang["executions"], $lang["dataTableZeroRecords"]);?>",
+                info: "<?php echo str_replace("[1]", $lang["executions"], $lang["dataTableInfo"]);?>",
+                infoEmpty: "<?php echo str_replace("[1]", $lang["executions"], $lang["dataTableEmpty"]);?>",
+                infoFiltered: "<?php echo str_replace("[1]", $lang["executions"], $lang["dataTableInfoFiltered"]);?>",
                 search: ""
             }
         });
@@ -702,16 +705,16 @@
             ],
             dom: '<"toolbar">frtip',
             language: {
-                zeroRecords: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTbaleZeroRecords"]);?>",
+                zeroRecords: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableZeroRecords"]);?>",
                 info: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableInfo"]);?>",
                 infoEmpty: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableEmpty"]);?>",
                 infoFiltered: "<?php echo str_replace("[1]", $lang["quizzes"], $lang["dataTableInfoFiltered"]);?>",
                 search: ""
             }
         });
-        $('.dataTables_filter').css("display", "none");
-        $('.dataTables_wrapper').css("width", "100%");
-        
+        $('.dataTables_filter').css("display", "none");   
+        $('.dataTables_info').css("margin-bottom", "40px");
+        $('.dataTables_info').css("width", "100%"); 
 
 
         $("#searchbox").on("keyup search input paste cut", function() {
