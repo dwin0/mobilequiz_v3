@@ -1,50 +1,7 @@
 <?php
-
-include "modules/extraFunctions.php";
-
-if(!isset($_GET["id"]))
-{
-	header("Location: ?p=quiz&code=-15");
-	exit;
-}
-
-if($_SESSION["role"]["user"] == 1)
-{
-	if($_SESSION["role"]["creator"] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["id"]))
-	{
-		header("Location: ?p=quiz&code=-1");
-		exit;
-	}
-}
-else
-{
-	header("Location: ?p=home&code=-20");
-	exit;
-}
-
-//TODO: Duplicated SQL-Query
-
-$stmt = $dbh->prepare("select questionnaire.name, noParticipationPeriod, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email, owner_id from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
-$stmt->bindParam(":quizId", $_GET["id"]);
-if(!$stmt->execute())
-{
-	header("Location: ?p=quiz&code=-25");
-	exit;
-}
-if($stmt->rowCount() != 1)
-{
-	header("Location: ?p=quiz&code=-15");
-	exit;
-}
-$fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
-if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["id"]))
-{
-	header("Location: ?p=quiz&code=-1");
-	exit;
-}
-
-
+	include "modules/authorizationCheck_quizReport.php";
 ?>
+
 <div class="container theme-showcase">
 	<div class="page-header">
 		<h1><?php echo $lang["quizReportHeading"] . " &laquo;" . $fetchQuiz["name"] . "&raquo;"?></h1>
@@ -91,38 +48,41 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 							</div>
 						</div>
 						<div class="form-group">
+							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizTableAmountQuestions"];?></label>
+							<div class="col-md-9 col-sm-8">
+								<p class="form-control-static"><?php 
+									$stmt = $dbh->prepare("select id from question inner join qunaire_qu on qunaire_qu.question_id = question.id where qunaire_qu.questionnaire_id = :quizId");
+									$stmt->bindParam(":quizId", $fetchQuiz["qId"]);
+									$stmt->execute();
+									echo $stmt->rowCount();
+								?></p>
+							</div>
+						</div>
+						<div class="form-group">
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["maxPoints"];?></label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select id, type_id from question inner join qunaire_qu on qunaire_qu.question_id = question.id where qunaire_qu.questionnaire_id = :quizId");
-									$stmt->bindParam(":quizId", $_GET["id"]);
+									$stmt = $dbh->prepare("select question.id, type_id, execution.singlechoice_multiplier from question inner join qunaire_qu
+															on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id
+															inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id
+															where execution.id = :execId");
+									$stmt->bindParam(":execId", $_GET["execId"]);
 									$stmt->execute();
 									$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 									$totalPoints = 0;
 									for($i = 0; $i < count($fetchQuestions); $i++)
 									{
 										if($fetchQuestions[$i]["type_id"] == 1)
-											$totalPoints++;
-										else if($fetchQuestions[$i]["type_id"] == 2)
-										{
-											$stmt = $dbh->prepare("select answer_id as count from answer_question where question_id = :question_id");
-											$stmt->bindParam(":question_id", $fetchQuestions[$i]["id"]);
-											$stmt->execute();
-											$totalPoints += $stmt->rowCount();
-										}
+											$totalPoints+= (1*$fetchQuestions[0]["singlechoice_multiplier"]);
+											else if($fetchQuestions[$i]["type_id"] == 2)
+											{
+												$stmt = $dbh->prepare("select answer_id as count from answer_question where question_id = :question_id");
+												$stmt->bindParam(":question_id", $fetchQuestions[$i]["id"]);
+												$stmt->execute();
+												$totalPoints += $stmt->rowCount();
+											}
 									}
 									echo $totalPoints;
-								?></p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizTableAmountQuestions"];?></label>
-							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select id from question inner join qunaire_qu on qunaire_qu.question_id = question.id where qunaire_qu.questionnaire_id = :quizId");
-									$stmt->bindParam(":quizId", $_GET["id"]);
-									$stmt->execute();
-									echo $stmt->rowCount();
 								?></p>
 							</div>
 						</div>
@@ -130,8 +90,9 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["amountParticipants"];?></label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select questionnaire.id, user_qunaire_session.user_id from questionnaire inner join user_qunaire_session on user_qunaire_session.questionnaire_id = questionnaire.id where questionnaire.id = :quizId group by user_id");
-									$stmt->bindParam(":quizId", $_GET["id"]);
+									$stmt = $dbh->prepare("select execution_id, user_exec_session.user_id from execution inner join user_exec_session 
+														on user_exec_session.execution_id = execution.id where execution.id = :execId group by user_id");
+									$stmt->bindParam(":execId", $_GET["execId"]);
 									$stmt->execute();
 									echo $stmt->rowCount();
 								?></p>
@@ -141,8 +102,9 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["amountParticipations"];?></label>
 							<div class="col-md-9 col-sm-8">
 								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select questionnaire.id, user_qunaire_session.user_id from questionnaire inner join user_qunaire_session on user_qunaire_session.questionnaire_id = questionnaire.id where questionnaire.id = :quizId");
-									$stmt->bindParam(":quizId", $_GET["id"]);
+									$stmt = $dbh->prepare("select execution.id, user_exec_session.user_id from execution inner join user_exec_session 
+														on user_exec_session.execution_id = execution.id where execution.id = :execId");
+									$stmt->bindParam(":execId", $_GET["execId"]);
 									$stmt->execute();
 									echo $stmt->rowCount();
 								?></p>
@@ -152,7 +114,7 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 					<p>
 						<?php 
 						$quizLink = str_replace("/index.php", "", $_SERVER["HTTP_HOST"].$_SERVER['PHP_SELF']);
-						$showedLink = $quizLink . "/?quiz=" . $fetchQuiz["qnaire_token"];
+						$showedLink = $quizLink . "/?quiz=" . $fetchQuiz["exec_token"];
 						
 						$text;
 						if($fetchQuiz["noParticipationPeriod"]) {
@@ -161,8 +123,8 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 							$text = $lang["showQuiz"];
 						}
 						
-						$text = str_replace("[0]", "<a href=\"?quiz=" . $fetchQuiz["qnaire_token"] . "\">" . $showedLink . "</a>", $text);
-						$text = str_replace("[1]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"]), $text));
+						$text = str_replace("[0]", "<a href=\"?quiz=" . $fetchQuiz["exec_token"] . "\">" . $showedLink . "</a>", $text);
+						$text = str_replace("[1]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["starttime"])), $text);
 						$text = str_replace("[2]", utf8_encode(strftime("%d. %B %Y, %H:%M:%S", $fetchQuiz["endtime"])), $text);
 						$text = str_replace("[3]", $fetchQuiz["firstname"] . " " . $fetchQuiz["lastname"], $text);
 						$text = str_replace("[4]", $fetchQuiz["email"], $text);
@@ -184,9 +146,9 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 			<h3 class="panel-title"><?php echo $lang["quizReportTime"]; ?></h3>
 		</div>
 		<div class="panel-body">
-			<?php 
-			$stmt = $dbh->prepare("select starttime, endtime, end_state from user_qunaire_session where questionnaire_id = :quizId");
-			$stmt->bindParam(":quizId", $_GET["id"]);
+			<?php //TODO: nicht sicher ob diese Berechnung stimmt --> in Sitzung anschauen?
+			$stmt = $dbh->prepare("select starttime, endtime, end_state from user_exec_session where execution_id = :execId and endtime is not null");
+			$stmt->bindParam(":execId", $_GET["execId"]);
 			$stmt->execute();
 			$fetchUserQunaireSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			
@@ -247,14 +209,15 @@ if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 
 								<?php 
 								$bestPoints = [0,0,0];
 								$avgPoints = 0;
-								$stmt = $dbh->prepare("select user_qunaire_session.id, nickname, starttime, endtime from user_qunaire_session inner join user on user.id = user_qunaire_session.user_id where questionnaire_id = :questionnaire_id");
-								$stmt->bindParam(":questionnaire_id", $_GET["id"]);
+								$stmt = $dbh->prepare("select user_exec_session.id, nickname, starttime, endtime from user_exec_session inner join user 
+													on user.id = user_exec_session.user_id where execution_id = :execId");
+								$stmt->bindParam(":execId", $_GET["execId"]);
 								$stmt->execute();
 								$fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
 								
 								for($i = 0; $i < count($fetchSession); $i++)
 								{
-									$fetchPoints = getPoints($dbh, $_GET["id"], $fetchSession[$i]["id"], 2);
+									$fetchPoints = getPoints($dbh, $fetchQuiz["qId"], $fetchSession[$i]["id"], 2);
 									$sessionKey = $fetchSession[$i]["nickname"];
 									$timeNeeded = $fetchSession[$i]["endtime"] - $fetchSession[$i]["starttime"];
 									if($fetchPoints[0] >= $bestPoints[1][0])

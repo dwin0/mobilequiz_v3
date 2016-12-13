@@ -1,72 +1,78 @@
 <?php
-include "modules/extraFunctions.php";
-
-if(!isset($_GET["id"]))
-{
-	header("Location: ?p=quiz&code=-15");
-	exit;
-}
-
-if($_SESSION["role"]["user"] == 1)
-{
-	if($_SESSION["role"]["creator"] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["id"]))
+	include "modules/authorizationCheck_quizReport.php";
+	include 'PHPExcel/Classes/PHPExcel.php';
+	include 'PHPExcel/Classes/PHPExcel/Writer/Excel2007.php';
+	
+	function clearDir($dir)
 	{
-		header("Location: ?p=quiz&code=-1");
-		exit;
-	}
-}
-else
-{
-	header("Location: ?p=home&code=-20");
-	exit;
-}
-
-$stmt = $dbh->prepare("select questionnaire.name, owner_id, quiz_passed from questionnaire where questionnaire.id = :quizId");
-$stmt->bindParam(":quizId", $_GET["id"]);
-if(!$stmt->execute())
-{
-	header("Location: ?p=quiz&code=-25");
-	exit;
-}
-if($stmt->rowCount() != 1)
-{
-	header("Location: ?p=quiz&code=-15");
-	exit;
-}
-$fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
-if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["id"]))
-{
-	header("Location: ?p=quiz&code=-1");
-	exit;
-}
-
-include 'PHPExcel/Classes/PHPExcel.php';
-include 'PHPExcel/Classes/PHPExcel/Writer/Excel2007.php';
-
-function clearDir($dir)
-{
-	if (is_dir($dir)) {
-		if ($dh = opendir($dir)) {
-			while (($file = readdir($dh)) !== false) {
-				if ($file!="." AND $file !="..") {
-					unlink($dir . $file);
+		if (is_dir($dir)) {
+			if ($dh = opendir($dir)) {
+				while (($file = readdir($dh)) !== false) {
+					if ($file!="." AND $file !="..") {
+						unlink($dir . $file);
+					}
 				}
+				closedir($dh);
 			}
-			closedir($dh);
 		}
 	}
-}
-
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
-
-// Set properties
-$objPHPExcel->getProperties()->setCreator("Mobilequiz Team");
-$objPHPExcel->getProperties()->setLastModifiedBy("Mobilequiz Team");
-$objPHPExcel->getProperties()->setTitle("Mobilequiz_results");
-
-// Add the data
+	
+	// Create new PHPExcel object
+	$objPHPExcel = new PHPExcel();
+	
+	// Set properties
+	$objPHPExcel->getProperties()->setCreator("Mobilequiz Team");
+	$objPHPExcel->getProperties()->setLastModifiedBy("Mobilequiz Team");
+	$objPHPExcel->getProperties()->setTitle("Mobilequiz_results");
+	
+	$stmt = $dbh->prepare("select user_exec_session.*, user.nickname, firstname, lastname, email, `group`.name from user_exec_session inner join user on user.id = user_exec_session.user_id 
+						left outer join user_group on user_group.user_id = user.id left outer join `group` on user_group.group_id = `group`.id inner join user_data on user_data.user_id = user.id 
+						where execution_id = :execId");
+	$stmt->bindParam(":execId", $_GET["execId"]);
+	$stmt->execute();
+	$fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	$userSessions = array();
+	//echo "<br /><br /><br /><br /><br /><br />b: " . count($fetchSession) . " "  . $fetchQuiz["qId"];
+	for($i = 0; $i < count($fetchSession); $i++)
+	{
+		//echo "a: " . $i . " " . $fetchSession[$i]["id"];
+		$fetchPoints = getPoints($dbh, $fetchQuiz["qId"], $fetchSession[$i]["id"], 2);
+		if(isset($_GET["displayMode"]) && $_GET["displayMode"] == "prof")
+			$sessionKey = $fetchSession[$i]["lastname"] . " " . $fetchSession[$i]["firstname"];
+		else
+			$sessionKey = $fetchSession[$i]["nickname"];
+		$timeUsed = $fetchSession[$i]["endtime"] - $fetchSession[$i]["starttime"];
+		if($userSessions[$sessionKey] == null)
+		{
+			$userSessions[$sessionKey] = [$fetchPoints[0], $fetchPoints[1], $fetchPoints[2], 1, $timeUsed, $fetchSession[$i]["name"], $fetchSession[$i]["user_id"], $fetchSession[$i]["email"],$fetchSession[$i]["starttime"]];
+			//echo "c: " . $sessionKey;
+		}
+		else {
+			if($fetchPoints[2]>$userSessions[$sessionKey][2])
+			{
+				$userSessions[$sessionKey][0] = $fetchPoints[0];
+				$userSessions[$sessionKey][1] = $fetchPoints[1];
+				$userSessions[$sessionKey][2] = $fetchPoints[2];
+				$userSessions[$sessionKey][4] = $timeUsed;
+				$userSessions[$sessionKey][5] = $fetchSession[$i]["name"];
+				$userSessions[$sessionKey][6] = $fetchSession[$i]["user_id"];
+				$userSessions[$sessionKey][7] = $fetchSession[$i]["email"];
+				$userSessions[$sessionKey][8] = $fetchSession[$i]["starttime"];
+			}
+			++$userSessions[$sessionKey][3];
+		}
+		//array_push($userSessions, $fetchPoints);
+	}
+	
+	$points = array();
+	foreach ($userSessions as $key => $row)
+	{
+		$points[$key] = $row[2];
+	}
+	array_multisort($points, SORT_DESC, $userSessions);
 ?>
+
 <script type="text/javascript">
 
 <?php if(isset($_GET["displayMode"]) && $_GET["displayMode"] == "anonym")
@@ -77,7 +83,7 @@ $objPHPExcel->getProperties()->setTitle("Mobilequiz_results");
 		$.ajax({
 			url: 'modules/actionHandler.php',
 			type: "get",
-			data: "action=revealUserName&questionnaireId="+<?php echo $_GET["id"];?>+"&userId="+uId,
+			data: "action=revealUserName&questionnaireId="+<?php echo $fetchQuiz["qId"];?>+"&userId="+uId,
 			dataType: 'json',
 			success: function(output) 
 			{
@@ -134,54 +140,6 @@ $(function() {
 	$('#users_wrapper .dataTables_filter input').addClass("magnifyingGlass");
 });
 </script>
-
-<?php 
-	
-	$stmt = $dbh->prepare("select user_qunaire_session.*, user.nickname, firstname, lastname, email, group.name from user_qunaire_session inner join user on user.id = user_qunaire_session.user_id left outer join `group` on user.group_id = group.id inner join user_data on user_data.user_id = user.id where questionnaire_id = :questionnaire_id");
-	$stmt->bindParam(":questionnaire_id", $_GET["id"]);
-	$stmt->execute();
-	$fetchSession = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	
-	$userSessions = array();
-	//echo "<br /><br /><br /><br /><br /><br />b: " . count($fetchSession) . " "  . $_GET["id"];
-	for($i = 0; $i < count($fetchSession); $i++)
-	{
-		//echo "a: " . $i . " " . $fetchSession[$i]["id"];
-		$fetchPoints = getPoints($dbh, $_GET["id"], $fetchSession[$i]["id"], 2);
-		if(isset($_GET["displayMode"]) && $_GET["displayMode"] == "prof")
-			$sessionKey = $fetchSession[$i]["lastname"] . " " . $fetchSession[$i]["firstname"];
-		else
-			$sessionKey = $fetchSession[$i]["nickname"];
-		$timeUsed = $fetchSession[$i]["endtime"] - $fetchSession[$i]["starttime"];
-		if($userSessions[$sessionKey] == null)
-		{
-			$userSessions[$sessionKey] = [$fetchPoints[0], $fetchPoints[1], $fetchPoints[2], 1, $timeUsed, $fetchSession[$i]["name"], $fetchSession[$i]["user_id"], $fetchSession[$i]["email"],$fetchSession[$i]["starttime"]];
-			//echo "c: " . $sessionKey;
-		}
-		else {
-			if($fetchPoints[2]>$userSessions[$sessionKey][2])
-			{
-				$userSessions[$sessionKey][0] = $fetchPoints[0];
-				$userSessions[$sessionKey][1] = $fetchPoints[1];
-				$userSessions[$sessionKey][2] = $fetchPoints[2];
-				$userSessions[$sessionKey][4] = $timeUsed;
-				$userSessions[$sessionKey][5] = $fetchSession[$i]["name"];
-				$userSessions[$sessionKey][6] = $fetchSession[$i]["user_id"];
-				$userSessions[$sessionKey][7] = $fetchSession[$i]["email"];
-				$userSessions[$sessionKey][8] = $fetchSession[$i]["starttime"];
-			}
-			++$userSessions[$sessionKey][3];
-		}
-		//array_push($userSessions, $fetchPoints);
-	}
-	
-	$points = array();
-	foreach ($userSessions as $key => $row)
-	{
-		$points[$key] = $row[2];
-	}
-	array_multisort($points, SORT_DESC, $userSessions);
-?>
 
 <div class="container theme-showcase">
 	<div class="page-header">
@@ -271,8 +229,8 @@ $(function() {
 		                        }
 		                        else 
 		                        {
-		                        	echo '<a href="?p=quizReportAnswerPersonalized&uId='.$val[6].'&qId='.$_GET["id"].'" original-title="'.$val[7].'" class="userEmail">' . $key . '</a>';
-		                        	echo ' <a href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&quizId='. $_GET["id"].'&uId='.$val[6].'" target="_blank" class="showPersonalizedAnswers" original-title="Ergebnisse anzeigen"><img src="assets/pdf_icon.png" alt="" height="18px" width="18px"></a>&nbsp;';
+		                        	echo '<a href="?p=quizReportAnswerPersonalized&uId='.$val[6].'&qId='.$fetchQuiz["qId"].'&execId='.$_GET["execId"].'" original-title="'.$val[7].'" class="userEmail">' . $key . '</a>';
+		                        	echo ' <a href="?p=generatePDF&action=getQuizTaskPaperWithMyAnswers&execId='. $_GET["execId"].'&uId='.$val[6].'" target="_blank" class="showPersonalizedAnswers" original-title="Ergebnisse anzeigen"><img src="assets/pdf_icon.png" alt="" height="18px" width="18px"></a>&nbsp;';
 									$objPHPExcel->getActiveSheet()->SetCellValue('B' . $i, $key);
 									$objPHPExcel->getActiveSheet()->SetCellValue('C' . $i, $val[7]);
 		                        }

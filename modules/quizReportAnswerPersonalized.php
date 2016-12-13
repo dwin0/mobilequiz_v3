@@ -1,5 +1,5 @@
 <?php
-include "modules/extraFunctions.php";
+include "modules/authorizationCheck_quizReport.php";
 
 function getMultiplechoiceChar($val)
 {
@@ -23,20 +23,6 @@ if(!isset($_GET["qId"]) || !isset($_GET["uId"]))
 	exit;
 }
 
-if($_SESSION["role"]["user"] == 1)
-{
-	if($_SESSION["role"]["creator"] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["id"]))
-	{
-		header("Location: ?p=quiz&code=-1");
-		exit;
-	}
-}
-else
-{
-	header("Location: ?p=home&code=-20");
-	exit;
-}
-
 $stmt = $dbh->prepare("select * from user inner join user_data on user_id = id where id = :uId");
 $stmt->bindParam(":uId", $_GET["uId"]);
 if(!$stmt->execute())
@@ -46,46 +32,17 @@ if(!$stmt->execute())
 }
 $fetchUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$stmt = $dbh->prepare("select questionnaire.name, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email, owner_id from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
-$stmt->bindParam(":quizId", $_GET["qId"]);
-if(!$stmt->execute())
-{
-	header("Location: ?p=quiz&code=-25");
-	exit;
-}
-if($stmt->rowCount() != 1)
-{
-	header("Location: ?p=quiz&code=-15&info=second");
-	exit;
-}
-$fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
-if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["qId"]))
-{
-	header("Location: ?p=quiz&code=-1");
-	exit;
-}
-
 $stmt = $dbh->prepare("select question.* from qunaire_qu inner join question on question.id = qunaire_qu.question_id where questionnaire_id = :quizId");
 $stmt->bindParam(":quizId", $_GET["qId"]);
 $stmt->execute();
 $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<script type="text/javascript">
-	function backToOverview(qId)
-	{
-		window.location = '?p=quizReportLadder&id=' + qId;
-	}
 
-	function changeSession(val)
-	{
-		window.location = '?p=quizReportAnswerPersonalized&uId=<?php echo $_GET["uId"];?>&qId=<?php echo $_GET["qId"];?>&sId='+$(val).val();
-	}
-</script>
 <div class="container theme-showcase">
 	<div class="page-header">
 		<h1><?php echo $fetchUser["lastname"] . " " . $fetchUser["firstname"] . " &laquo;" . $fetchQuiz["name"] . "&raquo; Auswertung "?></h1>
 	</div>
-	<input type="button" value="<?php echo $lang["btnBack"];?>" class="btn" style="margin-bottom: 5px;" onclick="backToOverview(<?php echo $_GET["qId"];?>)">
+	<input type="button" value="<?php echo $lang["btnBack"];?>" class="btn" style="margin-bottom: 5px;" onclick="backToOverview(<?php echo $execId;?>)">
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h3 class="panel-title"><?php echo $lang["answerStat"] . " - Stand vom " . date("d.m.Y H:i:s", time()); ?></h3>
@@ -94,31 +51,6 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			<div class="row">
 				<div class="col-md-8 col-sm-8">
 					<div class="form-horizontal">
-						<div class="form-group">
-							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["maxPoints"];?></label>
-							<div class="col-md-9 col-sm-8">
-								<p class="form-control-static"><?php 
-									$stmt = $dbh->prepare("select question.id, type_id, singlechoice_multiplier from question inner join qunaire_qu on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id where qunaire_qu.questionnaire_id = :quizId");
-									$stmt->bindParam(":quizId", $_GET["qId"]);
-									$stmt->execute();
-									$fetchQuestionsForMaxPoints = $stmt->fetchAll(PDO::FETCH_ASSOC);
-									$totalPoints = 0;
-									for($i = 0; $i < count($fetchQuestionsForMaxPoints); $i++)
-									{
-										if($fetchQuestionsForMaxPoints[$i]["type_id"] == 1)
-											$totalPoints += (1 * $fetchQuestionsForMaxPoints[$i]["singlechoice_multiplier"]);
-										else if($fetchQuestionsForMaxPoints[$i]["type_id"] == 2)
-										{
-											$stmt = $dbh->prepare("select answer_id as count from answer_question where question_id = :question_id");
-											$stmt->bindParam(":question_id", $fetchQuestionsForMaxPoints[$i]["id"]);
-											$stmt->execute();
-											$totalPoints += $stmt->rowCount();
-										}
-									}
-									echo $totalPoints;
-								?></p>
-							</div>
-						</div>
 						<div class="form-group">
 							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["quizTableAmountQuestions"];?></label>
 							<div class="col-md-9 col-sm-8">
@@ -130,15 +62,43 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 								?></p>
 							</div>
 						</div>
+						<div class="form-group">
+							<label class="col-md-3 col-sm-4 control-label"><?php echo $lang["maxPoints"];?></label>
+							<div class="col-md-9 col-sm-8">
+								<p class="form-control-static"><?php 
+									$stmt = $dbh->prepare("select question.id, type_id, execution.singlechoice_multiplier from question inner join qunaire_qu
+																on qunaire_qu.question_id = question.id inner join questionnaire on questionnaire.id = qunaire_qu.questionnaire_id
+																inner join qunaire_exec on qunaire_exec.questionnaire_id = questionnaire.id inner join execution on qunaire_exec.execution_id = execution.id
+																where execution.id = :execId");
+									$stmt->bindParam(":execId", $_GET["execId"]);
+									$stmt->execute();
+									$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+									$totalPoints = 0;
+									for($i = 0; $i < count($fetchQuestions); $i++)
+									{
+										if($fetchQuestions[$i]["type_id"] == 1)
+											$totalPoints+= (1*$fetchQuestions[0]["singlechoice_multiplier"]);
+											else if($fetchQuestions[$i]["type_id"] == 2)
+											{
+												$stmt = $dbh->prepare("select answer_id as count from answer_question where question_id = :question_id");
+												$stmt->bindParam(":question_id", $fetchQuestions[$i]["id"]);
+												$stmt->execute();
+												$totalPoints += $stmt->rowCount();
+											}
+									}
+									echo $totalPoints;
+								?></p>
+							</div>
+						</div>
 						<?php 
 						$bestSession = -1;
 						$percentageArray= array();
 						$choosedSession = -1;
 						if(isset($_GET["sId"]))
 							$choosedSession = $_GET["sId"];
-						$stmt = $dbh->prepare("select * from user_qunaire_session where user_id = :user_id and questionnaire_id = :questionnaire_id");
+						$stmt = $dbh->prepare("select * from user_exec_session where user_id = :user_id and execution_id = :execId and endtime is not null ");
 						$stmt->bindParam(":user_id", $_GET["uId"]);
-						$stmt->bindParam(":questionnaire_id", $_GET["qId"]);
+						$stmt->bindParam(":execId", $execId);
 						if(!$stmt->execute())
 						{
 							header("Location: index.php?p=quiz&code=-14");
@@ -245,7 +205,7 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 							</h3>
 						</div>
 						<div class="col-md-2 col-sm-3" style="text-align: right;">
-							Benötigte Zeit für die Frage: <span id="questionTimeNeeded_<?php echo $fetchQuestions[$i]["id"];?>"></span> s
+							Ben&ouml;tigte Zeit f&uuml;r die Frage: <span id="questionTimeNeeded_<?php echo $fetchQuestions[$i]["id"];?>"></span> s
 						</div>
 					</div>
 				</div>
@@ -306,6 +266,17 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			</div>
 			<div style="text-align: center; margin-bottom: 20px;"><?php echo "Ladezeit zwischen Fragen: " . $nextButtonTime . " ms";?></div>
 		<?php }?>
-	<input type="button" value="<?php echo $lang["btnBack"];?>" class="btn" style="margin-bottom: 5px;" onclick="backToOverview(<?php echo $_GET["qId"];?>)">
-	</div>
+	<input type="button" value="<?php echo $lang["btnBack"];?>" class="btn" style="margin-bottom: 5px;" onclick="backToOverview(<?php echo $execId;?>)">
 </div>
+
+<script type="text/javascript">
+	function backToOverview(execId)
+	{
+		window.location = '?p=quizReportLadder&execId=' + execId;
+	}
+
+	function changeSession(val)
+	{
+		window.location = '?p=quizReportAnswerPersonalized&uId=<?php echo $_GET["uId"];?>&qId=<?php echo $_GET["qId"];?>&sId='+$(val).val()+'&execId='+<?php echo $_GET["execId"] ?>;
+	}
+</script>

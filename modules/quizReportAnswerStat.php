@@ -1,49 +1,11 @@
 <?php
-include "modules/extraFunctions.php";
-
-if(!isset($_GET["id"]))
-{
-	header("Location: ?p=quiz&code=-15");
-	exit;
-}
-
-if($_SESSION["role"]["user"] == 1)
-{
-	if($_SESSION["role"]["creator"] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["id"]))
-	{
-		header("Location: ?p=quiz&code=-1");
-		exit;
-	}
-}
-else
-{
-	header("Location: ?p=home&code=-20");
-	exit;
-}
-
-$stmt = $dbh->prepare("select questionnaire.name, description, starttime, endtime, last_modified, qnaire_token, firstname, lastname, email, owner_id from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :quizId");
-$stmt->bindParam(":quizId", $_GET["id"]);
-if(!$stmt->execute())
-{
-	header("Location: ?p=quiz&code=-25");
-	exit;
-}
-if($stmt->rowCount() != 1)
-{
-	header("Location: ?p=quiz&code=-15");
-	exit;
-}
-$fetchQuiz = $stmt->fetch(PDO::FETCH_ASSOC);
-if($fetchQuiz["owner_id"] != $_SESSION["id"] && $_SESSION['role']['admin'] != 1 && !amIAssignedToThisQuiz($dbh, $_GET["id"]))
-{
-	header("Location: ?p=quiz&code=-1");
-	exit;
-}
-
-$stmt = $dbh->prepare("select question.* from qunaire_qu inner join question on question.id = qunaire_qu.question_id where questionnaire_id = :quizId");
-$stmt->bindParam(":quizId", $_GET["id"]);
-$stmt->execute();
-$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	include "modules/authorizationCheck_quizReport.php";
+	
+	$stmt = $dbh->prepare("select question.* from qunaire_qu inner join question on question.id = qunaire_qu.question_id where questionnaire_id = :quizId");
+	$stmt->bindParam(":quizId", $fetchQuiz["qId"]);
+	$stmt->execute();
+	$fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="container theme-showcase">
@@ -78,8 +40,8 @@ $fetchQuestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 								$answerCountArray[$fetchAnswers[$j]["id"]] = [$fetchAnswers[$j]["is_correct"], 0, 0, 0, 0];
 							}
 
-							$stmt = $dbh->prepare("select * from user_qunaire_session where questionnaire_id = :quizId");
-							$stmt->bindParam(":quizId", $_GET["id"]);
+							$stmt = $dbh->prepare("select * from user_exec_session where execution_id = :execId");
+							$stmt->bindParam(":execId", $_GET["execId"]);
 							$stmt->execute();
 							$fetchSessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 							
