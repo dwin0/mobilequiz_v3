@@ -271,6 +271,7 @@ $lang = array(
 		"dateCol" => "Ereignis Datum",
 		"typeCol" => "Ereignis Typ",
 		"eventCol" => "Ereignis",
+		"existingExecutionError" => "Es besteht noch mindestens eine Durchf&uuml;hrung. Das Quiz kann nicht gel&ouml;scht werden.",
 		"quizUploadPicError" => "Fehler beim hochladen des Bildes",
 		"quizGeneralError" => "Fehler in der Bearbeitung des Vorgangs",
 		"quizNotAvailable" => "Quiz nicht vorhanden",

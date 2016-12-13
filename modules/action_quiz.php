@@ -609,53 +609,74 @@ function deleteExecution()
 function deleteQuiz()
 {
 	global $dbh;
-
+	
+	$response_array["status"] = "OK";
+	
+	if(!isset($_POST["quizId"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["parameterError"];
+	}
+	
 	if($_SESSION['role']['creator'])
 	{
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :id");
-		$stmt->bindParam(":id", $_GET["quizId"]);
+		$stmt->bindParam(":id", $_POST["quizId"]);
 		$stmt->execute();
 		$fetchOwer = $stmt->fetch(PDO::FETCH_ASSOC);
 
 		if($_SESSION["id"] == $fetchOwer["owner_id"] || $_SESSION['role']['admin'] == 1)
 		{
+			$stmt = $dbh->prepare("select execution_id from qunaire_exec where questionnaire_id = :qId");
+			$stmt->bindParam(":qId", $_POST["quizId"]);
+			if($stmt->execute())
+			{
+				if($stmt->rowCount() != 0) 
+				{
+					$response_array["status"] = "error";
+					$response_array["text"] = $lang["existingExecutionError"];
+					echo json_encode($response_array);
+					exit;
+				}
+			}
+			
+			$stmt = $dbh->prepare("delete from qunaire_exec where questionnaire_id = :qId");
+			$stmt->bindParam(":qId", $_POST["quizId"]);
+			$delQunaire_exec = $stmt->execute();
+			
 			$stmt = $dbh->prepare("delete from qunaire_qu where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$stmt->bindParam(":qId", $_POST["quizId"]);
 			$delQunaire_qu = $stmt->execute();
 
-			$stmt = $dbh->prepare("select id from user_qunaire_session where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
-			$stmt->execute();
-			$fetchSessionId = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-			$delAn_qu_user = true;
-			for($i = 0; $i < count($fetchSessionId); $i++)
-			{
-				$stmt = $dbh->prepare("delete from an_qu_user where session_id = :sId");
-				$stmt->bindParam(":sId", $fetchSessionId[$i]["id"]);
-				if(!$stmt->execute())
-					$delAn_qu_user = false;
-			}
-
-			$stmt = $dbh->prepare("delete from user_qunaire_session where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
-			$delUser_qunaire_session = $stmt->execute();
-
 			$stmt = $dbh->prepare("delete from qunaire_assigned_to where questionnaire_id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$stmt->bindParam(":qId", $_POST["quizId"]);
 			$delQunaire_assigned_to = $stmt->execute();
 
 			$stmt = $dbh->prepare("delete from questionnaire where id = :qId");
-			$stmt->bindParam(":qId", $_GET["quizId"]);
+			$stmt->bindParam(":qId", $_POST["quizId"]);
 			$delQuestionnaire = $stmt->execute();
 
-			if($delQunaire_qu && $delUser_qunaire_session && $delQuestionnaire && $delAn_qu_user && $delQunaire_assigned_to)
+			if($delQunaire_exec && $delQunaire_qu && $delQunaire_assigned_to && $delQuestionnaire)
 			{
-				echo "deleteQuizOk";
+				$response_array["status"] = "OK";
 			} else {
-				echo "failed";
+				$response_array["status"] = "error";
+				$response_array["text"] = $lang["DB-Update-Error"];
 			}
+				
+			echo json_encode($response_array);
+			exit;
+		} else {
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["noAccessError"];
+			echo json_encode($response_array);
+			exit;
 		}
+	} else {
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["noAccessError"];
+		echo json_encode($response_array);
+		exit;
 	}
 }
 

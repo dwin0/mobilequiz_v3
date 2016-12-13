@@ -21,20 +21,6 @@
 		$mode = $_GET["mode"];
 	}
 	
-	if($_SESSION["role"]["user"])
-	{
-		if(! $_SESSION["role"]["creator"] && $quizFetch["owner_id"] != $_SESSION["id"] && ($mode == 'edit' && !amIAssignedToThisQuiz($dbh, $_GET["id"])))
-		{
-			header("Location: ?p=quiz&code=-1&info=qqq");
-			exit;
-		}
-	}
-	else
-	{
-		header("Location: ?p=home&code=-20");
-		exit;
-	}
-	
 	if($mode == 'edit')
 	{
 		$stmt = $dbh->prepare("select questionnaire.*, user_data.firstname, user_data.lastname from questionnaire inner join user on user.id = questionnaire.owner_id inner join user_data on user_data.user_id = user.id where questionnaire.id = :id");
@@ -56,12 +42,26 @@
 			$language = "English";
 		}
 		
-		$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, starttime, endtime, qnaire_token, random_questions, random_answers, limited_time, result_visible, result_visible_points, language, amount_of_questions, public, description, creation_date, last_modified, priority, amount_participations, quiz_passed, singlechoice_multiplier, noParticipationPeriod, showTaskPaper)
-					values (" . $_SESSION["id"] . ", NULL, '', NULL, NULL, '', NULL, NULL, NULL, NULL, NULL, '" . $language . "', NULL, NULL, '', ".time().", ".time().", NULL, NULL, NULL, NULL, NULL, NULL)");
+		$stmt = $dbh->prepare("insert into questionnaire (owner_id, subject_id, name, language, description, creation_date, last_modified)
+					values (" . $_SESSION["id"] . ", NULL, '', '" . $language . "', '', ".time().", ".time().")");
 		
 		$stmt->execute();
 		
 		$newQuizId = $dbh->lastInsertId();
+	}
+	
+	if($_SESSION["role"]["user"])
+	{
+		if(! $_SESSION["role"]["creator"] && $quizFetch["owner_id"] != $_SESSION["id"] && ($mode == 'edit' && !amIAssignedToThisQuiz($dbh, $_GET["id"])))
+		{
+			header("Location: ?p=quiz&code=-1&info=qqq");
+			exit;
+		}
+	}
+	else
+	{
+		header("Location: ?p=home&code=-20");
+		exit;
 	}
 	
 	$errorCode = new mobileError("", "red");
@@ -432,7 +432,7 @@
 
 </div>
 
-
+<div id="snackbar">Some text some message..</div>
 
 <script src="js/spin.min.js"></script>
 <script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
@@ -494,6 +494,7 @@
 				if(response["status"] == "OK")
 				{
 					console.log("OK");
+					showSnackbar("<?php echo $lang["saved"]?>");
 					$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
 					var rowData = [userEmail, '<img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(' + response["userId"] + ')">'];
 					var rowIndex = $('#assignTbl').dataTable().fnAddData(rowData);
@@ -525,6 +526,7 @@
 			{
 				if(output == "ok1")
 				{
+					showSnackbar("<?php echo $lang["saved"]?>");
 					$('#ajaxAnswer').html('<span style="color: green;">Berechtigung aberkannt.</span>');
 					$('#assignTbl').DataTable().row($('#assignation_'+userId)).remove().draw();
 					$('.tipsy').remove();
@@ -552,6 +554,7 @@
 			{
 				if(output == "ok")
 				{
+					showSnackbar("<?php echo $lang["saved"]?>");
 					$('#tblListOfQuestions').DataTable().row($('#question_'+qId)).remove().draw();
 					$('.tipsy').remove();
 				}
@@ -592,6 +595,7 @@
 			data: "action=moveQuestion&questionaireId="+<?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>+"&qOrder="+JSON.stringify(qOrder),
 			success: function(output) 
 			{
+				showSnackbar("<?php echo $lang["saved"]?>");
 				console.log(output);
 			}
 		});
@@ -659,7 +663,7 @@
 				switch(data.status)
 				{
 					case "OK":
-						console.log("OK");
+						showSnackbar("<?php echo $lang["saved"]?>");
 						break;
 					case "error":
 						alert("Error: " + data.text);
@@ -690,7 +694,7 @@
 				switch(data.status)
 				{
 					case "OK":
-						console.log("OK");
+						showSnackbar("<?php echo $lang["saved"]?>");
 
 						if(data.text != null)
 						{
@@ -717,7 +721,7 @@
 
 						$("#btnImportQuestionsFromExcel").val(null);
 						$("#btnImportQuestionsFromDirectory").val(null);
-
+						
 						break;
 					case "error":
 						alert("Error: " + data.text);
@@ -804,7 +808,7 @@
 		});
 
 		$("#btnAddNewExecution").on("click", function() {
-			window.location = "?p=createEditExecution&quizId=" + $("[name='quiz_id']").val() + "&mode=";
+			window.location = "?p=createEditExecution&quizId=" + $("[name='quiz_id']").val() + "&mode="; //TODO: hier sollte wohl execId hin!!!
 		});
 		
 		var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
@@ -890,4 +894,11 @@
 
 		$('#createEditQuizTab').tabCollapse();
 	});
+
+	function showSnackbar(text) {
+		var snackbar = $("#snackbar");
+		snackbar.text(text);
+	    snackbar.addClass("show");
+	    setTimeout(function(){ snackbar.removeClass("show"); }, 3000);
+	}
 </script>

@@ -101,7 +101,7 @@
 				    	{
 				    ?>
 			    	
-			    		<tr>
+			    		<tr id="<?php echo "quiz_" . $fetchQunaireWithoutExec[$i]["id"];?>">
 			    			<td>
 			    				<?php echo $fetchQunaireWithoutExec[$i]["name"];?>
 			    			</td>
@@ -607,21 +607,37 @@
 	{
 		if(confirm("<?php echo $lang["deleteConfirmation"];?>"))
 		{
-		    $.ajax({
-				url: 'modules/actionHandler.php',
-				type: 'get',
-				data: 'action=delQuiz&quizId=' + id,
-				success: function(output) {
-					if(output == 'deleteQuizOk')
+			var data = new FormData();
+			data.append("quizId", id);
+			
+			$.ajax({
+		        url: '?p=actionHandler&action=delQuiz',
+		        type: 'POST',
+		        data: data,
+		        cache: false,
+		        dataType: 'json',
+		        processData: false,
+		        contentType: false,
+		        success: function(data)
+		        {
+					switch(data.status)
 					{
-						$('#quizzes').DataTable().row($('#quiz_'+id)).remove().draw();
-						$('#topicActionResult').html("<span style=\"color: green;\"><?php echo $lang["quizSuccessfullyDeleted"];?>.</span>");
+						case "OK":
+							$('#quizWithoutExec').DataTable().row($('#quiz_'+id)).remove().draw();
+							$('#topicActionResult').html("<span style=\"color: green;\"><?php echo $lang["quizSuccessfullyDeleted"];?>.</span>");
+							console.log("OK");
+							break;
+						case "error":
+							alert("Error: " + data.text);
+							break;
 					}
-				}, error: function()
-				{
-					alert(<?php echo "\"" . $lang["deletingFailed"] . "\"";?>);
-				}
-			});
+		        },
+		        error: function()
+		        {
+		            console.log("Ajax couldn't send data");
+		            alert("Ajax couldn't send data");
+		        }
+		    });
 		}
 	}
 

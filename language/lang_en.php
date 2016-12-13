@@ -270,6 +270,7 @@ $lang = array(
 		"dateCol" => "Event date",
 		"typeCol" => "Event type",
 		"eventCol" => "Event",
+		"existingExecutionError" => "It exists at least one execution. The quiz can't be deleted.",
 		"quizUploadPicError" => "Error while uploading picture",
 		"quizGeneralError" => "Error while handling the process",
 		"quizNotAvailable" => "Quiz no available",
