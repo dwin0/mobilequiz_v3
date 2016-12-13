@@ -585,6 +585,7 @@ function deleteExecution()
 			{
 				$response_array["status"] = "OK";
 				$response_array["quizId"] = $fetchOwnerAndId["id"];
+				$response_array["execId"] = $_POST["execId"];
 			} else {
 				$response_array["status"] = "error";
 				$response_array["text"] = $lang["DB-Update-Error"];

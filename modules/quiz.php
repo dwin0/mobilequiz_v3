@@ -567,7 +567,7 @@
 			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"])) {?>
 											
 										<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchExecution[$i]["qId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuizAction"];?></a>
-										<a class="dropdown-item" href="?p=createEditExecution&mode=edit&execId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editExecutionAction"];?></a>										
+										<a class="dropdown-item" href="?p=createEditExecution&mode=edit&fromsite=quiz&execId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editExecutionAction"];?></a>										
 										<a class="dropdown-item" onclick="delExec(<?php echo $fetchExecution[$i]["execId"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delExec"];?></a>
 										<a class="dropdown-item" href="?p=quizReport&execId=<?php echo $fetchExecution[$i]["execId"];?>"><span class="glyphicon glyphicon-file"></span> <?php echo $lang["showQuizReport"];?></a>
 				                        								

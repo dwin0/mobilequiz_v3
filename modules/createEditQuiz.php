@@ -380,7 +380,7 @@
 		            		<td>
 		            		<?php if($_SESSION['role']['admin'] == 1 || $fetchQnaireQu[$i]["owner_id"] == $_SESSION["id"]) {?>
 	                            <a href="?p=createEditQuestion&mode=edit&fromsite=createEditQuiz&quizId=<?php echo $_GET["id"];?>&id=<?php echo $fetchQnaireQu[$i]["question_id"];?>" class="editQuestion" original-title="Frage bearbeiten"><img id="editQuestion" src="assets/icon_edit.png" alt="" height="18px" width="18px"></a>&nbsp;
-	                            <img id="delQuestionImg" style="cursor: pointer;" class="deleteQuestion delQuestionImg" src="assets/icon_delete.png" alt="" original-title="Frage aus dieser Lernkontrolle l&ouml;schen" height="18px" width="18px" onclick="delQuestion(<?php echo $fetchQnaireQu[$i]["question_id"];?>)"><br />
+	                            <img id="delQuestionImg" style="cursor: pointer;" class="deleteQuestion delQuestionImg" src="assets/icon_delete.png" alt="" original-title="Frage aus diesem Quiz l&ouml;schen" height="18px" width="18px" onclick="delQuestion(<?php echo $fetchQnaireQu[$i]["question_id"];?>)"><br />
 	                        <?php }?>
 		            		</td>
 		            	</tr>
@@ -412,7 +412,38 @@
 		                </tr>
 		            </thead>
 		            <tbody>
-		            	<!-- TODO Logik -->
+		            
+		            <?php 
+					if($mode == "edit")
+					{
+						$stmt = $dbh->prepare("select execution_id from qunaire_exec where questionnaire_id = :qId");
+						$stmt->bindParam(":qId", $_GET["id"]);
+						$stmt->execute();
+						$fetchExecId = $stmt->fetchAll(PDO::FETCH_ASSOC);
+						
+						if(count($fetchExecId) >= 1) {
+							for($i=0; $i < count($fetchExecId); $i++) {
+								$stmt = $dbh->prepare("select name, starttime, endtime from execution where id = :execId");
+								$stmt->bindParam(":execId", $fetchExecId[$i]["execution_id"]);
+								$stmt->execute();
+								$fetchExec = $stmt->fetchAll(PDO::FETCH_ASSOC);
+					?>		            
+		            
+		            	<tr id="<?php echo "execution_" . $fetchExecId[$i]["execution_id"];?>">
+							<td>
+								<?php echo $fetchExec[0]["name"]?>
+							</td>	
+							<td>
+								<?php echo date("d.m.Y H:i", $fetchExec[0]["starttime"]) . " bis " . date("d.m.Y H:i", $fetchExec[0]["endtime"])?>
+							</td>
+							<td>
+							<?php if($_SESSION['role']['admin'] == 1 || $fetchQnaireQu[$i]["owner_id"] == $_SESSION["id"]) {?>
+	                            <a href="?p=createEditExecution&mode=edit&fromsite=createEditQuiz&executionId=<?php echo $fetchExecId[$i]["execution_id"];?>" class="editExecution" original-title="Durchf&uuml;hrung bearbeiten"><img id="editExecution" src="assets/icon_edit.png" alt="" height="18px" width="18px"></a>&nbsp;
+	                            <img id="delExecutionImg" style="cursor: pointer;" class="deleteExecution delExecutionImg" src="assets/icon_delete.png" alt="" original-title="Durchf&uuml;hrung aus diesem Quiz l&ouml;schen" height="18px" width="18px" onclick="delExec(<?php echo $fetchExecId[$i]["execution_id"];?>)"><br />
+	                        <?php }?>
+							</td>
+		            	</tr>
+		            <?php }}}?>
 		            </tbody>
 		        </table>
 	        </div>
@@ -568,6 +599,44 @@
 				$('#ajaxAnswer').html('<span style="color: red;">Fehler.</span>');
 			}
 		});
+	}
+
+	function delExec(id)
+	{
+		if(confirm("<?php echo $lang["deleteConfirmation"] ?>")) 
+		{
+			var data = new FormData();
+			data.append("execId", id);
+			
+			$.ajax({
+		        url: '?p=actionHandler&action=delExec',
+		        type: 'POST',
+		        data: data,
+		        cache: false,
+		        dataType: 'json',
+		        processData: false,
+		        contentType: false,
+		        success: function(data)
+		        {
+					switch(data.status)
+					{
+						case "OK":
+							$('#tblListOfExecutions').DataTable().row($('#execution_'+data.execId)).remove().draw();
+							$('#createEditQuizActionResult').html("<span style=\"color: green;\"><?php echo $lang["executionSuccessfullyDeleted"];?>.</span>");
+							showSnackbar("<?php echo $lang["saved"]?>");
+							break;
+						case "error":
+							alert("Error: " + data.text);
+							break;
+					}
+		        },
+		        error: function()
+		        {
+		            console.log("Ajax couldn't send data");
+		            alert("Ajax couldn't send data");
+		        }
+		    });
+		}
 	}
 
 	function formCheck()
@@ -738,7 +807,7 @@
 	
 
 	$(function() {
-		var tooltipElements = ['#assignationHelp', '.delAssignedImg', '.delQuestionImg', '.editQuestion', '.questionTypeInfo'];
+		var tooltipElements = ['#assignationHelp', '.delAssignedImg', '.delQuestionImg', '.delExecutionImg', '.editQuestion', '.editExecution', '.questionTypeInfo'];
 
 		$.each(tooltipElements, function(i, string){
 			$(string).tipsy({gravity: 'n'});
@@ -808,7 +877,7 @@
 		});
 
 		$("#btnAddNewExecution").on("click", function() {
-			window.location = "?p=createEditExecution&quizId=" + $("[name='quiz_id']").val() + "&mode="; //TODO: hier sollte wohl execId hin!!!
+			window.location = "?p=createEditExecution&mode=create&fromsite=createEditQuiz";
 		});
 		
 		var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;
