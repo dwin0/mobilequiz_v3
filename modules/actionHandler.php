@@ -7,6 +7,7 @@
 	include_once 'action_quiz_groups.php';
 	include_once 'action_poll.php';
 	include_once 'action_user.php';
+	include_once 'action_execution.php';
 	
 	include_once '../config/config.php';
 	include_once "../modules/extraFunctions.php";
@@ -94,6 +95,8 @@
 		case "queryAnswers":
 			queryAnswers();
 			break;
+		case "updateExecution":
+			updateExecution();
 		default:
 			header("Location: ?p=quiz&code=-1&info=ppp");
 	}

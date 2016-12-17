@@ -1,21 +1,93 @@
 <?php 
+	include_once 'errorCodeHandler.php';
+	include_once 'config/executionDefaultValues.php';
 	$maxCharactersExecution = 30;
+	
+	$code = '';
+	$mode = "create";
+	if(isset($_GET["mode"]))
+	{
+		$mode = $_GET["mode"];
+	}
+	
+	$execId = -1;
+	if(isset($_GET["execId"]))
+	{
+		$execId = $_GET["execId"];
+	}
+	
+	$quizId = -1;
+	if(isset($_GET["quizId"]))
+	{
+		$quizId = $_GET["quizId"];
+	}
+	
+	$fromSite = '';
+	if(isset($_GET["fromsite"]))
+	{
+		$fromSite = $_GET["fromsite"];
+	}
+	
+	if($_SESSION["role"]["user"])
+	{
+		if(! $_SESSION["role"]["creator"])
+		{
+			$code = -3;
+		}
+	}
+	else
+	{
+		$code = -4;
+	}
+	
+	if($mode == 'edit' && $code == '') 
+	{
+		$stmt = $dbh->prepare("select * from execution where id = :execId");
+		$stmt->bindParam(":execId", $execId);
+		$stmt->execute();
+		if($stmt->rowCount() != 1)
+		{
+			$code = -2;
+		}
+		$fetchExecution = $stmt->fetch(PDO::FETCH_ASSOC);
+	} else if ($mode == 'create' && $code == '') {
+		$stmt = $dbh->prepare("insert into execution (creation_date, last_modified) values (".time().", ".time().")");
+		$stmt->execute();
+		$newExecId = $dbh->lastInsertId();
+		
+		$stmt = $dbh->prepare("insert into qunaire_exec (questionnaire_id, execution_id) values (:quizId, :execId)");
+		$stmt->bindParam(":quizId", $quizId);
+		$stmt->bindParam(":execId", $newExecId);
+		if(!$stmt->execute())
+		{
+			$code = -1;
+		}
+	}
+	
+	$errorCode = new mobileError("", "red");
+	if($code != '')
+	{
+		$errorCode = handleCreateEditExecutionError($code);
+	}
 ?>
 
 
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <div class="container theme-showcase">
 	<div class="page-header">
-		<h1><?php echo $mode == "create" ? $lang["addNewExecution"] : str_replace("[1]", '&laquo;' . "Pseudoname TODO mit fetch ersetzen" . '&raquo;', $lang["editExecution"]);?></h1>
+		<h1><?php echo $mode == "create" ? $lang["addNewExecution"] : str_replace("[1]", '&laquo;' . $fetchExecution["name"] . '&raquo;', $lang["editExecution"]);?></h1>
 	</div>
-
+	
+	<?php if($code != '') {?>
+	<p style="color:<?php echo $errorCode->getColor();?>"><?php echo $errorCode->getText();?></p>
+	<?php }?>
 	<p><?php echo $lang["requiredFields"];?></p>
 	
 	<ul id="createEditExecutionTab" class="nav nav-tabs">
-        <li class="active"><a href="#generalInformation" data-toggle="tab">Allgemeine Informationen</a></li>
-        <li><a href="#participation" data-toggle="tab">Teilnehmer</a></li>
-        <li><a href="#settings" data-toggle="tab">Einstellungen</a></li>
-        <li><a href="#publication" data-toggle="tab">Publikation</a></li>
+        <li class="active"><a href="#generalInformation" data-toggle="tab"><?php echo $lang["generalInformations"];?></a></li>
+        <li><a href="#participation" data-toggle="tab"><?php echo $lang["participant"];?></a></li>
+        <li><a href="#settings" data-toggle="tab"><?php echo $lang["settings"];?></a></li>
+        <li><a href="#publication" data-toggle="tab"><?php echo $lang["publication"];?></a></li>
     </ul>
     
     
@@ -35,7 +107,7 @@
 						maxlength="<?php echo $maxCharactersExecution;?>" value="<?php 
 						if($mode == "edit")
 						{
-							echo "dummy noch mit fetch ersetzen";
+							echo $fetchExecution["name"];
 						}
 						?>"/>
 				</div>
@@ -44,15 +116,27 @@
    	 		<!-- Execution Priority -->
    	 		<div class="form-group">
 				<div class="col-md-2 col-sm-3 control-label">
-					<label><?php echo $lang["quizPriority"];?>*</label>
+					<label for="quizPriority"><?php echo $lang["quizPriority"];?>*</label>
 				</div>
 				<div class="col-md-10 col-sm-9">
 					<?php 
 					$resultChecked = 0;
 					if($mode == "edit")
-						$resultChecked = $quizFetch["priority"];
+					{
+						$resultChecked = $fetchExecution["priority_id"];
+					}
+					
+					$fetchUserPriority = '';
+					$stmt = $dbh->prepare("select * from priority_settings where priority_id = :priorityId and user_id = :userId");
+					$stmt->bindParam(":priorityId", $resultChecked);
+					$stmt->bindParam(":userId", $_SESSION["id"]);
+					$stmt->execute();
+					if($stmt->rowCount() == 1)
+					{
+						$fetchUserPriority = $stmt->fetch(PDO::FETCH_ASSOC);
+					}
 					?>
-					<select name="quizPriority" class="form-control" style="width: 195px; display: inline;" required="required">
+					<select id="quizPriority" name="quizPriority" class="form-control" style="width: 195px; display: inline;" required="required">
 						<option value="0" <?php echo $resultChecked == 0 ? 'selected' : '';?>><?php echo $lang["prioLearningHelp"];?></option>
 						<option value="1" <?php echo $resultChecked == 1 ? 'selected' : '';?>><?php echo $lang["prioExamRequirement"];?></option>
 						<option value="2" <?php echo $resultChecked == 2 ? 'selected' : '';?>><?php echo $lang["prioExam"];?></option>
@@ -69,12 +153,15 @@
 					<?php 
 					if($mode == "edit")
 					{
-						$noParticipationPeriod2 = $quizFetch["noParticipationPeriod"];
+						$noParticipationPeriod2 = $fetchExecution["noParticipationPeriod"];
+					} else if($mode == "create" && $fetchUserPriority != '')
+					{
+						$noParticipationPeriod2 = $fetchUserPriority["noParticipationPeriod"];
 					}
 					?>
 					<label for="noParticipationPeriod1" class="radio-inline"> 
 					<input type="radio" id="noParticipationPeriod1" name="noParticipationPeriod" onchange="setDatesEnabled()"
-						value="1" <?php echo $noParticipationPeriod2 == 1 || $mode == "create" ? 'checked':'';?> /> <?php echo $lang["noParticipationPeriod3"];?>
+						value="1" <?php echo $noParticipationPeriod2 == 1 ? 'checked':'';?> /> <?php echo $lang["noParticipationPeriod3"];?>
 					</label>
 				</div>
 				<div class="col-md-5 col-sm-7">
@@ -88,7 +175,7 @@
 						$displayedTime = time();
 						if($mode == "edit")
 						{
-							$displayedTime = $quizFetch["starttime"];
+							$displayedTime = $fetchExecution["starttime"];
 						}
 						echo date("d.m.Y", $displayedTime);
 						?>" class="form-control" required="required"/>
@@ -102,7 +189,7 @@
 						$displayedTime = strtotime('+1 Week');
 						if($mode == "edit")
 						{
-							$displayedTime = $quizFetch["endtime"];
+							$displayedTime = $fetchExecution["endtime"];
 						}
 						echo date("d.m.Y", $displayedTime);
 						?>"
@@ -256,9 +343,9 @@
 						$noLimitChecked = true;
 						if($mode == "edit")
 						{
-							if($quizFetch["limited_time"] != 0)
+							if($fetchExecution["limited_time"] != 0)
 							{
-								$timeLimit = gmdate("i:s", $quizFetch["limited_time"]);
+								$timeLimit = gmdate("i:s", $fetchExecution["limited_time"]);
 								$noLimitChecked = false;
 							}
 						}
@@ -290,9 +377,9 @@
 						$questionAmountChecked = true;
 						if($mode == "edit")
 						{
-							if($quizFetch["amount_of_questions"] != 0)
+							if($fetchExecution["amount_of_questions"] != 0)
 							{
-								$questionAmount = $quizFetch["amount_of_questions"];
+								$questionAmount = $fetchExecution["amount_of_questions"];
 								$questionAmountChecked = false;
 							}
 						}
@@ -325,9 +412,9 @@
 						$maxParticipationsChecked = true;
 						if($mode == "edit")
 						{
-							if($quizFetch["amount_participations"] != 0)
+							if($fetchExecution["amount_participations"] != 0)
 							{
-								$maxParticipations = $quizFetch["amount_participations"];
+								$maxParticipations = $fetchExecution["amount_participations"];
 								$maxParticipationsChecked = false;
 							}
 						}
@@ -360,9 +447,9 @@
 						$quizPassedChecked = false;
 						if($mode == "edit")
 						{
-							if($quizFetch["quiz_passed"] != 0)
+							if($fetchExecution["quiz_passed"] != 0)
 							{
-								$quizPassed = $quizFetch["quiz_passed"];
+								$quizPassed = $fetchExecution["quiz_passed"];
 								$quizPassedChecked = false;
 							} else {
 								$quizPassed = 0;
@@ -398,7 +485,7 @@
 							<label> <input type="checkbox" name="randomizeQuestions"
 								value="1" <?php 
 								if($mode == "edit")
-									{ echo $quizFetch["random_questions"]==1 ? 'checked':''; }
+									{ echo $fetchExecution["random_questions"]==1 ? 'checked':''; }
 								else 
 									{ echo "checked"; }
 								?> /><?php echo $lang["randomQuestions"];?>
@@ -410,7 +497,7 @@
 							<label> <input type="checkbox" name="randomizeAnswers" value="1"
 								<?php
 								if($mode == "edit")
-									{ echo $quizFetch["random_answers"]==1 ? 'checked':''; }
+									{ echo $fetchExecution["random_answers"]==1 ? 'checked':''; }
 								else
 									{ echo "checked"; }
 								?> /><?php echo $lang["randomAnswers"];?>
@@ -435,14 +522,14 @@
 				</div>
 				<div class="col-md-4 col-sm-6">
 					<?php 
-					$singlechoiceMult = 2;
+					$singlechoiceMultiplier = 2;
 					if($mode == "edit")
 					{
-						$singlechoiceMult = $quizFetch["singlechoice_multiplier"];
+						$singlechoiceMultiplier = $fetchExecution["singlechoice_multiplier"];
 					}
 					?>
 					<input type="number" id="singlechoiceMult" name="singlechoiceMult" class="form-control" style="width: 90px; display: inline;"
-						value="<?php echo $singlechoiceMult; ?>" required="required" />
+						value="<?php echo $singlechoiceMultiplier; ?>" required="required" />
 				</div>
 				<div class="col-md-6 col-sm-2">
 					<!-- TODO: Logik -->
@@ -465,12 +552,12 @@
 					<label class="radio-inline"> <input type="radio" name="isPrivate" value="0" required 
 						<?php if($mode == "create") { echo "checked"; }
 							  else if($mode == "edit") {
-								  if($quizFetch["public"] == 0) { echo " checked"; }
+								  if($fetchExecution["public"] == 0) { echo " checked"; }
 						}?>/> <?php echo $lang["public"];?>
 					</label> 
 					<label class="radio-inline" style="white-space: pre;"> <input type="radio" name="isPrivate" value="1"
 						<?php if($mode == "edit") {
-								  if($quizFetch["public"] == 1) { echo " checked"; }
+								  if($fetchExecution["public"] == 1) { echo " checked"; }
 						}?>/><?php echo $lang["privateMoreInfo"];?>
 					</label>
 				</div>
@@ -492,8 +579,8 @@
                     $pointsChecked = 1;
                     if($mode == "edit")
                     {
-                    	$resultChecked = $quizFetch["result_visible"];
-                    	$pointsChecked = $quizFetch["result_visible_points"];
+                    	$resultChecked = $fetchExecution["result_visible"];
+                    	$pointsChecked = $fetchExecution["result_visible_points"];
                     }
                     ?>
                     
@@ -546,7 +633,7 @@
 					$showQuizTaskPaper = 0;
 					if($mode == "edit")
 					{
-						$showQuizTaskPaper = $quizFetch["showTaskPaper"];
+						$showQuizTaskPaper = $fetchExecution["showTaskPaper"];
 					}
 					?>
 					<label class="radio-inline">
@@ -570,10 +657,13 @@
 		<input type="button" class="btn" id="btnBackToCreateEditQuiz" value="<?php echo $lang["btnBack"];?>" onclick="window.location='?p=quiz';"/> <!-- TODO: richtige location setzen -->
 	</div>
 	<div style="float: right; padding-left: 10px; margin-top: 10px;">
-		<input type="button" class="btn" id="btnSaveAndCreateNewExecution" value="<?php echo $lang["createNextExecution"];?>" />
+		<input type="button" class="btn" id="btnSaveAndCreateNewExecution" value="<?php echo $lang["createNextExecution"];?>" /> <!-- TODO: Logik für den klick hinzufügen -->
 	</div>
 	
 </div>
+
+<div id="snackbar">Some text some message..</div>
+
 
 <script type="text/javascript" src="js/bootstrap-tabcollapse.js"></script>
 <script type="text/javascript">
@@ -607,6 +697,11 @@
 			$(string).tipsy({gravity: 'n'});
 		});
 
+		$(document).ready(function() {
+			
+			$(document).on("change", "#executionName, #quizPriority, [name='noParticipationPeriod'], #startDate, #startTime, #endDate, #endTime", updateExecutionData);
+			
+		});
 		
 		setDatesEnabled();
 		$("#groupAddSuccess").hide();
@@ -693,6 +788,7 @@
         $('.dataTables_filter').attr("style", "margin-top: 0");
         $('.dataTables_wrapper').attr("style", "margin-bottom: 25px;");
 
+        
         $('#assignUserTbl').DataTable({
             'bSort': true,
             'bPaginate': false,
@@ -716,6 +812,102 @@
 
 		
 	});
+
+
+	function updateExecutionData(event)
+	{
+		var maxCharactersExecName = 30;
+		
+		if(this.value == this.oldvalue) return;
+
+		var target = event.target.id;
+		if(target == "") {
+			target = event.target.name;
+		}
+
+		var url = '?p=actionHandler&action=updateExecution';
+		var field;
+		var data = new FormData();
+
+		switch(target) {
+			case "executionName":
+				field = "executionName";
+			    data.append("executionName", event.target.value);
+			    data.append("maxChar", maxCharactersExecName);
+				break;
+			case "quizPriority":
+				field = "quizPriority";
+				data.append("quizPriority", event.target.value);
+				break;
+			case "noParticipationPeriod0":
+			case "noParticipationPeriod1":
+				field = "noParticipationPeriod";
+				data.append("noParticipationPeriod", event.target.value);
+				break;
+			case "startDate":
+				field = "startDate";
+				data.append("startDate", event.target.value);
+				data.append("startTime", $('#startTime').val());
+				break;
+			case "startTime":
+				field = "startTime";
+				data.append("startTime", event.target.value);
+				data.append("startDate", $('#startDate').val());
+				break;
+			case "endDate":
+				field = "endDate";
+				data.append("endDate", event.target.value);
+				data.append("endTime", $('#endTime').val());
+				break;
+			case "endTime":
+				field = "endTime";
+				data.append("endTime", event.target.value);
+				data.append("endDate", $('#endDate').val());
+				break;
+		}
+
+		uploadChange(url, data, field);
+	}
+
+	function uploadChange(url, data, field) 
+	{
+		data.append("execId", "<?php echo ($mode == "edit") ? $execId : $newExecId;?>");
+		data.append("mode", "<?php echo $mode;?>");
+		
+		$.ajax({
+	        url: url + '&field=' + field,
+	        type: 'POST',
+	        data: data,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false,
+	        contentType: false,
+	        success: function(data)
+	        {
+				switch(data.status)
+				{
+					case "OK":
+						showSnackbar("<?php echo $lang["saved"]?>");
+						break;
+					case "error":
+						alert("Error: " + data.text);
+						break;
+				}
+	        },
+	        error: function()
+	        {
+	            console.log("Ajax couldn't send data");
+	            alert("Ajax couldn't send data");
+	        }
+	    });
+	}
+
+	function showSnackbar(text) {
+		var snackbar = $("#snackbar");
+		snackbar.text(text);
+	    snackbar.addClass("show");
+	    setTimeout(function(){ snackbar.removeClass("show"); }, 3000);
+	}
 	
 	$('#createEditExecutionTab').tabCollapse();
 </script>

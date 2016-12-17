@@ -13,10 +13,10 @@ function updateQuiz() {
 		$stmt = $dbh->prepare("select owner_id from questionnaire where id = :q_id");
 		$stmt->bindParam(":q_id", $_POST["quizId"]);
 		$stmt->execute();
-		$fetchQuizOwnerPic = $stmt->fetch(PDO::FETCH_ASSOC);
+		$fetchQuizOwner = $stmt->fetch(PDO::FETCH_ASSOC);
 	
 		//return if it is not the owner of this quiz
-		if($fetchQuizOwnerPic["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1 && !amIAssignedToThisQuiz($dbh, $_POST["quiz_id"]))
+		if($fetchQuizOwner["owner_id"] != $_SESSION["id"] && $_SESSION["role"]["admin"] != 1 && !amIAssignedToThisQuiz($dbh, $_POST["quizId"]))
 		{
 			$response_array["status"] = "error";
 			$response_array["text"] = $lang["quiz-authorization-error"];
@@ -52,14 +52,16 @@ function updateQuiz() {
 			break;
 	}
 	
-	$stmt = $dbh->prepare("update questionnaire set last_modified = ".time()." where id = :quiz_id");
-	$stmt->bindParam(":quiz_id", $_POST["quizId"]);
-	if(! $stmt->execute())
+	if($response_array["status"] == "OK")
 	{
-		$response_array["status"] = "error";
-		$response_array["text"] = $lang["DB-Update-Error"];
+		$stmt = $dbh->prepare("update questionnaire set last_modified = ".time()." where id = :quiz_id");
+		$stmt->bindParam(":quiz_id", $_POST["quizId"]);
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["DB-Update-Error"];
+		}
 	}
-	
 	
 	echo json_encode($response_array);
 	exit;

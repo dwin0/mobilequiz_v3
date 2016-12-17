@@ -351,7 +351,22 @@
 		}
 	}
 	
-	
+	function getExecutionErrorText($code)
+	{
+		switch($code)
+		{
+			case -1:
+				return "Datenbankfehler beim Erstellen der Durchf&uumlhrung";
+			case -2:
+				return "Datenbankfehler beim Suchen der Durchf&uuml;hrung";
+			case -3:
+				return "Sie haben nicht gen&uuml;gend Berechtigungen.";
+			case -4:
+				return "Sie sind nicht eingeloggt.";
+			default:
+				return "Fehler (Code: " . $code .")";
+		}
+	}
 	
 	
 	
@@ -403,4 +418,8 @@
 		return new mobileError(getTopicsErrorText($code), getErrorColor($code));
 	}
 	
+	function handleCreateEditExecutionError($code)
+	{
+		return new mobileError(getExecutionErrorText($code), getErrorColor($code));
+	}
 ?>

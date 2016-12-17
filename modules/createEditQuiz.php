@@ -438,7 +438,7 @@
 							</td>
 							<td>
 							<?php if($_SESSION['role']['admin'] == 1 || $fetchQnaireQu[$i]["owner_id"] == $_SESSION["id"]) {?>
-	                            <a href="?p=createEditExecution&mode=edit&fromsite=createEditQuiz&executionId=<?php echo $fetchExecId[$i]["execution_id"];?>" class="editExecution" original-title="Durchf&uuml;hrung bearbeiten"><img id="editExecution" src="assets/icon_edit.png" alt="" height="18px" width="18px"></a>&nbsp;
+	                            <a href="?p=createEditExecution&mode=edit&fromsite=createEditQuiz&execId=<?php echo $fetchExecId[$i]["execution_id"];?>" class="editExecution" original-title="Durchf&uuml;hrung bearbeiten"><img id="editExecution" src="assets/icon_edit.png" alt="" height="18px" width="18px"></a>&nbsp;
 	                            <img id="delExecutionImg" style="cursor: pointer;" class="deleteExecution delExecutionImg" src="assets/icon_delete.png" alt="" original-title="Durchf&uuml;hrung aus diesem Quiz l&ouml;schen" height="18px" width="18px" onclick="delExec(<?php echo $fetchExecId[$i]["execution_id"];?>)"><br />
 	                        <?php }?>
 							</td>
@@ -718,6 +718,7 @@
 	function uploadChange(url, data, field) 
 	{
 		data.append("quizId", $("[name='quiz_id']").val());
+		data.append("mode", <?php echo $mode;?>);
 		
 		$.ajax({
 	        url: url + '&field=' + field,
@@ -877,7 +878,7 @@
 		});
 
 		$("#btnAddNewExecution").on("click", function() {
-			window.location = "?p=createEditExecution&mode=create&fromsite=createEditQuiz";
+			window.location = "?p=createEditExecution&mode=create&fromsite=createEditQuiz&quizId=" + <?php echo isset($_GET["id"]) ? $_GET["id"] : $newQuizId;?>;
 		});
 		
 		var sourceData = <?php echo json_encode(array_column($fetchUserMails, "email"));?>;

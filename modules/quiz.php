@@ -117,7 +117,7 @@
 			    			<td>
 			    				<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
 									style="color: #373a3c; background-color: #fff; border-color: #ccc;"><?php echo $lang["action"];?></button>
-								<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -120px">
+								<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -10px">
 									<a class="dropdown-item" href="?p=createEditQuiz&mode=edit&id=<?php echo $fetchQunaireWithoutExec[$i]["id"];?>"><span class="glyphicon glyphicon-pencil"></span> <?php echo $lang["editQuizAction"];?></a>
 									<a class="dropdown-item" onclick="delQuiz(<?php echo $fetchQunaireWithoutExec[$i]["id"];?>)"><span class="glyphicon glyphicon-remove"></span> <?php echo $lang["delQuiz"];?></a>
 			    				</div>
@@ -129,7 +129,7 @@
 			<?php }?>
 			
 			<div style="width: 100%; margin-bottom: 1em;">
-				<h3 style="float: left; margin-top: 25px; margin-bottom: 5px;">Durchf&uuml;hrungen</h3>
+				<h3 style="float: left; margin-top: 25px; margin-bottom: 5px;">Quizdurchf&uuml;hrungen</h3>
 				<div id="searchBoxDiv" class="control-group" style="width: 260px; margin-left:auto; margin-right:0;">
 					<label class="control-label" for="searchbox">
 						<b><?php echo $lang["search"]; ?></b>
@@ -562,7 +562,7 @@
 			                        
 			                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
 										style="color: #373a3c; background-color: #fff; border-color: #ccc;"><?php echo $lang["action"];?></button>
-										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -120px">
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="position: relative; margin-left: -190px">
 			                        
 			                        <?php if($_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"])) {?>
 											
