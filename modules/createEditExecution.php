@@ -149,7 +149,7 @@
 						$noParticipationPeriod2 = constant('noParticipationPeriod0');
 					}
 					?>
-					<script> $(function(){setExamDisabled(<?php echo $resultChecked?>);});</script>
+					<script>$(function(){setExamDisabled(<?php echo $noParticipationPeriod2?>)});</script>
 					<label for="noParticipationPeriod1" class="radio-inline"> 
 					<input type="radio" id="noParticipationPeriod1" name="noParticipationPeriod" onchange="setDatesEnabled()"
 						value="1" <?php echo $noParticipationPeriod2 == 1 ? 'checked':'';?> /> <span id="noParticipationPeriodText"> <?php echo $lang["noParticipationPeriod3"];?> </span>
@@ -696,7 +696,6 @@
 			$('#noParticipationPeriodText').css("cursor", "pointer");
 		}
 	}
-
 	
 	$(function() {
 		var tooltipElements = ['#singlechoiceMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp'];
@@ -903,6 +902,34 @@
 						{
 							var settings = data.settings; <?php //TODO?>
 							setExamDisabled(settings.noParticipationPeriod);
+						}
+
+						if(data.noPartPeriodNewValue)
+						{
+							var val0 = <?php echo constant('noParticipationPeriod0')?>;
+							var val1 = <?php echo constant('noParticipationPeriod1')?>;
+							var val2 = <?php echo constant('noParticipationPeriod2')?>;
+							var quizPriority = $('#quizPriority').val();
+							var defaultValue = '';
+							
+							if(quizPriority == 0)
+							{
+								defaultValue = val0;
+							} else if(quizPriority == 1)
+							{
+								defaultValue = val1;
+							} else if(quizPriority == 2)
+							{
+								defaultValue = val2;
+							}	
+							
+							if(data.noPartPeriodNewValue == defaultValue)
+							{
+								$("#resetToStandardParticipationPeriod").prop("disabled", true);
+							} else
+							{
+								$("#resetToStandardParticipationPeriod").prop("disabled", false);
+							}
 						}
 						
 						break;

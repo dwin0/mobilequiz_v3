@@ -209,13 +209,13 @@ function updateExecutionNoPartPeriod($noPartPeriod, $execId, $dbh)
 	$stmt = $dbh->prepare("update execution set noParticipationPeriod = :noPartPeriod where id = :execId");
 	$stmt->bindParam(":noPartPeriod", $noPartPeriod);
 	$stmt->bindParam(":execId", $execId);
-	
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
 		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 	
+	$response_array["noPartPeriodNewValue"] = $noPartPeriod;
 	return $response_array;
 }
 
