@@ -125,16 +125,6 @@
 					{
 						$resultChecked = $fetchExecution["priority_id"];
 					}
-					
-					$fetchUserPriority = '';
-					$stmt = $dbh->prepare("select * from priority_settings where priority_id = :priorityId and user_id = :userId");
-					$stmt->bindParam(":priorityId", $resultChecked);
-					$stmt->bindParam(":userId", $_SESSION["id"]);
-					$stmt->execute();
-					if($stmt->rowCount() == 1)
-					{
-						$fetchUserPriority = $stmt->fetch(PDO::FETCH_ASSOC);
-					}
 					?>
 					<select id="quizPriority" name="quizPriority" class="form-control" style="width: 195px; display: inline;" required="required">
 						<option value="0" <?php echo $resultChecked == 0 ? 'selected' : '';?>><?php echo $lang["prioLearningHelp"];?></option>
@@ -154,14 +144,15 @@
 					if($mode == "edit")
 					{
 						$noParticipationPeriod2 = $fetchExecution["noParticipationPeriod"];
-					} else if($mode == "create" && $fetchUserPriority != '')
+					} else 
 					{
-						$noParticipationPeriod2 = $fetchUserPriority["noParticipationPeriod"];
+						$noParticipationPeriod2 = constant('noParticipationPeriod0');
 					}
 					?>
+					<script> $(function(){setExamDisabled(<?php echo $resultChecked?>);});</script>
 					<label for="noParticipationPeriod1" class="radio-inline"> 
 					<input type="radio" id="noParticipationPeriod1" name="noParticipationPeriod" onchange="setDatesEnabled()"
-						value="1" <?php echo $noParticipationPeriod2 == 1 ? 'checked':'';?> /> <?php echo $lang["noParticipationPeriod3"];?>
+						value="1" <?php echo $noParticipationPeriod2 == 1 ? 'checked':'';?> /> <span id="noParticipationPeriodText"> <?php echo $lang["noParticipationPeriod3"];?> </span>
 					</label>
 				</div>
 				<div class="col-md-5 col-sm-7">
@@ -689,6 +680,23 @@
 		});
 	}
 
+	function setExamDisabled(noPartPeriod)
+	{
+		$("#noParticipationPeriod" + noPartPeriod).prop("checked", true);
+		setDatesEnabled();
+		if($('#quizPriority').val() == 2) 
+		{
+			$("#noParticipationPeriod1").prop("disabled", true);
+			$('#noParticipationPeriodText').css("color", "grey");
+			$('#noParticipationPeriodText').css("cursor", "not-allowed");
+		} else 
+		{
+			$("#noParticipationPeriod1").prop("disabled", false);
+			$('#noParticipationPeriodText').css("color", "black");
+			$('#noParticipationPeriodText').css("cursor", "pointer");
+		}
+	}
+
 	
 	$(function() {
 		var tooltipElements = ['#singlechoiceMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp'];
@@ -871,8 +879,10 @@
 
 	function uploadChange(url, data, field) 
 	{
+		var mode = "<?php echo $mode;?>";
+		
 		data.append("execId", "<?php echo ($mode == "edit") ? $execId : $newExecId;?>");
-		data.append("mode", "<?php echo $mode;?>");
+		data.append("mode", mode);
 		
 		$.ajax({
 	        url: url + '&field=' + field,
@@ -888,6 +898,13 @@
 				{
 					case "OK":
 						showSnackbar("<?php echo $lang["saved"]?>");
+
+						if(data.settings)
+						{
+							var settings = data.settings; <?php //TODO?>
+							setExamDisabled(settings.noParticipationPeriod);
+						}
+						
 						break;
 					case "error":
 						alert("Error: " + data.text);

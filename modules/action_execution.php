@@ -93,72 +93,12 @@ function updateExecutionName($name, $maxChar, $execId, $dbh)
 	return $response_array;
 }
 
-function updateExecutionPriority($resultChecked, $execId, $dbh)
+function updateExecutionPriority($newPriority, $execId, $dbh)
 {
 	$response_array["status"] = "OK";
 	
-	if($resultChecked == 0)
-	{
-		$userId = $_SESSION["id"];
-		$noParticipationPeriod = constant('noParticipationPeriod0');
-		$limitedTime = constant('limited_time0');
-		$amountOfQuestions = constant('amount_of_questions0');
-		$amountParticipations = constant('amount_participations0');
-		$quizPassed = constant('quiz_passed0');
-		$randomQuestions = constant('random_questions0');
-		$randomAnswers = constant('random_answers0');
-		$singleChoiceMult = constant('singlechoice_multiplier0');
-		$public = constant('public0');
-		$resultVisiblePoints = constant('result_visible_points0');
-		$resultVisible = constant('result_visible0');
-		$showTaskPaper = constant('showTaskPaper0');
-		$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, limited_time, amount_of_questions, amount_participations,
-				quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
-				values ($resultChecked, $userId, $noParticipationPeriod, $limitedTime, $amountOfQuestions, $amountParticipations, $quizPassed,
-				$randomQuestions, $randomAnswers, $singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
-		$stmt->execute();
-	} else if($resultChecked == 1)
-	{
-		$userId = $_SESSION["id"];
-		$noParticipationPeriod = constant('noParticipationPeriod1');
-		$limitedTime = constant('limited_time1');
-		$amountOfQuestions = constant('amount_of_questions1');
-		$amountParticipations = constant('amount_participations1');
-		$quizPassed = constant('quiz_passed1');
-		$randomQuestions = constant('random_questions1');
-		$randomAnswers = constant('random_answers1');
-		$singleChoiceMult = constant('singlechoice_multiplier1');
-		$public = constant('public1');
-		$resultVisiblePoints = constant('result_visible_points1');
-		$resultVisible = constant('result_visible1');
-		$showTaskPaper = constant('showTaskPaper1');
-		$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, limited_time, amount_of_questions, amount_participations,
-				quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
-				values ($resultChecked, $userId, $noParticipationPeriod, $limitedTime, $amountOfQuestions, $amountParticipations, $quizPassed,
-				$randomQuestions, $randomAnswers, $singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
-		$stmt->execute();
-	} else if($resultChecked == 2)
-	{
-		$userId = $_SESSION["id"];
-		$noParticipationPeriod = constant('noParticipationPeriod2');
-		$amountOfQuestions = constant('amount_of_questions2');
-		$amountParticipations = constant('amount_participations2');
-		$randomQuestions = constant('random_questions2');
-		$randomAnswers = constant('random_answers2');
-		$singleChoiceMult = constant('singlechoice_multiplier2');
-		$public = constant('public2');
-		$resultVisiblePoints = constant('result_visible_points2');
-		$resultVisible = constant('result_visible2');
-		$showTaskPaper = constant('showTaskPaper2');
-		$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, amount_of_questions, amount_participations,
-				random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
-				values ($resultChecked, $userId, $noParticipationPeriod, $amountOfQuestions, $amountParticipations, $randomQuestions, $randomAnswers,
-				$singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
-		$stmt->execute();
-	}
-	
 	$stmt = $dbh->prepare("update execution set priority_id = :prioId where id = :execId");
-	$stmt->bindParam(":prioId", $resultChecked);
+	$stmt->bindParam(":prioId", $newPriority);
 	$stmt->bindParam(":execId", $execId);
 	
 	if(! $stmt->execute())
@@ -167,6 +107,98 @@ function updateExecutionPriority($resultChecked, $execId, $dbh)
 		$response_array["text"] = $lang["DB-Update-Error"];
 	}
 	
+	
+	$stmt = $dbh->prepare("select * from priority_settings where priority_id = :priorityId and user_id = :userId");
+	$stmt->bindParam(":priorityId", $newPriority);
+	$stmt->bindParam(":userId", $_SESSION["id"]);
+	$stmt->execute();
+	
+	$userId = $_SESSION["id"];
+	
+	if($stmt->rowCount() == 0)
+	{
+		
+		if($newPriority == 0)
+		{
+			$noParticipationPeriod = constant('noParticipationPeriod0');
+			$limitedTime = constant('limited_time0');
+			$amountOfQuestions = constant('amount_of_questions0');
+			$amountParticipations = constant('amount_participations0');
+			$quizPassed = constant('quiz_passed0');
+			$randomQuestions = constant('random_questions0');
+			$randomAnswers = constant('random_answers0');
+			$singleChoiceMult = constant('singlechoice_multiplier0');
+			$public = constant('public0');
+			$resultVisiblePoints = constant('result_visible_points0');
+			$resultVisible = constant('result_visible0');
+			$showTaskPaper = constant('showTaskPaper0');
+			$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, limited_time, amount_of_questions, amount_participations,
+					quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
+					values ($newPriority, $userId, $noParticipationPeriod, $limitedTime, $amountOfQuestions, $amountParticipations, $quizPassed,
+					$randomQuestions, $randomAnswers, $singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
+			$stmt->execute();
+		} else if($newPriority == 1)
+		{
+			$noParticipationPeriod = constant('noParticipationPeriod1');
+			$limitedTime = constant('limited_time1');
+			$amountOfQuestions = constant('amount_of_questions1');
+			$amountParticipations = constant('amount_participations1');
+			$quizPassed = constant('quiz_passed1');
+			$randomQuestions = constant('random_questions1');
+			$randomAnswers = constant('random_answers1');
+			$singleChoiceMult = constant('singlechoice_multiplier1');
+			$public = constant('public1');
+			$resultVisiblePoints = constant('result_visible_points1');
+			$resultVisible = constant('result_visible1');
+			$showTaskPaper = constant('showTaskPaper1');
+			$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, limited_time, amount_of_questions, amount_participations,
+					quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
+					values ($newPriority, $userId, $noParticipationPeriod, $limitedTime, $amountOfQuestions, $amountParticipations, $quizPassed,
+					$randomQuestions, $randomAnswers, $singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
+			$stmt->execute();
+		} else if($newPriority == 2)
+		{
+			$noParticipationPeriod = constant('noParticipationPeriod2');
+			$limitedTime = null;
+			$amountOfQuestions = constant('amount_of_questions2');
+			$amountParticipations = constant('amount_participations2');
+			$quizPassed = null;
+			$randomQuestions = constant('random_questions2');
+			$randomAnswers = constant('random_answers2');
+			$singleChoiceMult = constant('singlechoice_multiplier2');
+			$public = constant('public2');
+			$resultVisiblePoints = constant('result_visible_points2');
+			$resultVisible = constant('result_visible2');
+			$showTaskPaper = constant('showTaskPaper2');
+			$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, amount_of_questions, amount_participations,
+					random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
+					values ($newPriority, $userId, $noParticipationPeriod, $amountOfQuestions, $amountParticipations, $randomQuestions, $randomAnswers,
+					$singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
+			$stmt->execute();
+		}
+	} else 
+	{
+		$fetchUserPriority = $stmt->fetch(PDO::FETCH_ASSOC);
+		
+		$noParticipationPeriod = $fetchUserPriority["noParticipationPeriod"];
+		$limitedTime = $fetchUserPriority["limited_time"];
+		$amountOfQuestions = $fetchUserPriority['amount_of_questions'];
+		$amountParticipations = $fetchUserPriority['amount_participations'];
+		$quizPassed = $fetchUserPriority['quiz_passed'];
+		$randomQuestions = $fetchUserPriority['random_questions'];
+		$randomAnswers = $fetchUserPriority['random_answers'];
+		$singleChoiceMult = $fetchUserPriority['singlechoice_multiplier'];
+		$public = $fetchUserPriority['public'];
+		$resultVisiblePoints = $fetchUserPriority['result_visible_points'];
+		$resultVisible = $fetchUserPriority['result_visible'];
+		$showTaskPaper = $fetchUserPriority['showTaskPaper'];
+	}
+	
+	$response_array["settings"] = array("noParticipationPeriod" => $noParticipationPeriod, "limited_time" => $limitedTime, "amount_of_questions" => $amountOfQuestions,
+									"amount_participations" => $amountParticipations, "quiz_passed" => $quizPassed, "random_questions" => $randomQuestions,
+									"random_answers" => $randomAnswers, "singlechoice_multiplier" => $singleChoiceMult, "public" => $public, "result_visible_points" => $resultVisiblePoints,
+									"result_visible" => $resultVisible, "showTaskPaper" => $showTaskPaper);
+
 	return $response_array;
 }
 
