@@ -191,7 +191,7 @@
 				</div>
 				<div class="col-md-2 col-sm-2">
 					<!-- TODO: Logik -->
-					<input type="button" class="btn" id="resetToStandardParticipationPeriod" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+					<button type="button" class="btn" id="resetToStandardParticipationPeriod" disabled onclick="setDefaultValue(this)" style="max-width: 185px; margin-top: 5px;"><?php echo $lang["buttonSetBack"]; ?></button>
 				</div>
 			</div>
     	</div>
@@ -929,6 +929,7 @@
 							} else
 							{
 								$("#resetToStandardParticipationPeriod").prop("disabled", false);
+								$("#resetToStandardParticipationPeriod").val(defaultValue);
 							}
 						}
 						
@@ -946,6 +947,30 @@
 	    });
 	}
 
+	function setDefaultValue(element)
+	{
+		target = element.id;
+
+		switch(target)
+		{
+			case "resetToStandardParticipationPeriod":
+				var defaultValue = $("#resetToStandardParticipationPeriod").val();
+				if(defaultValue == 1) 
+				{
+					$("#noParticipationPeriod1").prop("checked", true);
+					$("#noParticipationPeriod0").prop("checked", false);
+					$("#noParticipationPeriod1").trigger("change");
+				} else 
+				{
+					$("#noParticipationPeriod0").prop("checked", true);
+					$("#noParticipationPeriod1").prop("checked", false);
+					$("#noParticipationPeriod0").trigger("change");
+				}
+				break;
+		
+		}
+	}
+	
 	function showSnackbar(text) {
 		var snackbar = $("#snackbar");
 		snackbar.text(text);
