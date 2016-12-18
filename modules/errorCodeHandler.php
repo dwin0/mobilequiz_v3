@@ -287,6 +287,14 @@
 				return "Sie sind nicht eingeloggt.";
 			case -21:
 				return "Datenbank-Fehler";
+			case -31:
+				return "Datenbankfehler beim Erstellen der Durchf&uumlhrung";
+			case -32:
+				return "Datenbankfehler beim Suchen der Durchf&uuml;hrung";
+			case -33:
+				return "Sie haben nicht gen&uuml;gend Berechtigungen.";
+			case -34:
+				return "Sie sind nicht eingeloggt.";
 			case -3:
 			case -4:
 			case -5:
@@ -355,14 +363,6 @@
 	{
 		switch($code)
 		{
-			case -1:
-				return "Datenbankfehler beim Erstellen der Durchf&uumlhrung";
-			case -2:
-				return "Datenbankfehler beim Suchen der Durchf&uuml;hrung";
-			case -3:
-				return "Sie haben nicht gen&uuml;gend Berechtigungen.";
-			case -4:
-				return "Sie sind nicht eingeloggt.";
 			default:
 				return "Fehler (Code: " . $code .")";
 		}

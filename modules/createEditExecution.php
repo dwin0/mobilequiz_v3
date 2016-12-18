@@ -32,12 +32,12 @@
 	{
 		if(! $_SESSION["role"]["creator"])
 		{
-			$code = -3;
+			$code = -33;
 		}
 	}
 	else
 	{
-		$code = -4;
+		$code = -34;
 	}
 	
 	if($mode == 'edit' && $code == '') 
@@ -47,7 +47,7 @@
 		$stmt->execute();
 		if($stmt->rowCount() != 1)
 		{
-			$code = -2;
+			$code = -32;
 		}
 		$fetchExecution = $stmt->fetch(PDO::FETCH_ASSOC);
 	} else if ($mode == 'create' && $code == '') {
@@ -60,22 +60,69 @@
 		$stmt->bindParam(":execId", $newExecId);
 		if(!$stmt->execute())
 		{
-			$code = -1;
+			$code = -31;
 		}
 	}
 	
-	$errorCode = new mobileError("", "red");
-	if($code != '')
+	if($code < 0)
 	{
-		$errorCode = handleCreateEditExecutionError($code);
+		header("Location: ?p=home&code=" . $code);
+		exit;
 	}
+	
+	$errorCode = new mobileError("", "red");
+	if($_GET["code"] != '')
+	{
+		$errorCode = handleCreateEditExecutionError($_GET["code"]);
+	}
+	
+	$stmt = $dbh->prepare("select name from `group`");
+	$stmt->execute();
+	$fetchGroupNames = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	$stmt = $dbh->prepare("select email from user");
+	$stmt->execute();
+	$fetchUserEmails = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	$stmt = $dbh->prepare("select * from priority_settings where priority_id = 0 and user_id = :userId");
+	$stmt->bindParam(":userId", $_SESSION["id"]);
+	$stmt->execute();
+	if($stmt->rowCount() == 0)
+	{
+		$existingSettings = false;
+		
+		//insert user-settings for learning-help
+		$userId = $_SESSION["id"];
+		$noParticipationPeriod = constant('noParticipationPeriod0');
+		$limitedTime = constant('limited_time0');
+		$amountOfQuestions = constant('amount_of_questions0');
+		$amountParticipations = constant('amount_participations0');
+		$quizPassed = constant('quiz_passed0');
+		$randomQuestions = constant('random_questions0');
+		$randomAnswers = constant('random_answers0');
+		$singleChoiceMult = constant('singlechoice_multiplier0');
+		$public = constant('public0');
+		$resultVisiblePoints = constant('result_visible_points0');
+		$resultVisible = constant('result_visible0');
+		$showTaskPaper = constant('showTaskPaper0');
+		$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, limited_time, amount_of_questions, amount_participations,
+				quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
+				values (0, $userId, $noParticipationPeriod, $limitedTime, $amountOfQuestions, $amountParticipations, $quizPassed,
+				$randomQuestions, $randomAnswers, $singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
+		$stmt->execute();
+	} else 
+	{
+		$existingSettings = true;
+		$fetchUserPriority = $stmt->fetch(PDO::FETCH_ASSOC);
+	}
+	
 ?>
 
 
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <div class="container theme-showcase">
 	<div class="page-header">
-		<h1><?php echo $mode == "create" ? $lang["addNewExecution"] : str_replace("[1]", '&laquo;' . $fetchExecution["name"] . '&raquo;', $lang["editExecution"]);?></h1>
+		<h1><?php echo $mode == "create" ? $lang["addNewExecution"] : str_replace("[1]", '&laquo;' . htmlspecialchars($fetchExecution["name"]) . '&raquo;', $lang["editExecution"]);?></h1>
 	</div>
 	
 	<?php if($code != '') {?>
@@ -144,9 +191,15 @@
 					if($mode == "edit")
 					{
 						$noParticipationPeriod2 = $fetchExecution["noParticipationPeriod"];
-					} else 
+					} else //create
 					{
-						$noParticipationPeriod2 = constant('noParticipationPeriod0');
+						if($existingSettings)
+						{
+							$noParticipationPeriod2 = $fetchUserPriority["noParticipationPeriod"];
+						} else
+						{
+							$noParticipationPeriod2 = constant('noParticipationPeriod0');
+						}
 					}
 					?>
 					<script>$(function(){setExamDisabled(<?php echo $noParticipationPeriod2?>)});</script>
@@ -190,7 +243,6 @@
 					</label>
 				</div>
 				<div class="col-md-2 col-sm-2">
-					<!-- TODO: Logik -->
 					<button type="button" class="btn" id="resetToStandardParticipationPeriod" disabled onclick="setDefaultValue(this)" style="max-width: 185px; margin-top: 5px;"><?php echo $lang["buttonSetBack"]; ?></button>
 				</div>
 			</div>
@@ -209,14 +261,24 @@
 						Durchf&uuml;hrung zugewiesen werden sollen. Nur wer zugewiesen ist, kann am Quiz teilnehmen." width="18" height="18"></label>
 					</div>
 					<div class="col-md-10 col-sm-9">
-						<input type="text" id="autocompleteGroups"><img id="addGroup" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="">
+						<input type="text" id="autocompleteGroups"><img id="addGroup" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addAssignedGroup()">
 					</div>
 				</div>
 				<div class="from-group">
 					<div class="col-md-10 col-sm-9" id="ajaxAnswerGroup"></div>
 				</div>
 				<div class="table-responsive">
-					<!-- TODO: Logik -->
+					<?php 
+					$execId = $newExecId;
+					if($mode == "edit")
+					{
+						$execId = $_GET["execId"];
+					}
+					$stmt = $dbh->prepare("select `group`.name, `group`.id from `group` inner join group_exec on `group`.id = group_exec.group_id where group_exec.execution_id = :execId");
+					$stmt->bindParam(":execId", $execId);
+					$stmt->execute();
+					$fetchGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+					?>
 					<table class="assignGroupTbl" id="assignGroupTbl">
 			            <thead>
 			                <tr>
@@ -225,7 +287,12 @@
 			                </tr>
 			            </thead>
 			            <tbody>
-			            	<!-- TODO: Logik -->
+			            	<?php for ($i = 0; $i < count($fetchGroups); $i++) {?>
+			            	<tr id="<?php echo "group_" . $fetchGroups[$i]["id"];?>">
+			            		<td><?php echo $fetchGroups[$i]["name"];?></td>
+			            		<td><img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssignedGroup(<?php echo $fetchGroups[$i]["id"] . ", " . $execId ?>)"></td>
+			            	</tr>
+			            	<?php }?>
 			            </tbody>
 		        	</table>
 	        	</div>
@@ -241,14 +308,24 @@
 						welche dieser Durchf&uuml;hrung zugewiesen werden sollen. Nur wer zugewiesen ist, kann am Quiz teilnehmen." width="18" height="18"></label>
 					</div>
 					<div class="col-md-10 col-sm-9">
-						<input type="text" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="">
+						<input type="text" id="autocompleteUsers"><img id="addUser" style="margin-left: 8px; cursor: pointer" alt="add" src="assets/arrow-right.png" width="28" height="32" onclick="addAssignedUser()">
 					</div>
 				</div>
 				<div class="from-group">
-					<div class="col-md-10 col-sm-9" id="ajaxAnswerParticipant"></div>
+					<div class="col-md-10 col-sm-9" id="ajaxAnswerUser"></div>
 				</div>
 				<div class="table-responsive">
-					<!-- TODO: Logik -->
+					<?php 
+					$execId = $newExecId;
+					if($mode == "edit")
+					{
+						$execId = $_GET["execId"];
+					}
+					$stmt = $dbh->prepare("select user.email, user.id from user inner join user_exec on user.id = user_exec.user_id where user_exec.execution_id = :execId");
+					$stmt->bindParam(":execId", $execId);
+					$stmt->execute();
+					$fetchUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+					?>
 					<table class="assignUserTbl" id="assignUserTbl">
 			            <thead>
 			                <tr>
@@ -257,68 +334,16 @@
 			                </tr>
 			            </thead>
 			            <tbody>
-			            	<!-- TODO: Logik -->
+			            	<?php for ($i = 0; $i < count($fetchUsers); $i++) {?>
+			            	<tr id="<?php echo "user_" . $fetchUsers[$i]["id"];?>">
+			            		<td><?php echo $fetchUsers[$i]["email"];?></td>
+			            		<td><img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssignedUser(<?php echo $fetchUsers[$i]["id"] . ", " . $execId ?>)"></td>
+			            	</tr>
+			            	<?php }?>
 			            </tbody>
 		        	</table>
 	        	</div>
         	</fieldset>
-			
-			<!-- alter Code
-			<div class="panel-body" id="assignQuizToGroup" style="padding: 0px;">
-				<div class="alert alert-success alert-dismissable" id="groupAddSuccess" style="border-radius: 0 0 4px 4px;">
-				    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
-				    <strong>Erfolgreich! </strong>
-				    Gruppe zugeordnet.
-				</div>
-				<div class="alert alert-danger alert-dismissable" id="groupAddError" style="border-radius: 0 0 4px 4px;">
-				    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
-				    <strong>Fehler! </strong>
-				    Es ist ein Fehler aufgetreten.
-				</div>
-				<div class="form-horizontal">
-					<div class="col-md-3 col-sm-3" style="margin: 20px 0px 20px 0px;"> 
-						<label><?php echo $lang["assignQuizToGroupInfo1"];?></label>
-						<div style="min-height: 75px; max-height: 200px; overflow-y: scroll;">
-							<ul id="assignGroupToQuizSortable1" class="assignGroupToQuizCconnectedSortable">
-								<?php 
-								$stmt = $dbh->prepare("select assign_group_qunaire.*, `group`.name, (select count(*) from user where group_id = `group`.id) as memberCount from assign_group_qunaire inner join `group` on `group`.id = assign_group_qunaire.group_id where questionnaire_id = :qId");
-								$stmt->bindParam(":qId", $_GET["id"]);
-								$stmt->execute();
-								$fetchAssignedGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
-								
-								for($i = 0; $i < count($fetchAssignedGroups); $i++)
-								{
-								?>
-									<li class="ui-state-default groupName" original-title="<?php echo $fetchAssignedGroups[$i]["name"];?>" id="<?php echo $fetchAssignedGroups[$i]["group_id"];?>"><?php echo strlen($fetchAssignedGroups[$i]["name"]) > 19 ? substr($fetchAssignedGroups[$i]["name"], 0, 19) . "..." : $fetchAssignedGroups[$i]["name"]; echo " (" . $fetchAssignedGroups[$i]["memberCount"] . ")";?></li>
-								<?php }?>
-							</ul>
-						</div>
-					</div>
-					<div class="col-md-1 col-sm-1" style="margin-top: 25px; text-align: center;"> 
-						<img style="margin-left: 8px;" alt="drag and drop" src="assets/arrow-leftRight.png" width="56" height="32">
-						<span style="font-size: 10px;">Drag &amp; Drop</span>
-					</div>
-					<div class="col-md-3 col-sm-3" style="margin: 20px 0px 20px 0px;"> 
-						<label><?php echo $lang["assignQuizToGroupInfo2"];?></label>
-						<div style="min-height: 75px; max-height: 200px; overflow-y: scroll;">
-							<ul id="assignGroupToQuizSortable2" class="assignGroupToQuizCconnectedSortable">
-								<?php 
-								$stmt = $dbh->prepare("select *, (select count(*) from user where group_id = `group`.id) as memberCount  from `group` where id not in (select group_id from assign_group_qunaire where questionnaire_id = :qId)");
-								$stmt->bindParam(":qId", $_GET["id"]);
-								$stmt->execute();
-								$fetchGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
-								
-								for($i = 0; $i < count($fetchGroups); $i++)
-								{
-								?>
-									<li class="ui-state-default groupName" original-title="<?php echo $fetchGroups[$i]["name"];?>" id="<?php echo $fetchGroups[$i]["id"];?>"><?php echo strlen($fetchGroups[$i]["name"]) > 19 ? substr($fetchGroups[$i]["name"], 0, 19) . "..." : $fetchGroups[$i]["name"]; echo " (" . $fetchGroups[$i]["memberCount"] . ")"?></li>
-								<?php }?>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</div>
-			-->
     	</div>
     	
     	
@@ -682,8 +707,7 @@
 
 	function setExamDisabled(noPartPeriod)
 	{
-		$("#noParticipationPeriod" + noPartPeriod).prop("checked", true);
-		setDatesEnabled();
+		
 		if($('#quizPriority').val() == 2) 
 		{
 			$("#noParticipationPeriod1").prop("disabled", true);
@@ -695,10 +719,15 @@
 			$('#noParticipationPeriodText').css("color", "black");
 			$('#noParticipationPeriodText').css("cursor", "pointer");
 		}
+
+		$("#noParticipationPeriod" + noPartPeriod).click();
+		setDatesEnabled();
+		$("#startDate").trigger("change");
+		$("#endDate").trigger("change");
 	}
 	
 	$(function() {
-		var tooltipElements = ['#singlechoiceMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp'];
+		var tooltipElements = ['#singlechoiceMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp', ".delAssignedImg"];
 
 		$.each(tooltipElements, function(i, string){
 			$(string).tipsy({gravity: 'n'});
@@ -707,6 +736,7 @@
 		$(document).ready(function() {
 			
 			$(document).on("change", "#executionName, #quizPriority, [name='noParticipationPeriod'], #startDate, #startTime, #endDate, #endTime", updateExecutionData);
+			resetButtonOnload("resetToStandardParticipationPeriod");
 			
 		});
 		
@@ -731,48 +761,6 @@
             autoclose: true,
             todayHighlight: true
         });
-
-		// alter Code
-// 		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
-// 			connectWith: ".assignGroupToQuizCconnectedSortable"
-// 		}).disableSelection();
-
-// 		$( "#assignGroupToQuizSortable1, #assignGroupToQuizSortable2" ).sortable({
-// 			stop: function( event, ui ) {
-// 				console.log("changed");
-// 				var assignedGroups = [];
-// 				$( "#assignGroupToQuizSortable1 li").each(function(index, elem) {
-// 					assignedGroups.push($(elem).attr('id'));
-// 				});
-// 				console.log("assignedGroups: " + JSON.stringify(assignedGroups));
-// 				$.ajax({
-// 					url: 'modules/actionHandler.php',
-// 					type: "get",
-//					data: "action=changeAssignedGroups&questionaireId="+<?php // echo isset($_GET["id"]) ? $_GET["id"] : -1;?>+"&groups="+JSON.stringify(assignedGroups),
-// 					success: function(output) 
-// 					{
-// 						//alertify
-// 						if(output == "ok") {
-							
-// 							console.log("success: " + output);
-// 			                $("#groupAddSuccess").slideDown(1000);   
-// 			                $("#groupAddSuccess").fadeTo(2000, 500).slideUp(1000);   
-// 						} else {
-// 							console.log("error: " + output);
-// 			                $("#groupAddError").slideDown(1000);   
-// 			                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
-// 						}
-// 					}, error: function(output)
-// 					{
-// 						console.log("error: " + output);
-// 		                $("#groupAddError").slideDown(1000);   
-// 		                $("#groupAddError").fadeTo(2000, 500).slideUp(1000); 
-// 					}
-// 				});
-// 			}
-// 		});
-		
-
 
 		$('#assignGroupTbl').DataTable({
             'bSort': true,
@@ -855,6 +843,7 @@
 				field = "startDate";
 				data.append("startDate", event.target.value);
 				data.append("startTime", $('#startTime').val());
+				console.log("Startdate: " + event.target.value + " " + $('#startTime').val());
 				break;
 			case "startTime":
 				field = "startTime";
@@ -906,31 +895,7 @@
 
 						if(data.noPartPeriodNewValue)
 						{
-							var val0 = <?php echo constant('noParticipationPeriod0')?>;
-							var val1 = <?php echo constant('noParticipationPeriod1')?>;
-							var val2 = <?php echo constant('noParticipationPeriod2')?>;
-							var quizPriority = $('#quizPriority').val();
-							var defaultValue = '';
-							
-							if(quizPriority == 0)
-							{
-								defaultValue = val0;
-							} else if(quizPriority == 1)
-							{
-								defaultValue = val1;
-							} else if(quizPriority == 2)
-							{
-								defaultValue = val2;
-							}	
-							
-							if(data.noPartPeriodNewValue == defaultValue)
-							{
-								$("#resetToStandardParticipationPeriod").prop("disabled", true);
-							} else
-							{
-								$("#resetToStandardParticipationPeriod").prop("disabled", false);
-								$("#resetToStandardParticipationPeriod").val(defaultValue);
-							}
+							noParticipationPeriodResetButtonCheck(data.noPartPeriodNewValue);
 						}
 						
 						break;
@@ -947,6 +912,166 @@
 	    });
 	}
 
+	var sourceDataGroup = <?php echo json_encode(array_column($fetchGroupNames, "name"));?>;
+	$( "#autocompleteGroups" ).autocomplete({
+	  source: sourceDataGroup
+	});
+
+	var sourceDataUser = <?php echo json_encode(array_column($fetchUserEmails, "email"));?>;
+	$( "#autocompleteUsers" ).autocomplete({
+	  source: sourceDataUser
+	});
+
+	function addAssignedGroup()
+	{
+		var groupName = $('#autocompleteGroups').val();
+		var execId = <?php echo isset($_GET["execId"]) ? $_GET["execId"] : $newExecId;?>;
+		var data = new FormData();
+		data.append("groupName", groupName);
+		data.append("execId", execId);
+
+		$.ajax({
+			url: '?p=actionHandler&action=addGroupAssignation',
+			type: 'POST',
+			data: data,
+			dataType: 'json',
+			contentType: false,
+			processData: false,
+			cache: false,
+			success: function(data) 
+			{
+				if(data.status == "OK")
+				{
+					showSnackbar("<?php echo $lang["saved"]?>");
+					$('#ajaxAnswerGroup').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
+					var rowData = [groupName, '<img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssignedGroup(' + data.groupId + ', ' + execId +')">'];
+					var rowIndex = $('#assignGroupTbl').dataTable().fnAddData(rowData);
+					var row = $('#assignGroupTbl').dataTable().fnGetNodes(rowIndex);
+					$(row).attr("id", "group_"+data.groupId);
+					$('#autocompleteGroups').val('');
+				}
+				else if(data.status == "error")
+				{
+					$('#ajaxAnswerGroup').html('<span style="color: red;">' + data.text + '</span>');
+				}
+			},
+			error: function() 
+			{
+				$('#ajaxAnswerGroup').html("<span style='color: red;'>Ajax couldn't send data.</span>");
+			}	      
+		});
+	}
+
+	function addAssignedUser()
+	{
+		var userEmail = $('#autocompleteUsers').val();
+		var execId = <?php echo isset($_GET["execId"]) ? $_GET["execId"] : $newExecId;?>;
+		var data = new FormData();
+		data.append("userEmail", userEmail);
+		data.append("execId", execId);
+
+		$.ajax({
+			url: '?p=actionHandler&action=addUserAssignation',
+			type: 'POST',
+			data: data,
+			dataType: 'json',
+			contentType: false,
+			processData: false,
+			cache: false,
+			success: function(data) 
+			{
+				if(data.status == "OK")
+				{
+					showSnackbar("<?php echo $lang["saved"]?>");
+					$('#ajaxAnswerUser').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
+					var rowData = [userEmail, '<img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssignedUser(' + data.userId + ', ' + execId +')">'];
+					var rowIndex = $('#assignUserTbl').dataTable().fnAddData(rowData);
+					var row = $('#assignUserTbl').dataTable().fnGetNodes(rowIndex);
+					$(row).attr("id", "user_"+data.userId);
+					$('#autocompleteUsers').val('');
+				}
+				else if(data.status == "error")
+				{
+					$('#ajaxAnswerUser').html('<span style="color: red;">' + data.text + '</span>');
+				}
+			},
+			error: function() 
+			{
+				$('#ajaxAnswerUser').html("<span style='color: red;'>Ajax couldn't send data.</span>");
+			}	      
+		});
+	}
+	
+	function delAssignedGroup(groupId, execId)
+	{
+		var data = new FormData();
+		data.append("groupId", groupId);
+		data.append("execId", execId);
+		
+		$.ajax({
+	        url: '?p=actionHandler&action=delGroupFromExec',
+	        type: 'POST',
+	        data: data,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false,
+	        contentType: false,
+	        success: function(data) 
+			{
+				if(data.status == "OK")
+				{
+					showSnackbar("<?php echo $lang["saved"]?>");
+					$('#ajaxAnswerGroup').html('<span style="color: green;">Berechtigung aberkannt.</span>');
+					$('#assignGroupTbl').DataTable().row($('#group_'+groupId)).remove().draw();
+					$('.tipsy').remove();
+				}
+				if(data.status == "error")
+				{
+					$('#ajaxAnswerGroup').html('<span style="color: red;">Fehler ' + data.text +'.</span>');
+				}
+			},
+			error: function() 
+			{
+				$('#ajaxAnswerGroup').html("<span style='color: red;'>Ajax couldn't send data.</span>");
+			}	      
+		});
+	}
+
+	function delAssignedUser(userId, execId)
+	{
+		var data = new FormData();
+		data.append("userId", userId);
+		data.append("execId", execId);
+		
+		$.ajax({
+	        url: '?p=actionHandler&action=delUserFromExec',
+	        type: 'POST',
+	        data: data,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false,
+	        contentType: false,
+	        success: function(data) 
+			{
+				if(data.status == "OK")
+				{
+					showSnackbar("<?php echo $lang["saved"]?>");
+					$('#ajaxAnswerUser').html('<span style="color: green;">Berechtigung aberkannt.</span>');
+					$('#assignUserTbl').DataTable().row($('#user_'+userId)).remove().draw();
+					$('.tipsy').remove();
+				}
+				if(data.status == "error")
+				{
+					$('#ajaxAnswerUser').html('<span style="color: red;">Fehler ' + data.text +'.</span>');
+				}
+			},
+			error: function() 
+			{
+				$('#ajaxAnswerUser').html("<span style='color: red;'>Ajax couldn't send data.</span>");
+			}	      
+		});
+	}
+	
 	function setDefaultValue(element)
 	{
 		target = element.id;
@@ -957,17 +1082,52 @@
 				var defaultValue = $("#resetToStandardParticipationPeriod").val();
 				if(defaultValue == 1) 
 				{
-					$("#noParticipationPeriod1").prop("checked", true);
-					$("#noParticipationPeriod0").prop("checked", false);
-					$("#noParticipationPeriod1").trigger("change");
+					$("#noParticipationPeriod1").click();
 				} else 
 				{
-					$("#noParticipationPeriod0").prop("checked", true);
-					$("#noParticipationPeriod1").prop("checked", false);
-					$("#noParticipationPeriod0").trigger("change");
+					$("#noParticipationPeriod0").click();
 				}
 				break;
 		
+		}
+	}
+
+	function resetButtonOnload(button)
+	{
+		switch(button)
+		{
+			case "resetToStandardParticipationPeriod":
+				var newValue = $("#noParticipationPeriod1").is(":checked") ? 1 : 0;
+				noParticipationPeriodResetButtonCheck(newValue);
+		}
+	}
+
+	function noParticipationPeriodResetButtonCheck(newValue)
+	{
+		var val0 = <?php echo constant('noParticipationPeriod0')?>;
+		var val1 = <?php echo constant('noParticipationPeriod1')?>;
+		var val2 = <?php echo constant('noParticipationPeriod2')?>;
+		var quizPriority = $('#quizPriority').val();
+		var defaultValue = '';
+		
+		if(quizPriority == 0)
+		{
+			defaultValue = val0;
+		} else if(quizPriority == 1)
+		{
+			defaultValue = val1;
+		} else if(quizPriority == 2)
+		{
+			defaultValue = val2;
+		}	
+		
+		if(newValue == defaultValue)
+		{
+			$("#resetToStandardParticipationPeriod").prop("disabled", true);
+		} else
+		{
+			$("#resetToStandardParticipationPeriod").prop("disabled", false);
+			$("#resetToStandardParticipationPeriod").val(defaultValue);
 		}
 	}
 	

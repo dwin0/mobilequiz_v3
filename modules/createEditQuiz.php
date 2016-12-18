@@ -3,17 +3,17 @@
 	include_once 'errorCodeHandler.php';
 	
 
+	$code = 0;
 	if(!isset($_GET["id"]))
 	{
 		$mode = "create";
-		$code = -1;
+		$code = -20;
 	}
 	
 	$maxCharactersQuiz = 30;
 	$maxCharactersTopic = 30;
 	$maxCharactersQuizDesc = 120;
 	
-	$code = 0;
 	$codeText = "";
 	$mode = "create";
 	if(isset($_GET["mode"]))
@@ -31,10 +31,11 @@
 		else
 		{
 			$mode = "create";
-			$code = -2;
+			$code = -21;
 		}
 	} else if($mode == 'create') {
 		
+		$code = 0;
 		if($_SESSION["language"] == "ger")
 		{
 			$language = "Deutsch";
@@ -61,6 +62,12 @@
 	else
 	{
 		header("Location: ?p=home&code=-20");
+		exit;
+	}
+	
+	if($code < 0)
+	{
+		header("Location: ?p=home&code=" . $code);
 		exit;
 	}
 	
@@ -524,7 +531,6 @@
 			{
 				if(response["status"] == "OK")
 				{
-					console.log("OK");
 					showSnackbar("<?php echo $lang["saved"]?>");
 					$('#ajaxAnswer').html('<span style="color: green;">Berechtigung zugewiesen.</span>');
 					var rowData = [userEmail, '<img id="delAssignedId" class="deleteAssigned delAssignedImg" src="assets/icon_delete.png" style="cursor: pointer;" alt="" original-title="Berechtigung entziehen" height="18px" width="18px" onclick="delAssigned(' + response["userId"] + ')">'];
@@ -547,8 +553,6 @@
 
 	function delAssigned(userId)
 	{
-		console.log("del: " + userId);
-
 		$.ajax({
 			url: 'modules/actionHandler.php',
 			type: "get",
@@ -718,7 +722,7 @@
 	function uploadChange(url, data, field) 
 	{
 		data.append("quizId", $("[name='quiz_id']").val());
-		data.append("mode", <?php echo $mode;?>);
+		data.append("mode", "<?php echo $mode;?>");
 		
 		$.ajax({
 	        url: url + '&field=' + field,

@@ -423,7 +423,7 @@
 			                        	<?php if($_SESSION['role']['admin'] == 1 || $fetchExecution[$i]["owner_id"] == $_SESSION["id"] || amIAssignedToThisQuiz($dbh, $fetchExecution[$i]["qId"])) {
 			                        		$eyePic = $fetchExecution[$i]["public"] != 1 ? 'closed' : 'open';
 			                        		echo '<img alt="'.$eyePic.'" src="assets/icon_eye_' . $eyePic . '.png" width="13" height="10" class="eye_'.$eyePic.'" original-title="'.$lang["quiz_" . $eyePic].'">';}?>
-			                            <p style="display: inline-block; width: 145px; word-wrap: break-word; vertical-align: middle;"><?php echo " " . substr(htmlspecialchars($fetchExecution[$i]["qName"]), 0, 30) . " - " . $fetchExecution[$i]["execName"];?></p>
+			                            <p style="display: inline-block; width: 145px; word-wrap: break-word; vertical-align: middle;"><?php echo " " . substr(htmlspecialchars($fetchExecution[$i]["qName"]), 0, 20) . " - " . substr(htmlspecialchars($fetchExecution[$i]["execName"]), 0, 20);?></p>
 			                            <p id="arrowDown" style="float: right; margin-right: 1em; display: none">&#9660;</p>
 			                        </td>
 			                        <td>

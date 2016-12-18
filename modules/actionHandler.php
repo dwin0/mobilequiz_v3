@@ -48,6 +48,12 @@
 		case "addAssignation":
 			addAssignation();
 			break;
+		case "addGroupAssignation":
+			addGroupAssignation();
+			break;
+		case "addUserAssignation":
+			addUserAssignation();
+			break;
 		case "delAssignation":
 			deleteAssignation();
 			break;
@@ -58,6 +64,12 @@
 			break;
 		case "delGroup":
 			deleteGroup();
+			break;
+		case "delGroupFromExec":
+			deleteGroupFromExecution();
+			break;
+		case "delUserFromExec":
+			deleteUserFromExecution();
 			break;
 		case "addGroup":
 			addGroup();

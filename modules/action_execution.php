@@ -304,5 +304,215 @@ function unixTime($date, $time)
 	return $time;
 }
 
+function deleteGroupFromExecution()
+{
+	global $dbh;
+	$response_array["status"] = "OK";
+	
+	//check correct owner
+	if($_POST["mode"] == 'edit')
+	{
+		//return if user is not allowed to delete group from execution
+		if($_SESSION["role"]["creator"] != 1)
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["execution-authorization-error"];
+		}
+	}
+	
+	if(!isset($_POST["execId"]) || !isset($_POST["groupId"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["parameterError"];
+	}
+	
+	if($response_array["status"] == "error")
+	{
+		echo json_encode($response_array);
+		exit;
+	}
+	
+	$stmt = $dbh->prepare("delete from group_exec where group_id = :groupId and execution_id = :execId");
+	$stmt->bindParam(":groupId", $_POST["groupId"]);
+	$stmt->bindParam(":execId", $_POST["execId"]);
+	if(!$stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["DB-Update-Error"];
+	}
+	
+	
+	if($response_array["status"] == "OK")
+	{
+		$stmt = $dbh->prepare("update execution set last_modified = ".time()." where id = :execId");
+		$stmt->bindParam(":execId", $_POST["execId"]);
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["DB-Update-Error"];
+		}
+	}
+	
+	echo json_encode($response_array);
+	exit;
+}
+
+function addGroupAssignation()
+{
+	global $dbh;
+	
+	$response_array["status"] = "OK";
+	
+	//check correct owner
+	if($_POST["mode"] == 'edit')
+	{
+		//return if user is not allowed to add group to execution
+		if($_SESSION["role"]["creator"] != 1)
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["execution-authorization-error"];
+		}
+	}
+	
+	if(!isset($_POST["execId"]) || !isset($_POST["groupName"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["parameterError"];
+	}
+	
+	if($response_array["status"] == "error")
+	{
+		echo json_encode($response_array);
+		exit;
+	}
+	
+	
+	$stmt = $dbh->prepare("select id from `group` where name = :name");
+	$stmt->bindParam(":name", $_POST["groupName"]);
+	$stmt->execute();
+	$groupId = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	$stmt = $dbh->prepare("insert into group_exec (group_id, execution_id) values (:groupId, :execId)");
+	$stmt->bindParam(":groupId", $groupId["id"]);
+	$stmt->bindParam(":execId", $_POST["execId"]);
+	if($stmt->execute())
+	{
+		$response_array["groupId"] = $groupId["id"];
+	
+	} else {
+		$response_array["status"] = ["error"];
+		$response_array["text"] = ["Couldn't update database."];
+	}
+	
+	echo json_encode($response_array);
+	exit;
+	
+}
+
+function addUserAssignation()
+{
+	global $dbh;
+	
+	$response_array["status"] = "OK";
+	
+	//check correct owner
+	if($_POST["mode"] == 'edit')
+	{
+		//return if user is not allowed to add group to execution
+		if($_SESSION["role"]["creator"] != 1)
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["execution-authorization-error"];
+		}
+	}
+	
+	if(!isset($_POST["execId"]) || !isset($_POST["userEmail"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["parameterError"];
+	}
+	
+	if($response_array["status"] == "error")
+	{
+		echo json_encode($response_array);
+		exit;
+	}
+	
+	
+	$stmt = $dbh->prepare("select id from user where email = :email");
+	$stmt->bindParam(":email", $_POST["userEmail"]);
+	$stmt->execute();
+	$userId = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	$stmt = $dbh->prepare("insert into user_exec (user_id, execution_id) values (:userId, :execId)");
+	$stmt->bindParam(":userId", $userId["id"]);
+	$stmt->bindParam(":execId", $_POST["execId"]);
+	if($stmt->execute())
+	{
+		$response_array["userId"] = $userId["id"];
+	
+	} else {
+		$response_array["status"] = ["error"];
+		$response_array["text"] = ["Couldn't update database."];
+	}
+	
+	echo json_encode($response_array);
+	exit;
+	
+}
+
+function deleteUserFromExecution()
+{
+	global $dbh;
+	$response_array["status"] = "OK";
+
+	//check correct owner
+	if($_POST["mode"] == 'edit')
+	{
+		//return if user is not allowed to delete group from execution
+		if($_SESSION["role"]["creator"] != 1)
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["execution-authorization-error"];
+		}
+	}
+
+	if(!isset($_POST["execId"]) || !isset($_POST["userId"]))
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["parameterError"];
+	}
+
+	if($response_array["status"] == "error")
+	{
+		echo json_encode($response_array);
+		exit;
+	}
+
+	$stmt = $dbh->prepare("delete from user_exec where user_id = :userId and execution_id = :execId");
+	$stmt->bindParam(":userId", $_POST["userId"]);
+	$stmt->bindParam(":execId", $_POST["execId"]);
+	if(!$stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["DB-Update-Error"];
+	}
+
+
+	if($response_array["status"] == "OK")
+	{
+		$stmt = $dbh->prepare("update execution set last_modified = ".time()." where id = :execId");
+		$stmt->bindParam(":execId", $_POST["execId"]);
+		if(! $stmt->execute())
+		{
+			$response_array["status"] = "error";
+			$response_array["text"] = $lang["DB-Update-Error"];
+		}
+	}
+
+	echo json_encode($response_array);
+	exit;
+}
+
 
 ?>
