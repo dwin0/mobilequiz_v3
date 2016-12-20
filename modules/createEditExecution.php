@@ -772,7 +772,7 @@
 
 	function setExamDisabledLimitedTime(limitedTime)
 	{
-		if(limitedTime === null) //in case of exam this is true
+		if(limitedTime === null || $('#quizPriority').val() == 2) //in case of exam this is true
 		{
 			$("#radioNoneTimeLimit").prop("disabled", true);
 			$('#radioNoneTimeLimitText').css("color", "grey");
