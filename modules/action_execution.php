@@ -38,7 +38,7 @@ function updateExecution() {
 			$response_array = updateExecutionPriority($_POST["quizPriority"], $_POST["execId"], $dbh);
 			break;
 		case "noParticipationPeriod":
-			$response_array = updateExecutionNoPartPeriod($_POST["noParticipationPeriod"], $_POST["execId"], $dbh);
+			$response_array = updateExecutionNoPartPeriod($_POST["noParticipationPeriod"], $_POST["execId"], $_POST["priorityId"], $dbh);
 			break;
 		case "startDate":
 			$response_array = updateExecutionStartDate($_POST["startDate"], $_POST["startTime"], $_POST["execId"], $dbh);
@@ -51,6 +51,9 @@ function updateExecution() {
 			break;
 		case "endTime":
 			$response_array = updateExecutionEndTime($_POST["endTime"], $_POST["endDate"], $_POST["execId"], $dbh);
+			break;
+		case "timeLimit":
+			$response_array = updateExecutionTimeLimit($_POST["timeLimit"], $_POST["execId"], $_POST["priorityId"], $dbh);
 			break;
 	}
 	
@@ -198,17 +201,28 @@ function updateExecutionPriority($newPriority, $execId, $dbh)
 									"amount_participations" => $amountParticipations, "quiz_passed" => $quizPassed, "random_questions" => $randomQuestions,
 									"random_answers" => $randomAnswers, "singlechoice_multiplier" => $singleChoiceMult, "public" => $public, "result_visible_points" => $resultVisiblePoints,
 									"result_visible" => $resultVisible, "showTaskPaper" => $showTaskPaper);
-
+	$response_array["functionName"] = "priority";
+	
 	return $response_array;
 }
 
-function updateExecutionNoPartPeriod($noPartPeriod, $execId, $dbh)
+function updateExecutionNoPartPeriod($noPartPeriod, $execId, $priorityId, $dbh)
 {
 	$response_array["status"] = "OK";
 	
 	$stmt = $dbh->prepare("update execution set noParticipationPeriod = :noPartPeriod where id = :execId");
 	$stmt->bindParam(":noPartPeriod", $noPartPeriod);
 	$stmt->bindParam(":execId", $execId);
+	if(!$stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["DB-Update-Error"];
+	}
+	
+	$stmt = $dbh->prepare("update priority_settings set noParticipationPeriod = :noPartPeriod where priority_id = :priorityId and user_id = :userId");
+	$stmt->bindParam(":noPartPeriod", $noPartPeriod);
+	$stmt->bindParam(":priorityId", $priorityId);
+	$stmt->bindParam(":userId", $_SESSION["id"]);
 	if(! $stmt->execute())
 	{
 		$response_array["status"] = "error";
@@ -216,9 +230,9 @@ function updateExecutionNoPartPeriod($noPartPeriod, $execId, $dbh)
 	}
 	
 	$response_array["noPartPeriodNewValue"] = $noPartPeriod;
+	$response_array["functionName"] = "noParticipationPeriod";
 	return $response_array;
 }
-
 
 function updateExecutionStartDate($startDate, $startTime, $execId, $dbh)
 {
@@ -302,6 +316,48 @@ function unixTime($date, $time)
 	$year = substr($date, 6);
 	$time = mktime($hour, $minute, $second, $month, $day, $year);
 	return $time;
+}
+
+function updateExecutionTimeLimit($timeLimit, $execId, $priorityId, $dbh)
+{
+	$response_array["status"] = "OK";
+	
+	$time = 0;
+	if($timeLimit != 0)
+	{
+		$time = convertMinutsAndSeconds($timeLimit);
+	}
+	
+	$stmt = $dbh->prepare("update execution set limited_time = :timeLimit where id = :execId");
+	$stmt->bindParam(":timeLimit", $time);
+	$stmt->bindParam(":execId", $execId);
+	if(!$stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["DB-Update-Error"];
+	}
+	
+	$stmt = $dbh->prepare("update priority_settings set limited_time = :timeLimit where priority_id = :priorityId and user_id = :userId");
+	$stmt->bindParam(":timeLimit", $time);
+	$stmt->bindParam(":priorityId", $priorityId);
+	$stmt->bindParam(":userId", $_SESSION["id"]);
+	if(!$stmt->execute())
+	{
+		$response_array["status"] = "error";
+		$response_array["text"] = $lang["DB-Update-Error"];
+	}
+	
+	$response_array["timeLimitNewValue"] = $time;
+	$response_array["functionName"] = "timeLimit";
+	return $response_array;
+}
+
+function convertMinutsAndSeconds($time)
+{
+	$minute = substr($time, 0, 2);
+	$second = substr($time, 3, 5);
+	$returnTime = $minute * 60 + $second;
+	return $returnTime;
 }
 
 function deleteGroupFromExecution()

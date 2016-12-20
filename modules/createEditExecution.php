@@ -40,6 +40,38 @@
 		$code = -34;
 	}
 	
+	$stmt = $dbh->prepare("select * from priority_settings where priority_id = 0 and user_id = :userId");
+	$stmt->bindParam(":userId", $_SESSION["id"]);
+	$stmt->execute();
+	if($stmt->rowCount() == 0)
+	{
+		$existingSettings = false;
+	
+		//insert user-settings for learning-help
+		$userId = $_SESSION["id"];
+		$noParticipationPeriod = constant('noParticipationPeriod0');
+		$limitedTime = constant('limited_time0');
+		$amountOfQuestions = constant('amount_of_questions0');
+		$amountParticipations = constant('amount_participations0');
+		$quizPassed = constant('quiz_passed0');
+		$randomQuestions = constant('random_questions0');
+		$randomAnswers = constant('random_answers0');
+		$singleChoiceMult = constant('singlechoice_multiplier0');
+		$public = constant('public0');
+		$resultVisiblePoints = constant('result_visible_points0');
+		$resultVisible = constant('result_visible0');
+		$showTaskPaper = constant('showTaskPaper0');
+		$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, limited_time, amount_of_questions, amount_participations,
+				quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
+				values (0, $userId, $noParticipationPeriod, $limitedTime, $amountOfQuestions, $amountParticipations, $quizPassed,
+				$randomQuestions, $randomAnswers, $singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
+		$stmt->execute();
+	} else
+	{
+		$existingSettings = true;
+		$fetchUserPriority = $stmt->fetch(PDO::FETCH_ASSOC);
+	}
+	
 	if($mode == 'edit' && $code == '') 
 	{
 		$stmt = $dbh->prepare("select * from execution where id = :execId");
@@ -51,7 +83,38 @@
 		}
 		$fetchExecution = $stmt->fetch(PDO::FETCH_ASSOC);
 	} else if ($mode == 'create' && $code == '') {
-		$stmt = $dbh->prepare("insert into execution (creation_date, last_modified) values (".time().", ".time().")");
+
+		if($existingSettings)
+		{
+			$noParticipationPeriod = $fetchUserPriority['noParticipationPeriod'];
+			$limitedTime = $fetchUserPriority['limited_time'];
+			$amountOfQuestions = $fetchUserPriority['amount_of_questions'];
+			$amountParticipations = $fetchUserPriority['amount_participations'];
+			$quizPassed = $fetchUserPriority['quiz_passed'];
+			$randomQuestions = $fetchUserPriority['random_questions'];
+			$randomAnswers = $fetchUserPriority['random_answers'];
+			$singleChoiceMult = $fetchUserPriority['singlechoice_multiplier'];
+			$public = $fetchUserPriority['public'];
+			$resultVisiblePoints = $fetchUserPriority['result_visible_points'];
+			$resultVisible = $fetchUserPriority['result_visible'];
+			$showTaskPaper = $fetchUserPriority['showTaskPaper'];
+		}
+		
+		$exec_token = NULL;
+		do {
+			$exec_token = substr(md5(uniqid(rand(), true)), 0, 6);
+			$stmt = $dbh->prepare("select id from execution where exec_token = :et");
+			$stmt->bindParam(":et", $exec_token);
+			$stmt->execute();
+		} while($stmt->rowCount()>0);
+		
+		$endTime = time() + (7 * 24 * 60 * 60);
+		
+		$stmt = $dbh->prepare("insert into execution (priority_id, exec_token, creation_date, last_modified, starttime, endtime, noParticipationPeriod, limited_time, amount_of_questions, 
+								amount_participations, quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper) 
+								values (0, '".$exec_token."', ".time().", ".time().", ".time().", ".$endTime.", ".$noParticipationPeriod.", ".$limitedTime.", ".$amountOfQuestions.", ".$amountParticipations.
+								", ".$quizPassed.", ".$randomQuestions.", ".$randomAnswers.", ".$singleChoiceMult.", ".$public.", ".$resultVisiblePoints.", ".$resultVisible.", ".$showTaskPaper.")");
+		$test = $stmt->queryString;
 		$stmt->execute();
 		$newExecId = $dbh->lastInsertId();
 		
@@ -83,39 +146,6 @@
 	$stmt = $dbh->prepare("select email from user");
 	$stmt->execute();
 	$fetchUserEmails = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	
-	$stmt = $dbh->prepare("select * from priority_settings where priority_id = 0 and user_id = :userId");
-	$stmt->bindParam(":userId", $_SESSION["id"]);
-	$stmt->execute();
-	if($stmt->rowCount() == 0)
-	{
-		$existingSettings = false;
-		
-		//insert user-settings for learning-help
-		$userId = $_SESSION["id"];
-		$noParticipationPeriod = constant('noParticipationPeriod0');
-		$limitedTime = constant('limited_time0');
-		$amountOfQuestions = constant('amount_of_questions0');
-		$amountParticipations = constant('amount_participations0');
-		$quizPassed = constant('quiz_passed0');
-		$randomQuestions = constant('random_questions0');
-		$randomAnswers = constant('random_answers0');
-		$singleChoiceMult = constant('singlechoice_multiplier0');
-		$public = constant('public0');
-		$resultVisiblePoints = constant('result_visible_points0');
-		$resultVisible = constant('result_visible0');
-		$showTaskPaper = constant('showTaskPaper0');
-		$stmt = $dbh->prepare("insert into priority_settings (priority_id, user_id, noParticipationPeriod, limited_time, amount_of_questions, amount_participations,
-				quiz_passed, random_questions, random_answers, singlechoice_multiplier, public, result_visible_points, result_visible, showTaskPaper)
-				values (0, $userId, $noParticipationPeriod, $limitedTime, $amountOfQuestions, $amountParticipations, $quizPassed,
-				$randomQuestions, $randomAnswers, $singleChoiceMult, $public, $resultVisiblePoints, $resultVisible, $showTaskPaper)");
-		$stmt->execute();
-	} else 
-	{
-		$existingSettings = true;
-		$fetchUserPriority = $stmt->fetch(PDO::FETCH_ASSOC);
-	}
-	
 ?>
 
 
@@ -181,7 +211,7 @@
 				</div>
 			</div>
 			
-			<!-- Execution Participation Period -->
+			<!-- Execution Participation Period --> <?php //TODO: Beispiel?>
    	 		<div class="form-group">
 				<div class="col-md-2 col-sm-3 control-label">
 					<label><?php echo $lang["executionPeriod"];?> *</label>
@@ -202,7 +232,7 @@
 						}
 					}
 					?>
-					<script>$(function(){setExamDisabled(<?php echo $noParticipationPeriod2?>)});</script>
+					<script>$(function(){setExamDisabledNoPartPeriod(<?php echo $noParticipationPeriod2?>)});</script>
 					<label for="noParticipationPeriod1" class="radio-inline"> 
 					<input type="radio" id="noParticipationPeriod1" name="noParticipationPeriod" onchange="setDatesEnabled()"
 						value="1" <?php echo $noParticipationPeriod2 == 1 ? 'checked':'';?> /> <span id="noParticipationPeriodText"> <?php echo $lang["noParticipationPeriod3"];?> </span>
@@ -348,6 +378,7 @@
     	
     	
     	<div class="tab-pane form-horizontal panel-body" id="settings">
+			<?php //TODO: hier weiter?>    		
     		<!-- Execution Time Limitation -->
 			<div class="form-group" style="margin-bottom: 25px;">
 				<div class="col-md-2 col-sm-3 control-label">
@@ -355,7 +386,7 @@
 				</div>
 				<div class="col-md-4 col-sm-6">
 					<?php 
-						$timeLimit = "00:00";
+						$timeLimit = gmdate("i:s", 0);
 						$noLimitChecked = true;
 						if($mode == "edit")
 						{
@@ -364,11 +395,25 @@
 								$timeLimit = gmdate("i:s", $fetchExecution["limited_time"]);
 								$noLimitChecked = false;
 							}
+						} else //create
+						{
+							if($existingSettings)
+							{
+								if($fetchUserPriority["limited_time"] != 0)
+								{
+									$timeLimit = gmdate("i:s", $fetchUserPriority["limited_time"]);
+									$noLimitChecked = false;
+								}
+							} else
+							{
+								$noLimitChecked = (constant('limited_time0') == 0);
+							}
 						}
 					?>
+					<script>$(function(){setExamDisabledLimitedTime('<?php echo $timeLimit?>')});</script>
 					<label for="radioNoneTimeLimit" class="radio-inline"> 
 					<input type="radio" id="radioNoneTimeLimit" name="timeLimitMode"
-						value="0" <?php echo $noLimitChecked ? 'checked':'';?> /> <?php echo $lang["noLimitation"];?>
+						value="0" <?php echo $noLimitChecked ? 'checked':'';?> /> <span id="radioNoneTimeLimitText"><?php echo $lang["noLimitation"];?></span>
 	                </label>
 					<label for="radioQuizTimeLimit" class="radio-inline" style="margin-left: 22px;">
 						<input style="margin-top: 11px;" type="radio" id="radioQuizTimeLimit" name="timeLimitMode" value="1" <?php echo $noLimitChecked ? '':'checked';?> /> 
@@ -378,7 +423,7 @@
 				</div>
 				<div class="col-md-6 col-sm-2">
 					<!-- TODO: Logik -->
-					<input type="button" class="btn" id="resetToStandardTimeLimitation" value="<?php echo $lang["buttonSetBack"]; ?>" style="max-width: 185px; margin-top: 5px;" />
+					<button type="button" class="btn" id="resetToStandardTimeLimitation" disabled onclick="setDefaultValue(this)" style="max-width: 185px; margin-top: 5px;"> <?php echo $lang["buttonSetBack"]; ?> </button>
 				</div>
 			</div>
 			
@@ -705,9 +750,8 @@
 		});
 	}
 
-	function setExamDisabled(noPartPeriod)
+	function setExamDisabledNoPartPeriod(noPartPeriod)
 	{
-		
 		if($('#quizPriority').val() == 2) 
 		{
 			$("#noParticipationPeriod1").prop("disabled", true);
@@ -725,6 +769,35 @@
 		$("#startDate").trigger("change");
 		$("#endDate").trigger("change");
 	}
+
+	function setExamDisabledLimitedTime(limitedTime)
+	{
+		if(limitedTime === null) //in case of exam this is true
+		{
+			$("#radioNoneTimeLimit").prop("disabled", true);
+			$('#radioNoneTimeLimitText').css("color", "grey");
+			$('#radioNoneTimeLimitText').css("cursor", "not-allowed");
+		} else 
+		{
+			$("#radioNoneTimeLimit").prop("disabled", false);
+			$('#radioNoneTimeLimitText').css("color", "black");
+			$('#radioNoneTimeLimitText').css("cursor", "pointer");
+		}
+
+		if(limitedTime == 0)
+		{
+			$("#radioNoneTimeLimit").trigger("change");
+		} else if(limitedTime > 0)
+		{	
+			var date = new Date(limitedTime*1000);
+			var minutes = "0" + date.getMinutes();
+			var seconds = "0" + date.getSeconds();
+			var formattedTime = '' + minutes.substr(-2) + ':' + seconds.substr(-2);		
+			$("#quizTimeLimit").val(formattedTime);
+			$("#radioQuizTimeLimit").click();
+			$("#radioQuizTimeLimit").trigger("change");
+		}
+	}
 	
 	$(function() {
 		var tooltipElements = ['#singlechoiceMultHelp', '.groupName', '#showQuizTaskPaperHelp', '#assignParticipantHelp', '#assignGroupHelp', ".delAssignedImg"];
@@ -734,9 +807,10 @@
 		});
 
 		$(document).ready(function() {
-			
-			$(document).on("change", "#executionName, #quizPriority, [name='noParticipationPeriod'], #startDate, #startTime, #endDate, #endTime", updateExecutionData);
+			<?php //TODO: hier on change registrieren?>
+			$(document).on("change", "#executionName, #quizPriority, [name='noParticipationPeriod'], #startDate, #startTime, #endDate, #endTime, [name='timeLimitMode'], #quizTimeLimit", updateExecutionData);
 			resetButtonOnload("resetToStandardParticipationPeriod");
+			resetButtonOnload("resetToStandardTimeLimitation");
 			
 		});
 		
@@ -860,6 +934,18 @@
 				data.append("endTime", event.target.value);
 				data.append("endDate", $('#endDate').val());
 				break;
+			case "radioNoneTimeLimit":
+				field = "timeLimit";
+				data.append("timeLimit", event.target.value);
+				break;
+			case "radioQuizTimeLimit":
+				field = "timeLimit";
+				data.append("timeLimit", $('#quizTimeLimit').val());
+				break;
+			case "quizTimeLimit":
+				field = "timeLimit";
+				data.append("timeLimit", event.target.value);
+				break;
 		}
 
 		uploadChange(url, data, field);
@@ -871,6 +957,7 @@
 		
 		data.append("execId", "<?php echo ($mode == "edit") ? $execId : $newExecId;?>");
 		data.append("mode", mode);
+		data.append("priorityId", $("#quizPriority").val());
 		
 		$.ajax({
 	        url: url + '&field=' + field,
@@ -887,17 +974,20 @@
 					case "OK":
 						showSnackbar("<?php echo $lang["saved"]?>");
 
-						if(data.settings)
+						switch(data.functionName)
 						{
-							var settings = data.settings; <?php //TODO?>
-							setExamDisabled(settings.noParticipationPeriod);
-						}
-
-						if(data.noPartPeriodNewValue)
-						{
-							noParticipationPeriodResetButtonCheck(data.noPartPeriodNewValue);
-						}
-						
+							case "priority":
+								var settings = data.settings; <?php //TODO?>
+								setExamDisabledNoPartPeriod(settings.noParticipationPeriod);
+								setExamDisabledLimitedTime(settings.limited_time);
+								break;
+							case "noParticipationPeriod":
+								noParticipationPeriodResetButtonCheck(data.noPartPeriodNewValue);
+								break;
+							case "timeLimit":
+								timeLimitResetButtonCheck(data.timeLimitNewValue)
+								break;
+						}					
 						break;
 					case "error":
 						alert("Error: " + data.text);
@@ -1088,7 +1178,16 @@
 					$("#noParticipationPeriod0").click();
 				}
 				break;
-		
+			case "resetToStandardTimeLimitation":
+				var defaultValue = $("#resetToStandardTimeLimitation").val();
+				if(defaultValue == 0) 
+				{
+					$("#radioNoneTimeLimit").click();
+				} else 
+				{
+					$("#radioQuizTimeLimit").click();
+				}
+				break;
 		}
 	}
 
@@ -1099,6 +1198,11 @@
 			case "resetToStandardParticipationPeriod":
 				var newValue = $("#noParticipationPeriod1").is(":checked") ? 1 : 0;
 				noParticipationPeriodResetButtonCheck(newValue);
+				break;
+			case "resetToStandardTimeLimitation":
+				var newValue = $("#radioNoneTimeLimit").is(":checked") ? 0 : 1;
+				timeLimitResetButtonCheck(newValue);
+				break;
 		}
 	}
 
@@ -1128,6 +1232,34 @@
 		{
 			$("#resetToStandardParticipationPeriod").prop("disabled", false);
 			$("#resetToStandardParticipationPeriod").val(defaultValue);
+		}
+	}
+
+	function timeLimitResetButtonCheck(newValue)
+	{
+		var val0 = <?php echo constant('limited_time0')?>;
+		var val1 = <?php echo constant('limited_time0')?>;
+		var quizPriority = $('#quizPriority').val();
+		var defaultValue = '';
+		
+		if(quizPriority == 0)
+		{
+			defaultValue = val0;
+		} else if(quizPriority == 1)
+		{
+			defaultValue = val1;
+		} else if(quizPriority == 2)
+		{
+			$("#resetToStandardTimeLimitation").prop("disabled", true);
+		}	
+		
+		if(newValue == defaultValue)
+		{
+			$("#resetToStandardTimeLimitation").prop("disabled", true);
+		} else
+		{
+			$("#resetToStandardTimeLimitation").prop("disabled", false);
+			$("#resetToStandardTimeLimitation").val(defaultValue);
 		}
 	}
 	
