@@ -159,14 +159,13 @@
 			$numberOfInterests = count($topics);
 			for($i = 0; $i < $numberOfInterests; $i++)
 			{
-				$stmt = $dbh->prepare("select id from group where subject_id = :subjectId");
-				$stmt->bindParam(':subjectId', $topics[$i]);
+				$stmt = $dbh->prepare("select id from `group` where subject_id = $topics[$i]");
 				$stmt->execute();
 				$fetchSubjectGroup = $stmt->fetch(PDO::FETCH_ASSOC);
-					
-				$stmt = $dbh->prepare("insert into user_group values (:userId, :groupId)");
-				$stmt->bindParam(':userId', $lastId);
-				$stmt->bindParam(':groupId', $fetchSubjectGroup["id"]);
+				
+				$uId = $lastId;
+				$gId = $fetchSubjectGroup["id"];
+				$stmt = $dbh->prepare("insert into user_group values ($uId, $gId)");
 				if(! $stmt->execute())
 				{
 					$allOk = false;

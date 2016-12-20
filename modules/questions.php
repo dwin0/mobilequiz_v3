@@ -15,7 +15,7 @@
 	}
 	
 	$selectedLanguage = "all";
-	$selectedTopic = "all";
+	$selectedTopic;
 	
 	$selectedCreator = "all";
 	
@@ -31,17 +31,23 @@
 	
 	if($_POST["alreadyThere"] != "1")
 	{
-		$stmt = $dbh->prepare("selects subject_id from group inner join user_group on group.id = user_group.group_id where user_group.user_id = :userId and group.subject_id is not null");
-		$stmt->bindParam(":userId", $_SESSION["id"]);
+		$userId = $_SESSION["id"];
+		$stmt = $dbh->prepare("select subject_id from `group` inner join user_group on `group`.id = user_group.group_id where user_group.user_id = $userId and `group`.subject_id is not null");
 		$stmt->execute();
 		$fetchUserInterestGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		
 		$numberOfUserInterests = count($fetchUserInterestGroups);
+		$selectedTopic = array();
+		
 		for($i = 0; $i < $numberOfUserInterests; $i++)
 		{
 			array_push($selectedTopic, $fetchUserInterestGroups[$i]["subject_id"]);
 		}
+	} else 
+	{
+		$selectedTopic = "all";
 	}
+	
 	
 	if(isset($_POST["topic"]))
 	{

@@ -187,13 +187,23 @@
 			        <div class="controls" style="margin-bottom: 1.5em;">
 		                <select id="topic" multiple="multiple" class="form-control" name="topic[]" required>
 		                    <?php 
+		                    function in_array_r($needle, $haystack, $strict = false) {
+		                    	foreach ($haystack as $item) {
+		                    		if (($strict ? $item === $needle : $item == $needle) || (is_array($item) && in_array_r($needle, $item, $strict))) {
+		                    			return true;
+		                    		}
+		                    	}
+		                    
+		                    	return false;
+		                    }
+		                    
+		                    
 		                    $stmt = $dbh->prepare("select subject_id from question group by subject_id");
 		                    $stmt->execute();
 		                    $result = $stmt->fetchAll();
 		                    
 		                    $userId = $_SESSION["id"];
-		                    $stmt = $dbh->prepare("select subject_id from group inner join user_group on group.id = user_group.group_id where user_group.user_id = :userId and group.subject_id is not null");
-		                    $stmt->bindParam(":userId", $userId);
+		                    $stmt = $dbh->prepare("select subject_id from `group` inner join user_group on group.id = user_group.group_id where user_group.user_id = $userId and group.subject_id is not null");
 		                    $stmt->execute();
 		                    $userInterestGroups = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		                    
@@ -207,7 +217,7 @@
 								$stmt->execute();
 								$resultSubjectName = $stmt->fetchAll(PDO::FETCH_ASSOC);
 															
-								$selected = (in_array($result[$i]["subject_id"], $userInterestGroups)) ? "selected" : "";
+								$selected = (in_array_r($result[$i]["subject_id"], $userInterestGroups)) ? "selected" : "";
 								
 								echo "<option value=\"" . $result[$i]["subject_id"] . "\" " . $selected . ">" . $resultSubjectName[0]["name"] . "</option>";
 		                    } ?>
